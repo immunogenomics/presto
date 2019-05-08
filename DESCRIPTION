@@ -1,7 +1,7 @@
 Package: presto
 Title: Fast Functions for Differential Expression using Wilcox and AUC
 biocViews: StatisticalMethod, DifferentialExpression, GeneExpression, RNASeq, SingleCell
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: c(
     person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", 
         role = c("cre", "aut"), comment = c(ORCID = "0000-0003-4848-3948")),
