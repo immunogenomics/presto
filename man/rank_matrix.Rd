@@ -18,8 +18,8 @@ rank_matrix(X)
 \value{
 List with 2 items
 \itemize{
-  \item X_ranked - matrix of entry ranks
-  \item ties - list of tied group sizes
+\item X_ranked - matrix of entry ranks
+\item ties - list of tied group sizes
 }
 }
 \description{

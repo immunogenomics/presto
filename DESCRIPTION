@@ -21,7 +21,11 @@ Imports:
     dplyr, 
     methods,
     tidyr, 
-    reshape2
+    reshape2,
+    Matrix,
+    rlang,
+    stats, 
+    utils
 RoxygenNote: 6.1.1
 Suggests: 
     knitr,
