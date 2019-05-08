@@ -86,7 +86,8 @@ head(wilcoxauc(object_seurat, 'cell_type'))
 
 ```
 
-Seurat supports multiple assay types. This can be specified with `seurat_assay`.
+Seurat supports multiple assay types. This can be specified with 
+`seurat_assay`.
 
 ```{r}
 head(wilcoxauc(object_seurat, 'cell_type', seurat_assay = 'RNA'))
@@ -155,8 +156,8 @@ head(wilcoxauc(exprs, y))
 
 ## Top markers
 
-We often find it helpful to summarize what the most distinguishing features are
-in group. 
+We often find it helpful to summarize what the most distinguishing features
+are in each group. 
 
 ```{r}
 res <- wilcoxauc(exprs, y)
@@ -196,8 +197,8 @@ head(wilcoxauc(exprs_sparse, y))
 ## groups_use
 
 Sometimes, you don't want to test all groups in the dataset against all other 
-groups. For instance, I want to compare only observations in group 'A' to those
-in group 'B'. This is achieved with the groups_use argument. 
+groups. For instance, I want to compare only observations in group 'A' to
+those in group 'B'. This is achieved with the groups_use argument. 
 
 ```{r}
 res_AB <- wilcoxauc(exprs, y, groups_use = c('A', 'B'))

@@ -19,8 +19,9 @@ test_that('presto::wilcoxauc gives same results as stats::wilcox.test', {
         return(res)
     })
     res_base_r <- Reduce(rbind, lapply(names(res_base_r), function(group) {
-        res_base_r[[group]] %>% data.frame() %>% 
-            tibble::rownames_to_column('feature') %>% 
+        .res <- res_base_r[[group]] %>% data.frame() 
+        .res$feature <- row.names(.res)
+        .res <- .res %>%     
             dplyr::mutate(group = group)
     })) %>% 
         dplyr::select(feature, group, statistic, p.value)
