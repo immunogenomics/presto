@@ -1,7 +1,6 @@
 Package: presto
 Title: Fast Functions for Differential Expression using Wilcox and AUC
-biocViews: StatisticalMethod, DifferentialExpression, GeneExpression, RNASeq, SingleCell
-Version: 0.99.2
+Version: 0.99.0
 Authors@R: c(
     person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", 
         role = c("cre", "aut"), comment = c(ORCID = "0000-0003-4848-3948")),
@@ -15,7 +14,7 @@ Authors@R: c(
 Description: Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as genomics analysis frameworks Seurat and SingleCellExperiment. 
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
-Depends: Rcpp
+Depends: R (>= 3.4.0), Rcpp
 LinkingTo: Rcpp, RcppArmadillo
 Imports: 
     dplyr, 
@@ -36,4 +35,5 @@ Suggests:
     SummarizedExperiment,
     broom,
     BiocStyle
+NeedsCompilation: yes
 VignetteBuilder: knitr
