@@ -1,2 +1,4 @@
 ^docs$
 ^cran-comments.md$
+^CRAN-RELEASE$
+^LICENSE$
