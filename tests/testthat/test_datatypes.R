@@ -1,6 +1,6 @@
 context('Test main Presto runs on variety of input types')
 
-library(presto)
+library(Presto)
 data(y)
 data(exprs)
 

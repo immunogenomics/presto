@@ -14,30 +14,47 @@ NULL
 
 
 tidy_results <- function(wide_res, features, groups) {
-    res <- Reduce(cbind,
-        lapply(names(wide_res), function(label) {
-            res <- wide_res[[label]]
-            colnames(res) <- paste(label, groups, sep = '.')
-            res
-        })) %>% data.frame()
-    res$feature <- features
-    res %>% 
-        reshape2::melt(id.vars = c('feature')) %>% 
-        # tidyr::gather(key, val, -feature) %>% 
-        tidyr::separate(.data$variable, c('metric', 'group'), '[[.]]') %>% 
-        tidyr::spread(.data$metric, .data$value) %>% 
-        dplyr::select(
-            .data$feature, 
-            .data$group, 
-            .data$avgExpr, 
-            .data$logFC, 
-            .data$statistic, 
-            .data$auc, 
-            .data$pval, 
-            .data$padj, 
-            .data$pct_in, 
-            .data$pct_out
-        )
+    res <- Reduce(cbind, lapply(wide_res, as.numeric)) %>% data.frame() 
+    colnames(res) <- names(wide_res)
+    res$feature <- rep(features, length(groups))
+    res$group <- rep(groups, length(features))
+    res <- res %>% dplyr::select(
+        .data$feature, 
+        .data$group, 
+        .data$avgExpr, 
+        .data$logFC, 
+        .data$statistic, 
+        .data$auc, 
+        .data$pval, 
+        .data$padj, 
+        .data$pct_in, 
+        .data$pct_out
+    )
+    
+    # res <- Reduce(cbind,
+    #     lapply(names(wide_res), function(label) {
+    #         res <- wide_res[[label]]
+    #         colnames(res) <- paste(label, groups, sep = '.')
+    #         res
+    #     })) %>% data.frame()
+    # res$feature <- features
+    # res %>% 
+    #     reshape2::melt(id.vars = c('feature')) %>% 
+    #     # tidyr::gather(key, val, -feature) %>% 
+    #     tidyr::separate(.data$variable, c('metric', 'group'), '[[.]]') %>% 
+    #     tidyr::spread(.data$metric, .data$value) %>% 
+    #     dplyr::select(
+    #         .data$feature, 
+    #         .data$group, 
+    #         .data$avgExpr, 
+    #         .data$logFC, 
+    #         .data$statistic, 
+    #         .data$auc, 
+    #         .data$pval, 
+    #         .data$padj, 
+    #         .data$pct_in, 
+    #         .data$pct_out
+    #     )
 }
 
 

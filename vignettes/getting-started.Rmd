@@ -28,7 +28,7 @@ explores more advanced use cases.
 To install the current stable release from CRAN:
 
 ```{r, eval=FALSE}
-install.packages('presto')
+install.packages('Presto')
 
 ```
 
@@ -36,13 +36,13 @@ For the cutting edge version of Presto:
 
 ```{r, eval=FALSE}
 library(devtools)
-install_github('immunogenomics/presto')
+install_github('immunogenomics/Presto')
 
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 options(digits=2)
-library(presto)
+library(Presto)
 ```
 
 

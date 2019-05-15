@@ -1,5 +1,5 @@
 context('Test correctness of Wilcox results')
-library(presto)
+library(Presto)
 data(exprs)
 data(y)
 

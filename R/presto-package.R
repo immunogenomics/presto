@@ -1,10 +1,10 @@
-#' presto
+#' Presto
 #' 
 #' Fast differential expression
 #' 
-#' @name presto
+#' @name Presto
 #' @docType package
-#' @useDynLib presto
+#' @useDynLib Presto
 #' @import Rcpp 
 #' @importClassesFrom Matrix dgCMatrix dgTMatrix dgeMatrix TsparseMatrix
 #' @importFrom methods as is
