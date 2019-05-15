@@ -1,4 +1,4 @@
 library(testthat)
-library(presto)
+library(Presto)
 
-test_check("presto")
+test_check("Presto")

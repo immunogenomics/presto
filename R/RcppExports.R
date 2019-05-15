@@ -2,46 +2,46 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 cpp_sumGroups_dgc <- function(x, p, i, ncol, groups, ngroups) {
-    .Call('_presto_cpp_sumGroups_dgc', PACKAGE = 'presto', x, p, i, ncol, groups, ngroups)
+    .Call('_Presto_cpp_sumGroups_dgc', PACKAGE = 'Presto', x, p, i, ncol, groups, ngroups)
 }
 
 cpp_sumGroups_dgc_T <- function(x, p, i, ncol, nrow, groups, ngroups) {
-    .Call('_presto_cpp_sumGroups_dgc_T', PACKAGE = 'presto', x, p, i, ncol, nrow, groups, ngroups)
+    .Call('_Presto_cpp_sumGroups_dgc_T', PACKAGE = 'Presto', x, p, i, ncol, nrow, groups, ngroups)
 }
 
 cpp_sumGroups_dense <- function(X, groups, ngroups) {
-    .Call('_presto_cpp_sumGroups_dense', PACKAGE = 'presto', X, groups, ngroups)
+    .Call('_Presto_cpp_sumGroups_dense', PACKAGE = 'Presto', X, groups, ngroups)
 }
 
 cpp_sumGroups_dense_T <- function(X, groups, ngroups) {
-    .Call('_presto_cpp_sumGroups_dense_T', PACKAGE = 'presto', X, groups, ngroups)
+    .Call('_Presto_cpp_sumGroups_dense_T', PACKAGE = 'Presto', X, groups, ngroups)
 }
 
 cpp_nnzeroGroups_dense <- function(X, groups, ngroups) {
-    .Call('_presto_cpp_nnzeroGroups_dense', PACKAGE = 'presto', X, groups, ngroups)
+    .Call('_Presto_cpp_nnzeroGroups_dense', PACKAGE = 'Presto', X, groups, ngroups)
 }
 
 cpp_nnzeroGroups_dense_T <- function(X, groups, ngroups) {
-    .Call('_presto_cpp_nnzeroGroups_dense_T', PACKAGE = 'presto', X, groups, ngroups)
+    .Call('_Presto_cpp_nnzeroGroups_dense_T', PACKAGE = 'Presto', X, groups, ngroups)
 }
 
 cpp_nnzeroGroups_dgc <- function(p, i, ncol, groups, ngroups) {
-    .Call('_presto_cpp_nnzeroGroups_dgc', PACKAGE = 'presto', p, i, ncol, groups, ngroups)
+    .Call('_Presto_cpp_nnzeroGroups_dgc', PACKAGE = 'Presto', p, i, ncol, groups, ngroups)
 }
 
 cpp_in_place_rank_mean <- function(v_temp, idx_begin, idx_end) {
-    .Call('_presto_cpp_in_place_rank_mean', PACKAGE = 'presto', v_temp, idx_begin, idx_end)
+    .Call('_Presto_cpp_in_place_rank_mean', PACKAGE = 'Presto', v_temp, idx_begin, idx_end)
 }
 
 cpp_rank_matrix_dgc <- function(x, p, nrow, ncol) {
-    .Call('_presto_cpp_rank_matrix_dgc', PACKAGE = 'presto', x, p, nrow, ncol)
+    .Call('_Presto_cpp_rank_matrix_dgc', PACKAGE = 'Presto', x, p, nrow, ncol)
 }
 
 cpp_rank_matrix_dense <- function(X) {
-    .Call('_presto_cpp_rank_matrix_dense', PACKAGE = 'presto', X)
+    .Call('_Presto_cpp_rank_matrix_dense', PACKAGE = 'Presto', X)
 }
 
 cpp_nnzeroGroups_dgc_T <- function(p, i, ncol, nrow, groups, ngroups) {
-    .Call('_presto_cpp_nnzeroGroups_dgc_T', PACKAGE = 'presto', p, i, ncol, nrow, groups, ngroups)
+    .Call('_Presto_cpp_nnzeroGroups_dgc_T', PACKAGE = 'Presto', p, i, ncol, nrow, groups, ngroups)
 }
 

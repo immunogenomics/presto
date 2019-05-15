@@ -16,9 +16,9 @@ NULL
 tidy_results <- function(wide_res, features, groups) {
     res <- Reduce(cbind, lapply(wide_res, as.numeric)) %>% data.frame() 
     colnames(res) <- names(wide_res)
-    res$feature <- rep(features, length(groups))
-    res$group <- rep(groups, length(features))
-    res <- res %>% dplyr::select(
+    res$feature <- rep(features, times = length(groups))
+    res$group <- rep(groups, each = length(features))
+    res %>% dplyr::select(
         .data$feature, 
         .data$group, 
         .data$avgExpr, 
@@ -30,7 +30,7 @@ tidy_results <- function(wide_res, features, groups) {
         .data$pct_in, 
         .data$pct_out
     )
-    
+
     # res <- Reduce(cbind,
     #     lapply(names(wide_res), function(label) {
     #         res <- wide_res[[label]]

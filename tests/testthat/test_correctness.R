@@ -39,3 +39,4 @@ test_that('presto::wilcoxauc gives same results as stats::wilcox.test', {
     expect_lt(max(abs(res_joint$statistic_base - res_joint$statistic_presto)), 1e-3)
 
 })
+

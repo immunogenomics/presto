@@ -12,7 +12,7 @@ Authors@R: c(
         role = c("aut"), comment = c(ORCID = "0000-0002-1901-8265"))
     )
 Description: Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as genomics analysis frameworks Seurat and SingleCellExperiment. 
-License: GPL-3 + file LICENSE
+License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 3.4.0), Rcpp
 LinkingTo: Rcpp, RcppArmadillo
