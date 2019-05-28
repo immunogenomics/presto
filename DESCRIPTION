@@ -1,6 +1,6 @@
-Package: Presto
+Package: presto
 Title: Fast Functions for Differential Expression using Wilcox and AUC
-Version: 0.99.0
+Version: 1.0.0
 Authors@R: c(
     person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", 
         role = c("cre", "aut"), comment = c(ORCID = "0000-0003-4848-3948")),

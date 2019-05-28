@@ -5,7 +5,7 @@ Presto performs a fast Wilcoxon rank sum test and auROC analysis. Latest benchma
 
 # Installation
 
-We are working on getting Presto into CRAN. For now, install Presto from github directly:
+We are working on getting presto into CRAN. For now, install Presto from github directly:
 
 ```{r}
 library(devtools)

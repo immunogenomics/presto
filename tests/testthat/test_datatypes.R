@@ -1,6 +1,6 @@
-context('Test main Presto runs on variety of input types')
+context('Test main presto runs on variety of input types')
 
-library(Presto)
+library(presto)
 data(y)
 data(exprs)
 

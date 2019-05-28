@@ -8,7 +8,7 @@
 #' \item Seurat V3 object
 #' \item SingleCellExperiment object
 #' }
-#' For detailed examples, consult the Presto vignette. 
+#' For detailed examples, consult the presto vignette. 
 #' 
 #' @param X A feature-by-sample matrix, Seurat object, or SingleCellExperiment
 #'  object

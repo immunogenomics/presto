@@ -1,5 +1,5 @@
 ---
-title: "Quick start to Presto"
+title: "Quick start to presto"
 author: "Ilya Korsunsky"
 output:
   BiocStyle::html_document:
@@ -9,7 +9,7 @@ output:
     fig_width: 7
     fig_height: 2.5
 vignette: >
-    %\VignetteIndexEntry{Quick start to Presto}
+    %\VignetteIndexEntry{Quick start to presto}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8} 
 ---
@@ -18,7 +18,7 @@ vignette: >
 
 # Introduction
 
-Presto makes it fast and easy to run Wilcoxon rank sum test and auROC analysis 
+presto makes it fast and easy to run Wilcoxon rank sum test and auROC analysis 
 on large datasets. The tutorial below shows how to install presto, walks 
 through the 3 major ways you can use presto with your data, and finally
 explores more advanced use cases. 
@@ -28,27 +28,27 @@ explores more advanced use cases.
 To install the current stable release from CRAN:
 
 ```{r, eval=FALSE}
-install.packages('Presto')
+install.packages('presto')
 
 ```
 
-For the cutting edge version of Presto: 
+For the cutting edge version of presto: 
 
 ```{r, eval=FALSE}
 library(devtools)
-install_github('immunogenomics/Presto')
+install_github('immunogenomics/presto')
 
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 options(digits=2)
-library(Presto)
+library(presto)
 ```
 
 
 # Input Types
 
-The main function in this vignette is `wilcoxauc`. Presto currently supports 3
+The main function in this vignette is `wilcoxauc`. presto currently supports 3
 interfaces to `wilcoxauc`, with a matrix, Seurat object, or 
 SingleCellExperiment object. The output of `wilcoxauc` is described in the
 next section. 
@@ -61,7 +61,7 @@ next section.
 
 ## Matrix input
 
-The most general use of Presto is with a matrix of features and observations 
+The most general use of presto is with a matrix of features and observations 
 (exprs) paired with a vector of group labels (y). 
 
 ```{r}
@@ -108,7 +108,7 @@ head(wilcoxauc(object_seurat, 'cell_type', assay = 'scale.data'))
 
 ## SingleCellExperiment
 
-Presto supports the Bioconductor data structure SingleCellExperiment. Again, 
+presto supports the Bioconductor data structure SingleCellExperiment. Again, 
 the most simple use case takes a SingleCellExperiment object and the metadata
 field with group labels. 
 
@@ -181,7 +181,7 @@ top_markers(res, n = 10, auc_min = .5, pct_in_min = 70)
 
 ## Dense vs sparse
 
-Presto is optimized for dense and sparse matrix inputs. When possible, use 
+presto is optimized for dense and sparse matrix inputs. When possible, use 
 sparse inputs. In our toy dataset, almost 39% of elements are zeros. Thus, it 
 makes sense to cast it as a sparse dgCMatrix and run wilcoxauc on that. 
 

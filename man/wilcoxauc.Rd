@@ -66,7 +66,7 @@ Inputs can be
 \item Seurat V3 object
 \item SingleCellExperiment object
 }
-For detailed examples, consult the Presto vignette.
+For detailed examples, consult the presto vignette.
 }
 \examples{
 

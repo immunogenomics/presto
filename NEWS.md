@@ -1,4 +1,4 @@
-# presto 0.99.0
+# presto 1.0.0
 
 Initial submission.
 
