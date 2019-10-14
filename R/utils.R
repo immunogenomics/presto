@@ -221,3 +221,4 @@ nnzeroGroups.matrix <- function(X, y, MARGIN=2) {
         cpp_nnzeroGroups_dense(X, as.integer(y) - 1, length(unique(y)))
     }
 }
+

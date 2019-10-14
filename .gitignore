@@ -5,3 +5,5 @@ inst/doc
 src/*.so
 src/*.o
 **/*.html
+.ipynb_checkpoints
+**/.ipynb_checkpoints
