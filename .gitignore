@@ -4,4 +4,4 @@ inst/doc
 .RData
 src/*.so
 src/*.o
-
+**/*.html
