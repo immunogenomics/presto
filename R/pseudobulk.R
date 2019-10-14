@@ -92,7 +92,7 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
             ## setup design 
             design <- meta_data            
             design[[contrast_var]] <- factor(ifelse(design[[contrast_var]] == foreground_id,
-                                               paste0('cluster_', foreground_id), 
+                                               paste0('cluster', foreground_id), 
                                                'background'))
             
             ## background clusters should not be treated as independent observations
