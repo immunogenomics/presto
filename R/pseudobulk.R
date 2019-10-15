@@ -1,69 +1,42 @@
 #' @export
-model.matrix.full <- function(vars_use, data_df, intercept = 0) {    
-    discrete_vars <- c()
+compute_hash <- function(data_df, vars_use) {
+    base <- 1
+    hash <- rep(0, nrow(data_df))
     for (varname in vars_use) {
-        if ("character" %in% class(data_df[[varname]])) {
-            data_df[[varname]] <- factor(data_df[[varname]])
-            discrete_vars <- c(discrete_vars, varname)
-        } else if ("factor" %in% class(data_df[[varname]])) {
-            discrete_vars <- c(discrete_vars, varname)            
-        } else {
-            stop('no support yet for continuous variables')
-        }
-    }    
-
-    contrasts_df <- lapply(discrete_vars, function(x) {
-        diag(nlevels(data.frame(data_df)[, x, drop = TRUE]))
-    })
-    names(contrasts_df) <- discrete_vars
-    for (varname in discrete_vars) {
-        colnames(contrasts_df[[varname]]) <- levels(data_df[[varname]])
-        row.names(contrasts_df[[varname]]) <- levels(data_df[[varname]])
-        
+        vals <- data.frame(data_df)[, varname, drop = TRUE]
+        nlevel <- nlevels(vals)
+        hash <- hash + (as.integer(vals) - 1) * base
+        base <- base * nlevel
     }
-    res <- model.matrix(as.formula(sprintf("~ %d + %s", intercept, paste(vars_use, collapse = "+"))), 
-                 data=data_df, contrasts.arg=contrasts_df)    
-        
-    return(res)
+    return(hash)
 }
 
 #' @export
 collapse_counts <- function(counts_mat, meta_data, varnames) {
-    design <- model.matrix.full(varnames, meta_data)
-
     ## give each unique row a hash value for indexing
-    hash <- factor(design %*% matrix(2 ^ seq(0, ncol(design) - 1), ncol = 1))
+    hash <- compute_hash(meta_data, varnames)
+    idx_keep <- which(!is.na(hash))
+    hash <- hash[idx_keep]
     hash <- factor(sprintf('sample_%d', as.integer(hash)))
-    length(unique(hash))
-
+    meta_data <- meta_data[idx_keep, ]
+    counts_mat <- counts_mat[, idx_keep]
+    
     ## one hot encoded design matrix, sample level
-    design_collapsed <- design %>% 
-        as_tibble() %>% 
+    design_collapsed <- data.frame(meta_data)[, varnames] %>% 
         cbind(sample_id = hash) %>% 
         unique()
     row.names(design_collapsed) <- design_collapsed$sample_id
 
-    ## in case cells were dropped b/c of NA values
-    counts_mat <- counts_mat[, row.names(design)]
-
+    ## sum over samples
     counts_collapsed <- presto:::sumGroups(counts_mat, hash, 1) %>% t()
     row.names(counts_collapsed) <- row.names(counts_mat)
     colnames(counts_collapsed) <- levels(hash)
 
     ## reorder to match design matrix
     counts_collapsed <- counts_collapsed[, design_collapsed$sample_id]
-    
-    ## recover the 
-    meta_collapsed <- data.frame(row.names = row.names(design_collapsed))
-    for (varname in varnames) {
-        matching_colnames <- grep(sprintf('^%s', varname), colnames(design_collapsed), value = TRUE)
-        vals <- matching_colnames[apply(design_collapsed[, matching_colnames] == 1, 1, which)]
-        meta_collapsed[[varname]] <- gsub(varname, '', vals)
-    }    
-    
-    return(list(counts_mat = counts_collapsed, meta_data = meta_collapsed))
+        
+    return(list(counts_mat = counts_collapsed, meta_data = design_collapsed))
 }
-
 
 #' @export
 pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE, 
