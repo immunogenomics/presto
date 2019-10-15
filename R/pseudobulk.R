@@ -3,7 +3,7 @@ compute_hash <- function(data_df, vars_use) {
     base <- 1
     hash <- rep(0, nrow(data_df))
     for (varname in vars_use) {
-        vals <- data.frame(data_df)[, varname, drop = TRUE]
+        vals <- factor(data.frame(data_df)[, varname, drop = TRUE])
         nlevel <- nlevels(vals)
         hash <- hash + (as.integer(vals) - 1) * base
         base <- base * nlevel
