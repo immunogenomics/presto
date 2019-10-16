@@ -42,7 +42,7 @@ collapse_counts <- function(counts_mat, meta_data, varnames) {
 pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE, 
                    min_counts_per_sample=10, present_in_min_samples=5) {
     ## filter low expressed genes
-    genes_keep <- which(rowSums(counts_df >= min_counts_per_sample) >= present_in_min_samples)
+    genes_keep <- which(Matrix::rowSums(counts_df >= min_counts_per_sample) >= present_in_min_samples)
     if (verbose) {
         message(sprintf('Filtered out %d genes, analyzing %d genes', nrow(counts_df) - length(genes_keep), length(genes_keep)))
     }
