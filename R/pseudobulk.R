@@ -74,9 +74,7 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
             res <- collapse_counts(counts_df, design, colnames(design))
             design <- res$meta_data
             counts_df <- res$counts_mat
-            
-            print(head(design))
-            
+                        
             ## Do DGE with DESeq2
             dds <- DESeqDataSetFromMatrix(
                 countData = counts_df,
