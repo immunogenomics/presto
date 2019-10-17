@@ -22,7 +22,7 @@ collapse_counts <- function(counts_mat, meta_data, varnames) {
     counts_mat <- counts_mat[, idx_keep]
     
     ## one hot encoded design matrix, sample level
-    design_collapsed <- data.frame(meta_data)[, varnames] %>% 
+    design_collapsed <- data.frame(meta_data)[, varnames, drop = FALSE] %>% 
         cbind(sample_id = hash) %>% 
         unique()
     row.names(design_collapsed) <- design_collapsed$sample_id
@@ -90,7 +90,7 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
         })})
         return(dge_res)
     })) %>% 
-    dplyr::select(group, feature, everything())
+    dplyr::select(group, feature, dplyr::everything())
 
 }
 
