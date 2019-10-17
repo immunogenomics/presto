@@ -34,13 +34,14 @@ collapse_counts <- function(counts_mat, meta_data, varnames) {
 
     ## reorder to match design matrix
     counts_collapsed <- counts_collapsed[, design_collapsed$sample_id]
-        
+    design_collapsed$sample_id <- NULL
     return(list(counts_mat = counts_collapsed, meta_data = design_collapsed))
 }
-
 #' @export
 pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE, 
                    min_counts_per_sample=10, present_in_min_samples=5) {
+    message('WARNING: meta_data should only contain pseudobulk identifying variables')
+    
     ## filter low expressed genes
     genes_keep <- which(Matrix::rowSums(counts_df >= min_counts_per_sample) >= present_in_min_samples)
     if (verbose) {
@@ -65,13 +66,16 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
             ## setup design 
             design <- meta_data            
             design[[contrast_var]] <- factor(ifelse(design[[contrast_var]] == foreground_id,
-                                               paste0('cluster', foreground_id), 
+                                               paste0('cluster_', foreground_id), 
                                                'background'))
             
             ## background clusters should not be treated as independent observations
-            res <- collapse_counts(counts_df, design, all_vars)
+#             res <- collapse_counts(counts_df, design, all_vars)
+            res <- collapse_counts(counts_df, design, colnames(design))
             design <- res$meta_data
             counts_df <- res$counts_mat
+            
+            print(head(design))
             
             ## Do DGE with DESeq2
             dds <- DESeqDataSetFromMatrix(
@@ -91,7 +95,6 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
         return(dge_res)
     })) %>% 
     dplyr::select(group, feature, dplyr::everything())
-
 }
 
 #' @export
