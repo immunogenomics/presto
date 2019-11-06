@@ -39,7 +39,7 @@ collapse_counts <- function(counts_mat, meta_data, varnames) {
 }
 #' @export
 pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE, 
-                   min_counts_per_sample=10, present_in_min_samples=5, collapse_background=TRUE) {
+                   min_counts_per_sample=10, present_in_min_samples=5, collapse_background=TRUE, vals_test=NULL) {
     message('WARNING: meta_data should only contain pseudobulk identifying variables')
     
     ## filter low expressed genes
@@ -58,7 +58,15 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
     if (verbose) {
         message(sprintf('Contrast var: %s', contrast_var))
     }
-    Reduce(rbind, lapply(unique(meta_data[[contrast_var]]), function(foreground_id) {
+    if (is.null(vals_test)) {
+        vals_test <- unique(meta_data[[contrast_var]])    
+    } else {
+        if (any(!vals_test %in% unique(meta_data[[contrast_var]]))) {
+            stop('vals_test must be values in the contrast var')    
+        }
+    }
+    
+    Reduce(rbind, lapply(vals_test, function(foreground_id) {
         if (verbose) {
             message(foreground_id)      
         }
