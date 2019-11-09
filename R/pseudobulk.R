@@ -12,7 +12,7 @@ compute_hash <- function(data_df, vars_use) {
 }
 
 #' @export
-collapse_counts <- function(counts_mat, meta_data, varnames) {
+collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group=0) {
     ## give each unique row a hash value for indexing
     hash <- compute_hash(meta_data, varnames)
     idx_keep <- which(!is.na(hash))
@@ -25,6 +25,19 @@ collapse_counts <- function(counts_mat, meta_data, varnames) {
     design_collapsed <- data.frame(meta_data)[, varnames, drop = FALSE] %>% 
         cbind(sample_id = hash) %>% 
         unique()
+    design_collapsed <- data.table(meta_data)[
+        , varnames, drop = FALSE, with = FALSE
+    ][
+        , sample_id := hash
+    ][
+        , N := .N, by = sample_id
+    ][
+        N >= min_cells_per_group
+    ] %>% 
+    unique() %>% 
+    dplyr::select(-N) %>% 
+    data.frame()
+
     row.names(design_collapsed) <- design_collapsed$sample_id
 
     ## sum over samples
