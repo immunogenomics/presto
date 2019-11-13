@@ -54,7 +54,7 @@ collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group
 #' @export
 pseudobulk_pairwise <- function(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose) {
     lapply(vals_test, function(foreground_id) {
-        background_ids <- as.character(unique(meta_data$seurat_annotations)) %>% setdiff(foreground_id)
+        background_ids <- as.character(unique(meta_data[[contrast_var]])) %>% setdiff(foreground_id)
         lapply(background_ids, function(background_id) {
             if (verbose) {
                 message(sprintf('%s vs %s', foreground_id, background_id)) 
