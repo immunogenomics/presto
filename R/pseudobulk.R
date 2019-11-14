@@ -12,7 +12,7 @@ compute_hash <- function(data_df, vars_use) {
 }
 
 #' @export
-collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group=0) {
+collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group=0, keep_n=FALSE) {
     ## give each unique row a hash value for indexing
     hash <- compute_hash(meta_data, varnames)
     idx_keep <- which(!is.na(hash))
@@ -35,8 +35,10 @@ collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group
         N >= min_cells_per_group
     ] %>% 
     unique() %>% 
-    dplyr::select(-N) %>% 
     data.frame()
+    if (!keep_n) ({
+        design_collapsed <- dplyr::select(design_collapsed, -N)
+    })
 
     row.names(design_collapsed) <- design_collapsed$sample_id
 
