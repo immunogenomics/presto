@@ -63,13 +63,13 @@ pseudobulk_pairwise <- function(dge_formula, counts_df, meta_data, contrast_var,
                 message(sprintf('%s vs %s', foreground_id, background_id)) 
             }
             
+            idx_use <- which(meta_data[[contrast_var]] %in% c(foreground_id, background_id))
             ## genes could be absent in these two groups
-            genes_keep <- which(Matrix::rowSums(counts_df >= min_counts_per_sample) >= present_in_min_samples)
+            genes_keep <- which(Matrix::rowSums(counts_df[, idx_use] >= min_counts_per_sample) >= present_in_min_samples)
             ## filter locally 
-            counts_df <- counts_df[genes_keep, ]
+            counts_df <- counts_df[genes_keep, idx_use]
             
             suppressMessages({suppressWarnings({
-                idx_use <- which(meta_data[[contrast_var]] %in% c(foreground_id, background_id))
                 design <- meta_data[idx_use, ]
                 
                 design[[contrast_var]] <- factor(ifelse(design[[contrast_var]] == foreground_id,
@@ -77,7 +77,7 @@ pseudobulk_pairwise <- function(dge_formula, counts_df, meta_data, contrast_var,
                                                    'background'))
                 ## Do DGE with DESeq2
                 dds <- DESeqDataSetFromMatrix(
-                    countData = counts_df[, idx_use],
+                    countData = counts_df,#[, idx_use],
                     colData = design,
                     design = dge_formula) %>% 
                     DESeq2::DESeq()
