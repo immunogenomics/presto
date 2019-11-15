@@ -54,13 +54,20 @@ collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group
 }
 
 #' @export
-pseudobulk_pairwise <- function(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose) {
+pseudobulk_pairwise <- function(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
+                                min_counts_per_sample, present_in_min_samples) {
     lapply(vals_test, function(foreground_id) {
         background_ids <- as.character(unique(meta_data[[contrast_var]])) %>% setdiff(foreground_id)
         lapply(background_ids, function(background_id) {
             if (verbose) {
                 message(sprintf('%s vs %s', foreground_id, background_id)) 
             }
+            
+            ## genes could be absent in these two groups
+            genes_keep <- which(Matrix::rowSums(counts_df >= min_counts_per_sample) >= present_in_min_samples)
+            ## filter locally 
+            counts_df <- counts_df[genes_keep, ]
+            
             suppressMessages({suppressWarnings({
                 idx_use <- which(meta_data[[contrast_var]] %in% c(foreground_id, background_id))
                 design <- meta_data[idx_use, ]
@@ -169,10 +176,12 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
     }
     
     if (mode == 'one_vs_all') {
-        res <- pseudobulk_one_vs_all(dge_formula, counts_df, meta_data, contrast_var, vals_test, collapse_background, verbose)
+        res <- pseudobulk_one_vs_all(dge_formula, counts_df, meta_data,
+                                     contrast_var, vals_test, collapse_background, verbose)
         
     } else if (mode == 'pairwise') {
-        res <- pseudobulk_pairwise(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose)
+        res <- pseudobulk_pairwise(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
+                                   min_counts_per_sample, present_in_min_samples)
     }
     return (res)
 }
