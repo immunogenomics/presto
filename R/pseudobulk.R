@@ -143,7 +143,6 @@ pseudobulk_one_vs_all <- function(dge_formula, counts_df, meta_data, contrast_va
 }
 
 pseudobulk_within <- function(dge_formula, counts_df, meta_data, split_var, vals_test, verbose) {
-
     Reduce(rbind, lapply(vals_test, function(group_test) {
         if (verbose) {
             message(group_test)      
