@@ -142,13 +142,60 @@ pseudobulk_one_vs_all <- function(dge_formula, counts_df, meta_data, contrast_va
     
 }
 
+pseudobulk_within <- function(dge_formula, counts_df, meta_data, split_var, vals_test, verbose) {
+
+    Reduce(rbind, lapply(vals_test, function(group_test) {
+        if (verbose) {
+            message(group_test)      
+        }
+        
+        ## remove the split-by-variable (e.g. cluster)
+        all_vars <- unlist(strsplit(tail(as.character(dge_formula), 1), split = ' \\+ '))
+        dge_formula <- as.formula(paste0('~', paste(tail(all_vars, -1), collapse = '+')))
+        contrast_var <- all_vars[[2]]
+        
+        suppressMessages({suppressWarnings({
+            ## setup design 
+            idx_use <- which(meta_data[[split_var]] == group_test)
+            design <- meta_data[idx_use, ]
+            
+            ## assume that contrast variable is two-level, otherwise ordinal
+            if (nlevels(design[[contrast_var]]) > 2) {
+                design[[contrast_var]] <- as.integer(design[[contrast_var]])                
+            }
+            
+            ## genes could be absent in tested group, filter locally 
+            genes_keep <- which(Matrix::rowSums(counts_df[, idx_use] >= min_counts_per_sample) >= present_in_min_samples)
+            counts_df <- counts_df[genes_keep, idx_use]
+                        
+            ## Do DGE with DESeq2
+            dds <- DESeqDataSetFromMatrix(
+                countData = counts_df,
+                colData = design,
+                design = dge_formula) %>% 
+                DESeq2::DESeq()
+
+            ## Get results 
+            contrast_name <- grep(contrast_var, resultsNames(dds), value = TRUE)
+            dge_res <- results(dds, name = contrast_name) %>% 
+                    data.frame() %>% 
+                    tibble::rownames_to_column('feature') %>% 
+                    dplyr::arrange(-stat) %>% 
+                    dplyr::mutate(group = group_test)
+        })})
+        return(dge_res)
+    })) %>% 
+    dplyr::select(group, feature, dplyr::everything()) %>% 
+    dplyr::arrange(group, -stat)
+    
+}
 
 
 #' @export
 pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE, 
                               min_counts_per_sample=10, present_in_min_samples=5, 
                               collapse_background=TRUE, vals_test=NULL,
-                              mode=c('one_vs_all', 'pairwise')[1]) {
+                              mode=c('one_vs_all', 'pairwise', 'within')[1]) {
     message('WARNING: meta_data should only contain pseudobulk identifying variables')
     
     ## filter low expressed genes
@@ -174,15 +221,23 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
             stop('vals_test must be values in the contrast var')    
         }
     }
-    
-    if (mode == 'one_vs_all') {
-        res <- pseudobulk_one_vs_all(dge_formula, counts_df, meta_data,
-                                     contrast_var, vals_test, collapse_background, verbose)
+    res <- switch(
+        mode, 
+        one_vs_all = pseudobulk_one_vs_all(dge_formula, counts_df, meta_data,
+                                           contrast_var, vals_test, collapse_background, verbose),
+        pairwise = pseudobulk_pairwise(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
+                                       min_counts_per_sample, present_in_min_samples),
+        within = pseudobulk_within(dge_formula, counts_df, meta_data,
+                                   contrast_var, vals_test, verbose)
+    )    
+#     if (mode == 'one_vs_all') {
+#         res <- pseudobulk_one_vs_all(dge_formula, counts_df, meta_data,
+#                                      contrast_var, vals_test, collapse_background, verbose)
         
-    } else if (mode == 'pairwise') {
-        res <- pseudobulk_pairwise(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
-                                   min_counts_per_sample, present_in_min_samples)
-    }
+#     } else if (mode == 'pairwise') {
+#         res <- pseudobulk_pairwise(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
+#                                    min_counts_per_sample, present_in_min_samples)
+#     } else if (mode == )
     return (res)
 }
 
