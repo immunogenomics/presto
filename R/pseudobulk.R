@@ -142,7 +142,7 @@ pseudobulk_one_vs_all <- function(dge_formula, counts_df, meta_data, contrast_va
     
 }
 
-pseudobulk_within <- function(dge_formula, counts_df, meta_data, split_var, vals_test, verbose) {
+pseudobulk_within <- function(dge_formula, counts_df, meta_data, split_var, vals_test, verbose, min_counts_per_sample, present_in_min_samples) {
     Reduce(rbind, lapply(vals_test, function(group_test) {
         if (verbose) {
             message(group_test)      
@@ -227,7 +227,8 @@ pseudobulk_deseq2 <- function(dge_formula, meta_data, counts_df, verbose=TRUE,
         pairwise = pseudobulk_pairwise(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
                                        min_counts_per_sample, present_in_min_samples),
         within = pseudobulk_within(dge_formula, counts_df, meta_data,
-                                   contrast_var, vals_test, verbose)
+                                   contrast_var, vals_test, verbose, 
+                                   min_counts_per_sample, present_in_min_samples)
     )    
 #     if (mode == 'one_vs_all') {
 #         res <- pseudobulk_one_vs_all(dge_formula, counts_df, meta_data,
