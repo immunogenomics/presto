@@ -12,7 +12,7 @@ compute_hash <- function(data_df, vars_use) {
 }
 
 #' @export
-collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group=0, keep_n=FALSE) {
+collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group=0, keep_n=FALSE, how=c('sum', 'mean')[1]) {
     ## give each unique row a hash value for indexing
     hash <- compute_hash(meta_data, varnames)
     idx_keep <- which(!is.na(hash))
@@ -36,12 +36,7 @@ collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group
     ] %>% 
     unique() %>% 
     data.frame()
-    if (!keep_n) ({
-        design_collapsed <- dplyr::select(design_collapsed, -N)
-    })
-
-    row.names(design_collapsed) <- design_collapsed$sample_id
-
+    
     ## sum over samples
     counts_collapsed <- presto:::sumGroups(counts_mat, hash, 1) %>% t()
     row.names(counts_collapsed) <- row.names(counts_mat)
@@ -50,6 +45,17 @@ collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group
     ## reorder to match design matrix
     counts_collapsed <- counts_collapsed[, design_collapsed$sample_id]
     design_collapsed$sample_id <- NULL
+
+    
+    if (how == 'mean') {
+        counts_collapsed <- as.matrix(counts_collapsed %*% Matrix::Diagonal(x = 1 / design_collapsed$N))        
+    }
+    if (!keep_n) {
+        design_collapsed <- dplyr::select(design_collapsed, -N)
+    }
+
+    row.names(design_collapsed) <- design_collapsed$sample_id
+    
     return(list(counts_mat = counts_collapsed, meta_data = design_collapsed))
 }
 
