@@ -1,34 +1,38 @@
 #' @export 
 find_markers_glmm_single_gene <- function(dge_formula, design, y, main_effect, nsim) {
     ## Estimate model 
-    glmer_res <- lme4::glmer(
-        dge_formula, cbind(design, y), 'poisson',
-        control = lme4::glmerControl(
-            calc.derivs=FALSE, ## 1.1X speedup
-            optimizer="nloptwrap" ## 2X speedup
-        )
-    ) 
-    
-    res <- list()
-
-    ## save the learned variance components
-    res$var <- as_tibble(lme4::VarCorr(glmer_res)) %>% 
-        dplyr::select(grpvar = grp, vcov) 
-    ## save all random and fixed effects
-    res$ranef <- lme4::ranef(glmer_res, condVar=TRUE) %>% 
-        as.data.frame() %>% 
-        dplyr::select(-term)
-    res$fixef <- data.frame(beta = lme4::fixef(glmer_res)) %>% 
-        tibble::rownames_to_column('effect')
-    
-    ## get betas and SDs
-    res$dge <- res$ranef %>%  
-        subset(grpvar == main_effect) %>% 
-        dplyr::select(group = grp, beta=condval) %>%
-        dplyr::mutate(group = as.character(group)) ## undo factors 
-    res$dge$sigma <- as.numeric(apply(as.data.frame(arm::sim(glmer_res, n.sims=nsim)@ranef[main_effect]), 2, sd))
+    tryCatch({
+        glmer_res <- lme4::glmer(
+            dge_formula, cbind(design, y), 'poisson',
+            control = lme4::glmerControl(
+                calc.derivs=FALSE, ## 1.1X speedup
+                optimizer="nloptwrap" ## 2X speedup
+            )
+        )    
         
-    return(res)
+        res <- list()
+
+        ## save the learned variance components
+        res$var <- as_tibble(lme4::VarCorr(glmer_res)) %>% 
+            dplyr::select(grpvar = grp, vcov) 
+        ## save all random and fixed effects
+        res$ranef <- lme4::ranef(glmer_res, condVar=TRUE) %>% 
+            as.data.frame() %>% 
+            dplyr::select(-term)
+        res$fixef <- data.frame(beta = lme4::fixef(glmer_res)) %>% 
+            tibble::rownames_to_column('effect')
+
+        ## get betas and SDs
+        res$dge <- res$ranef %>%  
+            subset(grpvar == main_effect) %>% 
+            dplyr::select(group = grp, beta=condval) %>%
+            dplyr::mutate(group = as.character(group)) ## undo factors 
+        res$dge$sigma <- as.numeric(apply(as.data.frame(arm::sim(glmer_res, n.sims=nsim)@ranef[main_effect]), 2, sd))
+
+        return(res)
+    }, error = function(e) {
+        return(NA)
+    })
 }
 
 
