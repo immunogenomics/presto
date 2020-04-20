@@ -45,7 +45,7 @@ split.presto <- function(obj, splitvar, .appendname = TRUE, .sep = '_') {
 #' @param overwrite (bool) overwrite model object
 #' 
 #' @export 
-glmm.presto <- function(obj, dge_formula, main_effect, analysis_name, features=NULL, do_par=TRUE, nsim=100, overwrite=TRUE) {    
+glmm.presto <- function(obj, dge_formula, main_effect, analysis_name, features=NULL, do_par=TRUE, nsim=100, overwrite=TRUE, ...) {    
     if (analysis_name %in% names(obj$models) & !overwrite) {
         stop(sprintf('glmm results \"%s\" already exists. Set overwrite=TRUE to replace', analysis_name))
     }

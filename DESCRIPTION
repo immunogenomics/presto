@@ -25,7 +25,9 @@ Imports:
     rlang,
     stats, 
     utils,
-    arm
+    arm,
+    furrr,
+    lme4
 RoxygenNote: 7.0.2
 Suggests: 
     knitr,

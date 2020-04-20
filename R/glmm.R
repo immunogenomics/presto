@@ -44,7 +44,7 @@ find_markers_glmm <- function(
         it_fxn <- purrr::map
     }
     if (is.null(features)) {
-        features <- rownames(counts_mat$counts_mat)
+        features <- rownames(counts_mat)
     }
     
     ## Get results for each gene
