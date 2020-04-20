@@ -18,7 +18,7 @@ find_markers_glmm_single_gene <- function(dge_formula, design, y, main_effect, n
     res$ranef <- lme4::ranef(glmer_res, condVar=TRUE) %>% 
         as.data.frame() %>% 
         dplyr::select(-term)
-    res$fixef <- data.frame(beta = fixef(glmer_res)) %>% 
+    res$fixef <- data.frame(beta = lme4::fixef(glmer_res)) %>% 
         tibble::rownames_to_column('effect')
     
     ## get betas and SDs
@@ -58,6 +58,9 @@ find_markers_glmm <- function(
         )
     })
     names(lres) <- features
+
+    ## in case some glmer models failed
+    lres <- lres[!is.na(lres)]    
     
     # Then aggregate the three lists together
     common_el <- purrr::reduce(map(lres, names), intersect)
