@@ -12,14 +12,18 @@ wilcoxauc(X, ...)
 
 \method{wilcoxauc}{seurat}(X, ...)
 
-\method{wilcoxauc}{Seurat}(X, group_by = NULL, assay = "data",
-  groups_use = NULL, seurat_assay = "RNA", ...)
+\method{wilcoxauc}{Seurat}(
+  X,
+  group_by = NULL,
+  assay = "data",
+  groups_use = NULL,
+  seurat_assay = "RNA",
+  ...
+)
 
-\method{wilcoxauc}{SingleCellExperiment}(X, group_by = NULL,
-  assay = NULL, groups_use = NULL, ...)
+\method{wilcoxauc}{SingleCellExperiment}(X, group_by = NULL, assay = NULL, groups_use = NULL, ...)
 
-\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE,
-  ...)
+\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{X}{A feature-by-sample matrix, Seurat object, or SingleCellExperiment

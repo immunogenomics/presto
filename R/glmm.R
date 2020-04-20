@@ -1,0 +1,71 @@
+#' @export 
+find_markers_glmm_single_gene <- function(dge_formula, design, y, main_effect, nsim) {
+    ## Estimate model 
+    glmer_res <- lme4::glmer(
+        dge_formula, cbind(design, y), 'poisson',
+        control = lme4::glmerControl(
+            calc.derivs=FALSE, ## 1.1X speedup
+            optimizer="nloptwrap" ## 2X speedup
+        )
+    ) 
+    
+    res <- list()
+
+    ## save the learned variance components
+    res$var <- as_tibble(lme4::VarCorr(glmer_res)) %>% 
+        dplyr::select(grpvar = grp, vcov) 
+    ## save all random and fixed effects
+    res$ranef <- lme4::ranef(glmer_res, condVar=TRUE) %>% 
+        as.data.frame() %>% 
+        dplyr::select(-term)
+    res$fixef <- data.frame(beta = fixef(glmer_res)) %>% 
+        tibble::rownames_to_column('effect')
+    
+    ## get betas and SDs
+    res$dge <- res$ranef %>%  
+        subset(grpvar == main_effect) %>% 
+        dplyr::select(group = grp, beta=condval) %>%
+        dplyr::mutate(group = as.character(group)) ## undo factors 
+    res$dge$sigma <- as.numeric(apply(as.data.frame(arm::sim(glmer_res, n.sims=nsim)@ranef[main_effect]), 2, sd))
+        
+    return(res)
+}
+
+
+#' @export 
+find_markers_glmm <- function(
+    dge_formula, counts_mat, meta_data, main_effect, features=NULL, do_par=TRUE, nsim=100
+) {
+    ## TODO: check that main_effect is in formula
+    if (do_par) {
+        plan(multicore)
+        it_fxn <- furrr::future_map
+    } else {
+        it_fxn <- purrr::map
+    }
+    if (is.null(features)) {
+        features <- rownames(counts_mat$counts_mat)
+    }
+    
+    ## Get results for each gene
+    lres <- it_fxn(features, function(feature_use) {
+        find_markers_glmm_single_gene(
+            dge_formula = dge_formula, 
+            design = meta_data, 
+            y = counts_mat[feature_use, ], 
+            main_effect, 
+            nsim
+        )
+    })
+    names(lres) <- features
+    
+    # Then aggregate the three lists together
+    common_el <- purrr::reduce(map(lres, names), intersect)
+    res <- map(common_el, function(name) {
+        map_dfr(lres, name, .id='feature')
+    })
+    names(res) <- common_el    
+    return(res) 
+    
+}
+
