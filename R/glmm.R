@@ -16,7 +16,7 @@ regress_out_one_gene <- function(formula_full, formula_reduced, design, y, commo
         ) 
         return(ypred)        
     }, error = function(e) {
-        return(rep())
+        return(rep(NA, length(y)))
     })
 }
 
@@ -33,7 +33,7 @@ regress_out.presto <- function(obj, formula_full, formula_reduced, features = NU
         it_fxn <- purrr::map
     }
     if (is.null(features)) {
-        features <- rownames(counts_mat)    
+        features <- rownames(obj$counts_mat)    
     }
     lres <- it_fxn(features, function(feature_use) {
         regress_out_one_gene(
