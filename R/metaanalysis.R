@@ -116,25 +116,43 @@ meta_analysis.presto <- function(models, type, key_names) {
     ## TODO: check that feature and group are the same 
     ## TODO: instead of feature and group, make generic 
     ## TODO: check that key_names uniquely define rows
+    
+    message('CAUTION: if gene names have underscores, pasrsing will be wrong')
     res <- switch(
         type, 
-        'fixedeffects' = {
-            ## prepare data
-            tests <- models[[1]] %>% 
-                tidyr::unite(key, all_of(key_names), sep = '_') %>% 
-                with(key)
+        'fixedeffects' = { 
+            beta_mat <- bind_rows(models, .id = 'temp_group_var')[, c('beta', 'temp_group_var', key_names)] %>% 
+                tidyr::spread(temp_group_var, beta, fill=0) %>% 
+                tidyr::unite(key, all_of(key_names), sep = "_") %>% 
+                tibble::column_to_rownames('key') %>% as.matrix()
 
-            beta_mat <- models %>% map('beta') %>% dplyr::bind_cols(testid = tests) %>% 
-                tibble::column_to_rownames('testid') %>% 
-                as.matrix()
 
-            sd_mat <- models %>% map('sigma') %>% dplyr::bind_cols(testid = tests) %>% 
-                tibble::column_to_rownames('testid') %>% 
-                as.matrix()
+            sd_mat <- bind_rows(models, .id = 'temp_group_var')[, c('sigma', 'temp_group_var', key_names)] %>% 
+                tidyr::spread(temp_group_var, sigma, fill=0) %>% 
+                tidyr::unite(key, all_of(key_names), sep = "_") %>% 
+                tibble::column_to_rownames('key') %>% as.matrix()
+
+
+            tests <- intersect(rownames(beta_mat), rownames(sd_mat))
+            beta_mat <- beta_mat[tests, ]
+            sd_mat <- sd_mat[tests, ]
+            
+            
+#             tests <- models[[1]] %>% 
+#                 tidyr::unite(key, all_of(key_names), sep = '_') %>% 
+#                 with(key)
+
+#             beta_mat <- models %>% map('beta') %>% dplyr::bind_cols(testid = tests) %>% 
+#                 tibble::column_to_rownames('testid') %>% 
+#                 as.matrix()
+
+#             sd_mat <- models %>% map('sigma') %>% dplyr::bind_cols(testid = tests) %>% 
+#                 tibble::column_to_rownames('testid') %>% 
+#                 as.matrix()
             
             ## summary stats
             compute_fixed_effects(beta_mat, sd_mat) %>% 
-                tidyr::separate(test, key_names)
+                tidyr::separate(test, key_names, sep='_')
             
         },
         NULL ## default
