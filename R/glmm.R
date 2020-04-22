@@ -14,7 +14,8 @@ regress_out_one_gene <- function(formula_full, formula_reduced, design, y, commo
             type = 'response',
             re.form = formula_reduced
         ) 
-        return(ypred)        
+        yresid <- residuals(glmer_res, type = 'response')        
+        return(ypred + yresid)  
     }, error = function(e) {
         return(rep(NA, length(y)))
     })
