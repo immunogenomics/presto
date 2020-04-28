@@ -52,7 +52,7 @@ glmm_uni <- function(feature, model_base, response, nsim) {
 
 
 #' @export 
-glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE, nsim=100, family='poisson') {
+glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE, nsim=100, family='poisson', return_model=TRUE) {
     if (parallel) {
         future::plan(multicore)
         it_fxn <- furrr::future_map
@@ -114,6 +114,10 @@ glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE,
     res$design <- list(model_base@resp$offset, t(model_base@pp$X), model_base@pp$Zt) %>% 
         purrr::reduce(Matrix::rbind2)
     res$response <- response[names(lres), ]
+
+    if (return_model) {
+        res$model_base <- model_base
+    }
     
     return(res)
 }
@@ -162,17 +166,21 @@ compute_I2 <- function(B, S) {
 
 
 #' @export 
-I2.presto <- function(object, effect, within=NULL) {
+I2.presto <- function(object, effect, effect_levels=NULL, within=NULL, within_levels=NULL) {
     ## TODO: save results, check if results were already computed in cache. Option to force recompute. 
     if (is.null(within)) {
         if (!effect %in% object$priornames_df$grp) {
             stop(sprintf('Model does not contain random effect intercept for term %s', effect))
-        }        
+        } 
+        if (is.null(effect_levels)) {
+            effect_levels <- subset(object$betanames_df, grpvar == effect)$grp
+        }
         idx_use <- object$betanames_df %>% 
             tibble::rowid_to_column('idx') %>% 
             subset(grpvar == effect) %>% 
+#             subset(grp %in% effect_levels) %>% 
             with(idx)
-
+        
         I2 <- matrix(compute_I2(t(object$beta[idx_use, ]), t(object$sigma[idx_use, ])), ncol = 1)
     } else {        
         ## find interaction term effect that matches both 
@@ -181,6 +189,9 @@ I2.presto <- function(object, effect, within=NULL) {
             c(paste(within, effect, sep=':'), paste(effect, within, sep=':')), 
             object$priornames_df$grp
         )]
+        
+        ## TODO: add functionalty for subsetting on effect and within levels
+        
         effect_name <- effect_name[!is.na(effect_name)]
         if (length(effect_name) == 0) {
             stop(sprintf('Model does not contain interaction term for %s and %s', effect, within))
@@ -206,6 +217,7 @@ I2.presto <- function(object, effect, within=NULL) {
     
     return(object)
 }
+
 
 
 #' @export 
@@ -250,6 +262,66 @@ toptable.presto <- function(
     return(res)    
 }
 
+
+#' @export 
+genemeans.presto <- function(object, readdepth_varname, xpm=1e6) {
+    b0 <- object$beta[which(object$betanames_df$grpvar == '(Intercept)'), ]
+    b1 <- object$beta[which(object$betanames_df$grpvar == readdepth_varname), ]
+    log_mu <- b0 + log(xpm)*b1
+    object$log_mu <- data.frame(log_mu) %>% 
+        tibble::rownames_to_column('feature') 
+    
+    return(object)
+}
+
+
+#' @export 
+effects.presto <- function(object, effect, effect_levels=NULL, within=NULL, within_levels=NULL) {
+    ## TODO: allow nested effects with the `within` parameter
+    ## TODO: create user facing accessor function and cache effects computation to not recompute p values
+    
+    if (is.null(effect_levels)) {
+        effect_levels <- object$betanames_df %>% 
+            subset(grpvar == effect) %>% 
+            with(grp)
+    }    
+    
+    object$effects <- dplyr::inner_join(
+        cbind(object$betanames_df, object$beta) %>% 
+            subset(grpvar == effect) %>% 
+            dplyr::select(-grpvar, -term) %>%
+            tidyr::gather(feature, beta, -grp),
+        cbind(object$betanames_df, object$sigma) %>% 
+            subset(grpvar == effect) %>% 
+            dplyr::select(-grpvar, -term) %>%
+            tidyr::gather(feature, sigma, -grp),
+        by = c('grp', 'feature')
+    ) %>% 
+        dplyr::mutate(
+            wald = beta / sigma,
+            pval = 2 * (1 - pnorm(abs(beta / sigma)))
+        ) %>% 
+        dplyr::mutate(fdr = p.adjust(pval, 'BH')) %>% 
+        dplyr::left_join(object$log_mu)
+        
+
+    return(object)
+}
+
+
+#' @export 
+plot_ma.presto <- function(object, max_fdr=.05) {
+    object$effect %>% 
+        ggplot(aes(log_mu, beta, color = fdr < max_fdr)) + 
+            geom_point(alpha = .8, size = .5) + 
+            theme_test(base_size = 20) + 
+            geom_hline(yintercept = 0, linetype = 2, color = 'black') + 
+            labs(x = 'Expected Mean (logCPM)', y = 'Log Fold Change') + 
+            scale_color_manual(values = c('grey', 'red')) + 
+            guides(color = FALSE) + 
+            NULL
+    
+}
 
 
 # #' @export 
