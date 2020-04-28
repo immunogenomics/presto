@@ -29,13 +29,14 @@ glmm_uni <- function(feature, model_base, response, nsim) {
         ## sigma for fixed and random effects
         sigma <- c(
             0, ## for offset
-            sqrt(diag(vcov(model))), ## fixed effects
+            ## as.matrix below needed b/c lme4 returns dpoMatrix, which doesn't play well 
+            sqrt(diag(as.matrix(lme4::vcov.merMod(model)))), ## fixed effects
             as.numeric(apply(as.data.frame(arm::sim(model, n.sims = nsim)@ranef), 2, sd)) ## random effects
         )
 
         ## prior distributions for random effects 
         ## CAUTION: Residuals are dropped for lmer without as.data.frame
-        prior_sd <- as.numeric(as.data.frame(VarCorr(model))$vcov)
+        prior_sd <- as.numeric(as.data.frame(lme4::VarCorr(model))$vcov)
 #         prior_sd <- as.numeric(VarCorr(model))
         if (isGLMM(model)) {
             ## for GLMMs, use SD of pearson residuals
@@ -53,7 +54,7 @@ glmm_uni <- function(feature, model_base, response, nsim) {
 #' @export 
 glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE, nsim=100, family='poisson') {
     if (parallel) {
-        furrr::plan(multicore)
+        future::plan(multicore)
         it_fxn <- furrr::future_map
     } else {
         it_fxn <- purrr::map
@@ -206,6 +207,48 @@ I2.presto <- function(object, effect, within=NULL) {
     return(object)
 }
 
+
+#' @export 
+toptable.presto <- function(
+    object, n=10, max_pval=.05, max_fdr=.05, min_beta=0, max_beta=Inf, rank_by=c('wald', 'beta', 'pval')[1]
+) {
+    ## TODO: options for tidy vs wide
+    ## TODO: options to show stats (tidy only)
+    X <- dplyr::inner_join(
+        cbind(object$betanames_df, object$beta) %>% 
+            subset(grpvar == 'Cluster') %>% 
+            dplyr::select(-grpvar, -term) %>%
+            tidyr::gather(key, beta, -grp),
+        cbind(object$betanames_df, object$sigma) %>% 
+            subset(grpvar == 'Cluster') %>% 
+            dplyr::select(-grpvar, -term) %>%
+            tidyr::gather(key, sigma, -grp),
+        by = c('grp', 'key')
+    ) %>% 
+        dplyr::mutate(
+            wald = beta / sigma,
+            pval = 2 * (1 - pnorm(abs(beta / sigma)))
+        ) %>% 
+        dplyr::mutate(fdr = p.adjust(pval, 'BH')) %>% 
+        subset(pval < max_pval & beta > min_beta & beta < max_beta & fdr < max_fdr)
+
+    if (rank_by %in% c('pval')) {
+        X$rank_val <- -X[[rank_by]]        
+    } else {
+        X$rank_val <- X[[rank_by]]
+    }
+    
+
+    res <- X %>%
+        dplyr::group_by(.data$grp) %>% 
+        dplyr::top_n(n = n, wt = .data$rank_val) %>% 
+        dplyr::mutate(rank = rank(-.data$rank_val, ties.method = "random")) %>% 
+        dplyr::ungroup() %>% 
+        dplyr::select(.data$key, .data$grp, .data$rank) %>% 
+        tidyr::spread(.data$grp, .data$key, fill = NA)
+
+    return(res)    
+}
 
 
 
