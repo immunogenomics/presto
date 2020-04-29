@@ -1,43 +1,50 @@
-#' @export 
-nlopt <- function(par, fn, lower, upper, control) {
-    .nloptr <<- res <- nloptr(par, fn, lb = lower, ub = upper, 
-        opts = list(algorithm = "NLOPT_LN_BOBYQA", print_level = 1,
-        maxeval = 1000, xtol_abs = 1e-6, ftol_abs = 1e-6))
-    list(par = res$solution,
-         fval = res$objective,
-         conv = if (res$status > 0) 0 else res$status,
-         message = res$message
-    )
-}
+# #' @export 
+# nlopt <- function(par, fn, lower, upper, control) {
+#     .nloptr <<- res <- nloptr(par, fn, lb = lower, ub = upper, 
+#         opts = list(algorithm = "NLOPT_LN_BOBYQA", print_level = 1,
+#         maxeval = 1000, xtol_abs = 1e-6, ftol_abs = 1e-6))
+#     list(par = res$solution,
+#          fval = res$objective,
+#          conv = if (res$status > 0) 0 else res$status,
+#          message = res$message
+#     )
+# }
 
 
 #' @export 
-glmm_uni <- function(feature, model_base, response, nsim) {    
+glmm_uni <- function(feature, formula, design, response, family, nsim, has_offset) {    
     tryCatch({        
-        model <- lme4::refit(model_base, response[feature, ])
+        ## In practice, refit introduces too much bias based on the initial fit 
+#         model <- lme4::refit(model_base, response[feature, ])
+        
+        ## Fit the model from scratch instead 
+        model <- fit_model.presto(formula, design, response, feature, family)
+        
         ## residuals
         epsilon <- as.numeric(residuals(model, 'response'))
         epsilon_pearson <- as.numeric(residuals(model, 'pearson'))
 
         ## beta for fixed and meta effects
         beta <- c(
-            1, ## for offset 
             as.numeric(fixef(model)), ## fixed effects
             as.numeric(as.data.frame(ranef(model))$condval) ## random effects
         )
-
+        
         ## sigma for fixed and random effects
         sigma <- c(
-            0, ## for offset
             ## as.matrix below needed b/c lme4 returns dpoMatrix, which doesn't play well 
             sqrt(diag(as.matrix(lme4::vcov.merMod(model)))), ## fixed effects
             as.numeric(apply(as.data.frame(arm::sim(model, n.sims = nsim)@ranef), 2, sd)) ## random effects
         )
+        
+        if (has_offset) {
+            beta <- c(1, beta)
+            sigma <- c(0, sigma)
+        }
 
         ## prior distributions for random effects 
         ## CAUTION: Residuals are dropped for lmer without as.data.frame
         prior_sd <- as.numeric(as.data.frame(lme4::VarCorr(model))$vcov)
-#         prior_sd <- as.numeric(VarCorr(model))
         if (isGLMM(model)) {
             ## for GLMMs, use SD of pearson residuals
             prior_sd <- c(prior_sd, sd(residuals(model, 'pearson')))
@@ -50,9 +57,42 @@ glmm_uni <- function(feature, model_base, response, nsim) {
     })
 }
 
+fit_model.presto <- function(formula, design, response, feature, family) {    
+    ## initialize model on one feature
+    if (family == 'nb') {
+        model <- lme4::glmer.nb(
+            formula, cbind(design, y = response[feature, ]), 
+            control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
+        )        
+    } else if (family == 'poisson') {
+        model <- lme4::glmer(
+            formula, cbind(design, y = response[feature, ]), 'poisson', 
+            control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
+        )
+    } else if (family == 'gaussian') {
+        model <- lme4::lmer(
+            formula, cbind(design, y = response[feature, ]),
+        control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE)
+        )        
+    } else {
+        stop(sprintf('(G)LMM family `%s` not supported', family))
+    }
+    
+    return(model)
+}
+
 
 #' @export 
-glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE, nsim=100, family='poisson', return_model=TRUE) {
+presto.presto <- function(
+    formula, 
+    design, 
+    response, 
+    size_varname,
+    features=NULL, 
+    parallel=FALSE, 
+    nsim=100, 
+    family='poisson'
+) {
     if (parallel) {
         future::plan(multicore)
         it_fxn <- furrr::future_map
@@ -63,25 +103,16 @@ glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE,
         features <- rownames(response)
     }
     
-    ## initialize model on one feature
-    if (family == 'nb') {
-        model_base <- lme4::glmer.nb(
-            formula, cbind(design, y = response[features[[1]], ]), 
-            control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
-        )        
-    } else if (family == 'poisson') {
-        model_base <- lme4::glmer(
-            formula, cbind(design, y = response[features[[1]], ]), family, 
-            control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
-        )
-    } else if (family == 'gaussian') {
-        model_base <- lme4::lmer(
-            formula, cbind(design, y = response[features[[1]], ]),
-        control = lmerControl(optimizer = "nloptwrap", calc.derivs = FALSE)
-        )        
-    } else {
-        stop(sprintf('(G)LMM family `%s` not supported', family))
-    }
+    ## To make downstream things easier, give exposure variable a dedicated name 
+    ## TODO: check that SIZE is valid exposure type variable 
+    design$EXPOSURE <- design[[size_varname]]
+    fstr <- gsub(size_varname, 'EXPOSURE', as.character(formula))
+    formula <- as.formula(sprintf('%s~%s', fstr[[2]], fstr[[3]]))
+
+    ## fit an initial model just to get the names
+    
+    
+    model_base <- fit_model.presto(formula, design, response, features[[1]], family)
     priornames_df <- as.data.frame(VarCorr(model_base))[, 1:3]
     if (isGLMM(model_base)) {
         ## glmer does not include residuals in VarCorr, lmer does
@@ -89,14 +120,22 @@ glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE,
     }
 
     betanames_df <- list(
-        tibble(grpvar = 'OFFSET', term = 'OFFSET', grp = 'OFFSET'),
         tibble(grpvar = names(fixef(model_base)), term = grpvar, grp = grpvar),
         as.data.frame(ranef(model_base), stringsAsFactors = FALSE)[, 1:3]
     ) %>% 
         bind_rows()
+    
+    ## check if exposure if offset or fixed effect
+    has_offset <- !all(map_lgl(model_base@resp$offset, identical, 0))
+    if (has_offset) {
+        betanames_df <- rbind(
+            tibble(grpvar = 'EXPOSURE', term = 'EXPOSURE', grp = 'EXPOSURE'),
+            betanames_df
+        )
+    }
 
     ## then refit with new responses
-    lres <- it_fxn(features, glmm_uni, model_base, response, nsim)
+    lres <- it_fxn(features, glmm_uni, formula, design, response, family, nsim, has_offset)
     names(lres) <- features
     lres <- lres[!is.na(lres)] 
     
@@ -111,13 +150,24 @@ glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE,
     res$betanames_df <- betanames_df
     res$priornames_df <- priornames_df
     res$meta_data <- design
-    res$design <- list(model_base@resp$offset, t(model_base@pp$X), model_base@pp$Zt) %>% 
-        purrr::reduce(Matrix::rbind2)
+    
+    if (has_offset) {
+        res$design <- list(EXPOSURE = model_base@resp$offset, t(model_base@pp$X), model_base@pp$Zt) %>% 
+            purrr::reduce(Matrix::rbind2)
+    } else {
+        res$design <- list(t(model_base@pp$X), model_base@pp$Zt) %>% 
+            purrr::reduce(Matrix::rbind2)
+    }
+    row.names(res$design) <- res$betanames_df$grp
+    
     res$response <- response[names(lres), ]
 
-    if (return_model) {
-        res$model_base <- model_base
-    }
+    ## compute mean genes
+    res <- genemeans.presto(res, xpm=1e6)
+    
+    
+    ## flags
+    res$has_offset <- has_offset
     
     return(res)
 }
@@ -126,12 +176,14 @@ glmm_multi <- function(formula, design, response, features=NULL, parallel=FALSE,
 
 #' @export 
 correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
+    
     if (missing(umi_common)) {
-        umi_common <- exp(mean(object$meta_data$logUMI))
+        umi_common <- mean(Matrix::colSums(object$response))
+#         umi_common <- exp(mean(object$meta_data$EXPOSURE))
     }
         
-    ## always remove read depth (offset or fixed)
-    effects_remove <- union(effects_remove, c('OFFSET', 'logUMI') )
+    ## always remove read depth
+    effects_remove <- union(effects_remove, 'EXPOSURE')
     idx_keep <- object$betanames_df %>% 
         tibble::rowid_to_column('idx') %>% 
         subset(!grepl(paste(effects_remove, collapse = '|'), grpvar)) %>% 
@@ -147,6 +199,8 @@ correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
     effect_keep <- exp(Matrix::crossprod(object$design[idx_keep, ], object$beta[idx_keep, ]))
     object$corrected <- Matrix::t(umi_common * effect_keep + object$epsilon)
     object$corrected <- as(object$corrected, class(object$response)[[1]])
+    colnames(object$corrected) <- colnames(object$response)
+    row.names(object$corrected) <- row.names(object$response)
     
     return(object)
 }
@@ -182,6 +236,7 @@ I2.presto <- function(object, effect, effect_levels=NULL, within=NULL, within_le
             with(idx)
         
         I2 <- matrix(compute_I2(t(object$beta[idx_use, ]), t(object$sigma[idx_use, ])), ncol = 1)
+        colnames(I2) <- 'I2'
     } else {        
         ## find interaction term effect that matches both 
         ## parse that interaction term into 2 effects
@@ -210,7 +265,9 @@ I2.presto <- function(object, effect, effect_levels=NULL, within=NULL, within_le
             as.matrix()
     }
 
-    rownames(I2) <- colnames(object$beta)        
+    I2 <- as.data.frame(I2)
+    rownames(I2) <- colnames(object$beta)
+    I2 <- tibble::rownames_to_column(I2, 'feature')
     object$I2 <- I2
 
     ## TODO: cache result is dictionary 
@@ -264,10 +321,17 @@ toptable.presto <- function(
 
 
 #' @export 
-genemeans.presto <- function(object, readdepth_varname, xpm=1e6) {
+genemeans.presto <- function(object, xpm=1e6) {
+    ## Special case of marginalizing variables: 
+    ##     take out everything except intercept
+    ##     give constant value to exposure 
     b0 <- object$beta[which(object$betanames_df$grpvar == '(Intercept)'), ]
-    b1 <- object$beta[which(object$betanames_df$grpvar == readdepth_varname), ]
+    b1 <- object$beta[which(object$betanames_df$grpvar == 'EXPOSURE'), ]
     log_mu <- b0 + log(xpm)*b1
+    
+    ## if mean counts < 1, set it to 1
+    log_mu <- pmax(log_mu, -log(xpm))
+    
     object$log_mu <- data.frame(log_mu) %>% 
         tibble::rownames_to_column('feature') 
     
@@ -322,6 +386,20 @@ plot_ma.presto <- function(object, max_fdr=.05) {
             NULL
     
 }
+
+#' @export 
+plot_volcano.presto <- function(object, max_fdr=.05) {
+    object$effect %>% 
+        ggplot(aes(beta, -log10(pval), color = fdr < max_fdr)) + 
+            geom_point(alpha = .8, size = .5) + 
+            theme_test(base_size = 20) + 
+            geom_vline(xintercept = 0, linetype = 2, color = 'black') + 
+            labs(x = 'Expected Mean (logCPM)', y = 'Log Fold Change') + 
+            scale_color_manual(values = c('grey', 'red')) + 
+            guides(color = FALSE) + 
+            NULL
+}
+
 
 
 # #' @export 
