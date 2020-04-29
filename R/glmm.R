@@ -44,7 +44,7 @@ glmm_uni <- function(feature, formula, design, response, family, nsim, has_offse
 
         ## prior distributions for random effects 
         ## CAUTION: Residuals are dropped for lmer without as.data.frame
-        prior_sd <- as.numeric(as.data.frame(lme4::VarCorr(model))$vcov)
+        prior_sd <- as.numeric(as.data.frame(lme4::VarCorr(model))$sdcor)
         if (isGLMM(model)) {
             ## for GLMMs, use SD of pearson residuals
             prior_sd <- c(prior_sd, sd(residuals(model, 'pearson')))
@@ -57,6 +57,7 @@ glmm_uni <- function(feature, formula, design, response, family, nsim, has_offse
     })
 }
 
+#' @export 
 fit_model.presto <- function(formula, design, response, feature, family) {    
     ## initialize model on one feature
     if (family == 'nb') {
