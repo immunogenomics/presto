@@ -179,12 +179,12 @@ presto.presto <- function(
 correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
     
     if (missing(umi_common)) {
-        umi_common <- mean(Matrix::colSums(object$response))
+        umi_common <- mean(log(Matrix::colSums(object$response)))
 #         umi_common <- exp(mean(object$meta_data$EXPOSURE))
     }
-        
-    ## always remove read depth
-    effects_remove <- union(effects_remove, 'EXPOSURE')
+  
+    ## read depth should not be removed but equalized
+    effects_remove <- setdiff(effects_remove, 'EXPOSURE')
     idx_keep <- object$betanames_df %>% 
         tibble::rowid_to_column('idx') %>% 
         subset(!grepl(paste(effects_remove, collapse = '|'), grpvar)) %>% 
@@ -197,8 +197,13 @@ correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
         object$betanames_df[idx_keep, ] %>% with(unique(grpvar)) %>% print()        
     }
 
-    effect_keep <- exp(Matrix::crossprod(object$design[idx_keep, ], object$beta[idx_keep, ]))
-    object$corrected <- Matrix::t(umi_common * effect_keep + object$epsilon)
+#     b1 <- object$beta[which(object$betanames_df$grpvar == 'EXPOSURE'), ]
+    
+    design_keep <- object$design[idx_keep, ]
+    design_keep['EXPOSURE', ] <- umi_common
+    
+    effect_keep <- exp(Matrix::crossprod(design_keep, object$beta[idx_keep, ]))
+    object$corrected <- Matrix::t(effect_keep + object$epsilon)
     object$corrected <- as(object$corrected, class(object$response)[[1]])
     colnames(object$corrected) <- colnames(object$response)
     row.names(object$corrected) <- row.names(object$response)
@@ -207,6 +212,14 @@ correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
 }
 
 
+
+#' @export 
+query.presto <- function(object, feature) {
+    return(list(
+        effect = cbind(object$betanames_df, beta = object$beta[, feature], sigma = object$sigma[, feature]), 
+        prior = cbind(object$priornames_df, sigma = object$prior_sd[, feature]) 
+    ))
+}
 
 #' @export 
 compute_I2 <- function(B, S) {
@@ -395,7 +408,7 @@ plot_volcano.presto <- function(object, max_fdr=.05) {
             geom_point(alpha = .8, size = .5) + 
             theme_test(base_size = 20) + 
             geom_vline(xintercept = 0, linetype = 2, color = 'black') + 
-            labs(x = 'Expected Mean (logCPM)', y = 'Log Fold Change') + 
+            labs(y = '-log10 p', x = 'Log Fold Change') + 
             scale_color_manual(values = c('grey', 'red')) + 
             guides(color = FALSE) + 
             NULL
