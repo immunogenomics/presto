@@ -354,35 +354,21 @@ genemeans.presto <- function(object, xpm=1e6) {
 
 
 #' @export 
-effects.presto <- function(object, effect, effect_levels=NULL, within=NULL, within_levels=NULL) {
-    ## TODO: allow nested effects with the `within` parameter
-    ## TODO: create user facing accessor function and cache effects computation to not recompute p values
+effects.presto <- function(object, effects) {
+    effects_available <- unique(object$betanames_df$grpvar)
+    if (any(!effects %in% effects_available)) {
+        missing_vars <- paste(setdiff(effects, effects_available), collapse = ', ')
+        stop(sprintf('missing variables in object: %s', missing_vars))
+    }
     
-    if (is.null(effect_levels)) {
-        effect_levels <- object$betanames_df %>% 
-            subset(grpvar == effect) %>% 
-            with(grp)
-    }    
-    
-    object$effects <- dplyr::inner_join(
-        cbind(object$betanames_df, object$beta) %>% 
-            subset(grpvar == effect) %>% 
-            dplyr::select(-grpvar, -term) %>%
-            tidyr::gather(feature, beta, -grp),
-        cbind(object$betanames_df, object$sigma) %>% 
-            subset(grpvar == effect) %>% 
-            dplyr::select(-grpvar, -term) %>%
-            tidyr::gather(feature, sigma, -grp),
-        by = c('grp', 'feature')
-    ) %>% 
-        dplyr::mutate(
-            wald = beta / sigma,
-            pval = 2 * (1 - pnorm(abs(beta / sigma)))
-        ) %>% 
-        dplyr::mutate(fdr = p.adjust(pval, 'BH')) %>% 
-        dplyr::left_join(object$log_mu)
-        
-
+    beta_tidy <- effects %>% purrr::map(.make_tidy_beta, object) %>% purrr::reduce(.merge_betas)
+    sigma_tidy <- effects %>% purrr::map(.make_tidy_sigma, object) %>% purrr::reduce(.merge_sigmas)
+    suppressMessages({
+        object$effect <- dplyr::full_join(beta_tidy, sigma_tidy) %>% 
+            dplyr::left_join(object$log_mu) %>% 
+            dplyr::mutate(wald = beta/sigma, pval = 2 * (1 - pnorm(abs(beta/sigma)))) %>% 
+            dplyr::mutate(fdr = p.adjust(pval, "BH"))
+    })    
     return(object)
 }
 
