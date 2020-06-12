@@ -129,12 +129,15 @@ presto.presto <- function(
     ## set up parallel machinery 
     features <- intersect(features, rownames(response))
     if (ncore == 1) {
-        future::plan(sequential(globals = FALSE))        
+        future::plan(sequential)
     } else if (ncore %in% c(0, Inf)) {
         ncore <- availableCores()
-        future::plan(multiprocess(globals = FALSE))
+        future::plan(multiprocess)
     } else {
-        future::plan(multiprocess(workers = get('ncore'), globals = FALSE))
+        ## ncore weirdly not recognized by future
+        .ncore <<- ncore
+        future::plan(future::multiprocess(workers = .ncore))
+        rm(.ncore)
     }
     
     ## chunk into `ncore` futures, one for each core
