@@ -43,7 +43,8 @@
         dplyr::full_join(X1, X2, by = terms_join) %>% 
             dplyr::rowwise() %>% 
             dplyr::mutate(beta = sum(beta.x, beta.y, na.rm = TRUE)) %>% 
-            dplyr::select(-beta.x, -beta.y)    
+            dplyr::ungroup() %>% 
+            dplyr::select(-beta.x, -beta.y)  
     })
 }
 
@@ -54,6 +55,7 @@
     dplyr::full_join(X1, X2, by = terms_join) %>% 
         dplyr::rowwise() %>% 
         dplyr::mutate(sigma = sqrt(sum(sigma.x ^ 2, sigma.y ^ 2, na.rm = TRUE))) %>% 
+        dplyr::ungroup() %>% 
         dplyr::select(-sigma.x, -sigma.y)
     })
 }
