@@ -36,26 +36,25 @@
     return(res)
 }
 
-
 .merge_betas <- function(X1, X2) {
     terms_join <- setdiff(intersect(colnames(X1), colnames(X2)), 'beta')
     suppressMessages({
-        dplyr::full_join(X1, X2, by = terms_join) %>% 
-            dplyr::rowwise() %>% 
-            dplyr::mutate(beta = sum(beta.x, beta.y, na.rm = TRUE)) %>% 
-            dplyr::ungroup() %>% 
-            dplyr::select(-beta.x, -beta.y)  
+        res <- dplyr::full_join(X1, X2, by = terms_join) 
+        res$beta <- replace_na(res$beta.x, 0) + replace_na(res$beta.y, 0)
+        res$beta.x <- NULL
+        res$beta.y <- NULL        
     })
+    return(res)
 }
 
 
 .merge_sigmas <- function(X1, X2) {
     terms_join <- setdiff(intersect(colnames(X1), colnames(X2)), 'sigma')
     suppressMessages({
-    dplyr::full_join(X1, X2, by = terms_join) %>% 
-        dplyr::rowwise() %>% 
-        dplyr::mutate(sigma = sqrt(sum(sigma.x ^ 2, sigma.y ^ 2, na.rm = TRUE))) %>% 
-        dplyr::ungroup() %>% 
-        dplyr::select(-sigma.x, -sigma.y)
+        res <- dplyr::full_join(X1, X2, by = terms_join) 
+        res$sigma <- sqrt(replace_na(res$sigma.y, 0) ^ 2 + replace_na(res$sigma.y, 0) ^ 2)
+        res$sigma.x <- NULL
+        res$sigma.y <- NULL        
     })
+    return(res)
 }
