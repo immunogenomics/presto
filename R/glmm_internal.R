@@ -36,6 +36,7 @@
     return(res)
 }
 
+
 .merge_betas <- function(X1, X2) {
     terms_join <- setdiff(intersect(colnames(X1), colnames(X2)), 'beta')
     suppressMessages({
@@ -52,7 +53,7 @@
     terms_join <- setdiff(intersect(colnames(X1), colnames(X2)), 'sigma')
     suppressMessages({
         res <- dplyr::full_join(X1, X2, by = terms_join) 
-        res$sigma <- sqrt(replace_na(res$sigma.y, 0) ^ 2 + replace_na(res$sigma.y, 0) ^ 2)
+        res$sigma <- sqrt(replace_na(res$sigma.x, 0) ^ 2 + replace_na(res$sigma.y, 0) ^ 2)
         res$sigma.x <- NULL
         res$sigma.y <- NULL        
     })
