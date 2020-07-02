@@ -47,6 +47,9 @@ glmm_uni <- function(feature, formula, design, response, family, nsim, has_offse
             prior_sd <- c(prior_sd, sd(residuals(model, 'pearson')))
         }
         
+#         rm(model)
+#         gc(full = TRUE, verbose = FALSE, reset = TRUE)
+        
         return(list(
             status = 0, beta = beta, sigma = sigma, epsilon = epsilon, 
             epsilon_pearson = epsilon_pearson, prior_sd = prior_sd
@@ -96,6 +99,11 @@ presto.presto <- function(
     if (is.null(features)) {
         features <- rownames(response)
     }
+
+    ## TODO: make a more rigorous check for this
+    if (family %in% c('poisson', 'binomial', 'nb')) {
+        message('CAUTION: if using GLMM, make sure your counts are integers!')
+    }
     
     ## To make downstream things easier, give exposure variable a dedicated name 
     ## TODO: check that SIZE is valid exposure type variable 
@@ -125,6 +133,8 @@ presto.presto <- function(
             betanames_df
         )
     }
+
+    message('SETUP FUTURES')
     
     ## set up parallel machinery 
     features <- intersect(features, rownames(response))
@@ -139,27 +149,34 @@ presto.presto <- function(
         future::plan(future::multiprocess(workers = .ncore))
         rm(.ncore)
     }
+    message('RUN THOSE FUTURES')
     
-    ## chunk into `ncore` futures, one for each core
-    chunk_assign <- sample(rep(seq(ncore), length.out = length(features)))
-    futures_list <- split(features, chunk_assign) %>% map(function(features_chunk) {
-        future(
-            expr = {
-                lres <- map(
-                    features_chunk, ## input
-                    glmm_uni, ## function
-                    formula, design, response[features_chunk, , drop = FALSE], family, nsim, has_offset ## params
-                )
-                names(lres) <- features_chunk
-                return(lres)
-            }, 
-            lazy = FALSE,
-            globals = FALSE
-        )
-    })
-    lres <- Reduce(append, value(futures_list))
-    lres <- lres[which(map(lres, 'status') == 0)]    
+    lres <- furrr::future_map(features, glmm_uni, formula, design, response, family, nsim, has_offset)
+    names(lres) <- features
+    lres <- lres[!is.na(lres)]
+
+#     ## chunk into `ncore` futures, one for each core
+#     chunk_assign <- sample(rep(seq(ncore), length.out = length(features)))
+#     futures_list <- split(features, chunk_assign) %>% map(function(features_chunk) {
+#         future(
+#             expr = {
+#                 lres <- map(
+#                     features_chunk, ## input
+#                     glmm_uni, ## function
+#                     formula, design, response[features_chunk, , drop = FALSE], family, nsim, has_offset ## params
+#                 )
+#                 names(lres) <- features_chunk
+#                 return(lres)
+#             }, 
+#             lazy = FALSE,
+#             globals = FALSE
+#         )
+#     })    
+#     message('COLLECT THOSE FUTURES')
+#     lres <- Reduce(append, value(futures_list))
+#     lres <- lres[which(map(lres, 'status') == 0)]    
     
+    message('AGGREGATE MY OWN RESULTS')
     # Aggregate results 
     common_el <- purrr::reduce(map(lres, names), intersect) %>% setdiff('status')
     res <- map(common_el, function(name) {
