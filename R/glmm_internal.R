@@ -36,7 +36,6 @@
     return(res)
 }
 
-
 .merge_betas <- function(X1, X2) {
     terms_join <- setdiff(intersect(colnames(X1), colnames(X2)), 'beta')
     suppressMessages({
