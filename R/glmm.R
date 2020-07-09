@@ -347,7 +347,8 @@ toptable.presto <- function(
     ) %>% 
         dplyr::mutate(
             wald = beta / sigma,
-            pval = 2 * (1 - pnorm(abs(beta / sigma)))
+            pval = -2 * pnorm(abs(beta / sigma), log.p = TRUE)
+#             pval = 2 * (1 - pnorm(abs(beta / sigma)))
         ) %>% 
         dplyr::mutate(fdr = p.adjust(pval, 'BH')) %>% 
         subset(pval < max_pval & beta > min_beta & beta < max_beta & fdr < max_fdr)
@@ -403,7 +404,12 @@ effects.presto <- function(object, effects) {
     suppressMessages({
         object$effect <- dplyr::full_join(beta_tidy, sigma_tidy) %>% 
             dplyr::left_join(object$log_mu) %>% 
-            dplyr::mutate(wald = beta/sigma, pval = 2 * (1 - pnorm(abs(beta/sigma)))) %>% 
+        
+            dplyr::mutate(
+                wald = beta/sigma, 
+                pval = -2 * pnorm(abs(beta / sigma), log.p = TRUE)
+#                 pval = 2 * (1 - pnorm(abs(beta/sigma)))
+            ) %>% 
             dplyr::mutate(fdr = p.adjust(pval, "BH"))
     })    
     return(object)
