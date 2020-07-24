@@ -36,7 +36,7 @@ make_contrast.presto <- function(object, var_contrast, var_nested=NULL, levels_c
     }
     
     if (is.null(var_nested)) {
-        .x <- x$betanames_df %>% 
+        .x <- betanames_df %>% 
             subset(grpvar == var_contrast & grp %in% levels_contrast)
         terms <- with(.x, as.character(glue::glue('{grpvar}.{grp}.{term}')))
         N <- length(terms)
