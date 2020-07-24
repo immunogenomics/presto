@@ -55,7 +55,7 @@
         res <- dplyr::full_join(X1, X2, by = terms_join) 
         res$sigma <- sqrt(replace_na(res$sigma.x, 0) ^ 2 + replace_na(res$sigma.y, 0) ^ 2)
         res$sigma.x <- NULL
-        res$sigma.y <- NULL        
+        res$sigma.y <- NULL 
     })
     return(res)
 }

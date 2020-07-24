@@ -12,7 +12,7 @@
 
 
 #' @export 
-glmm_uni <- function(feature, formula, design, response, family, nsim, has_offset) {    
+glmm_uni <- function(feature, formula, design, response, effects_cov, family, nsim, has_offset) {
     tryCatch({ 
         ## Fit the model 
         model <- fit_model.presto(formula, design, response[feature, ], family)
@@ -27,16 +27,37 @@ glmm_uni <- function(feature, formula, design, response, family, nsim, has_offse
             as.numeric(as.data.frame(ranef(model))$condval) ## random effects
         )
         
-        ## sigma for fixed and random effects
-        sigma <- c(
-            ## as.matrix below needed b/c lme4 returns dpoMatrix, which doesn't play well 
-            sqrt(diag(as.matrix(lme4::vcov.merMod(model)))), ## fixed effects
-            as.numeric(apply(as.data.frame(arm::sim(model, n.sims = nsim)@ranef), 2, sd)) ## random effects
-        )
+#         ## sigma for fixed and random effects
+#         sigma <- c(
+#             ## as.matrix below needed b/c lme4 returns dpoMatrix, which doesn't play well 
+#             sqrt(diag(as.matrix(lme4::vcov.merMod(model)))), ## fixed effects
+#             as.numeric(apply(as.data.frame(arm::sim(model, n.sims = nsim)@ranef), 2, sd)) ## random effects
+#         )
+        sim_res <- arm::sim(model, n.sims = nsim)
+        sim_df <- as.data.frame(sim_res@fixef)
+        if (any(effects_cov %in% names(sim_res@ranef))) {
+            sim_df <- cbind(
+                sim_df,
+                effects_cov %>% 
+                    intersect(names(sim_res@ranef)) %>% 
+                    map(function(effect_name) {
+                        res <- as.data.frame(sim_res@ranef[[effect_name]])
+                        colnames(res) <- paste0(effect_name, '.', colnames(res))
+                        return(res)
+                    }) %>% 
+                        bind_cols()
+            )
+        }
+        covmat <- cov(sim_df)        
+
+        ##### Effect Covariance for 
         
         if (has_offset) {
             beta <- c(1, beta)
-            sigma <- c(0, sigma)
+#             sigma <- c(0, sigma)
+#             covmat <- rbind(0, cbind(0, covmat))
+#             rownames(covmat)[1] <- 'OFFSET'
+#             colnames(covmat)[1] <- 'OFFSET'
         }
 
         ## prior distributions for random effects 
@@ -51,11 +72,11 @@ glmm_uni <- function(feature, formula, design, response, family, nsim, has_offse
 #         gc(full = TRUE, verbose = FALSE, reset = TRUE)
         
         return(list(
-            status = 0, beta = beta, sigma = sigma, epsilon = epsilon, 
+            status = 0L, beta = beta, covmat = covmat, epsilon = epsilon, 
             epsilon_pearson = epsilon_pearson, prior_sd = prior_sd
         ))
     }, error = function(e) {
-        return(list(status = 1, error = e))
+        return(list(status = 1L, error = e))
     })
 }
 
@@ -86,12 +107,91 @@ fit_model.presto <- function(formula, design, response, family) {
 
 
 #' @export 
+make_betanames_df <- function(model, has_offset) {
+    betanames_df <- list(
+        tibble(grpvar = names(fixef(model)), term = grpvar, grp = grpvar),
+        as.data.frame(ranef(model), stringsAsFactors = FALSE)[, 1:3]
+    ) %>% 
+        bind_rows()
+
+    ## check if exposure if offset or fixed effect
+    if (has_offset) {
+        betanames_df <- rbind(
+            tibble(grpvar = 'EXPOSURE', term = 'EXPOSURE', grp = 'EXPOSURE'),
+            betanames_df
+        )
+    }    
+    
+    ## Nicer names for fixed effects
+    rhs <- (as.character(model@call$formula))[3]
+    terms <- unlist(strsplit(rhs, ' *\\+  *'))
+    fe_terms <- terms[!grepl('\\||offset', terms)] %>% setdiff('1')
+    lme4_names <- setdiff(names(fixef(model)), '(Intercept)')
+
+    betanames_df_fixed <- map(fe_terms, function(name) {
+        tibble(
+            grpvar = name,
+            term = 'Fixed',
+            grp = grep(paste0('^', name), lme4_names, value = TRUE)
+        )
+    }) %>% 
+        bind_rows() 
+
+
+    ## We may have no fixed effects beyond global (Intercept)
+    if (nrow(betanames_df_fixed) > 0) {
+        betanames_df_fixed <- betanames_df_fixed %>% 
+        rowwise() %>% 
+        dplyr::mutate(
+            grp = gsub(grpvar, '', grp)
+        ) %>% 
+        ungroup() %>% 
+        dplyr::mutate(
+            lme4_name = paste0(grpvar, grp),
+            grp = case_when(
+                grp == '' ~ grpvar,
+                TRUE ~ grp
+            )
+        )       
+    
+        betanames_df <- betanames_df %>% 
+            left_join(
+                betanames_df_fixed, by = c('grpvar' = 'lme4_name')
+            ) %>% 
+            dplyr::mutate(grpvar_orig = grpvar) %>% 
+            dplyr::mutate(
+                term = case_when(
+                    !is.na(term.y) ~ term.y,
+                    TRUE ~ term.x
+                ),
+                grpvar = case_when(
+                    !is.na(grpvar.y) ~ grpvar.y,
+                    TRUE ~ grpvar
+                ),
+                grp = case_when(
+                    !is.na(grp.y) ~ grp.y,
+                    TRUE ~ grp.x
+                ),
+            )
+    } else {
+        betanames_df <- betanames_df %>% 
+            dplyr::mutate(grpvar_orig = grpvar)
+    }
+    
+    betanames_df %>% 
+        dplyr::select(grpvar, term, grp, grpvar_orig) %>% 
+        return()
+    
+}
+
+#' @export 
 presto.presto <- function(
     formula, 
     design, 
     response, 
     size_varname,
     features=NULL, 
+    effects_cov=c(''),
     ncore=1, 
     nsim=100, 
     family='poisson'
@@ -119,22 +219,8 @@ presto.presto <- function(
         priornames_df <- rbind(priornames_df, tibble(grp = 'Residual', var1 = NA, var2 = NA))
     }
 
-    betanames_df <- list(
-        tibble(grpvar = names(fixef(model_base)), term = grpvar, grp = grpvar),
-        as.data.frame(ranef(model_base), stringsAsFactors = FALSE)[, 1:3]
-    ) %>% 
-        bind_rows()
-    
-    ## check if exposure if offset or fixed effect
     has_offset <- !all(map_lgl(model_base@resp$offset, identical, 0))
-    if (has_offset) {
-        betanames_df <- rbind(
-            tibble(grpvar = 'EXPOSURE', term = 'EXPOSURE', grp = 'EXPOSURE'),
-            betanames_df
-        )
-    }
-
-    message('SETUP FUTURES')
+    betanames_df <- make_betanames_df(model_base, has_offset)
     
     ## set up parallel machinery 
     features <- intersect(features, rownames(response))
@@ -149,40 +235,40 @@ presto.presto <- function(
         future::plan(future::multiprocess(workers = .ncore))
         rm(.ncore)
     }
-    message('RUN THOSE FUTURES')
     
-    lres <- furrr::future_map(features, glmm_uni, formula, design, response, family, nsim, has_offset)
+    lres <- furrr::future_map(features, glmm_uni, formula, design, response, effects_cov, family, nsim, has_offset)
     names(lres) <- features
-    lres <- lres[!is.na(lres)]
+#     lres <- lres[!is.na(lres)] 
+    lres <- lres[which(equals(map(lres, 'status'), 0L))]
 
-#     ## chunk into `ncore` futures, one for each core
-#     chunk_assign <- sample(rep(seq(ncore), length.out = length(features)))
-#     futures_list <- split(features, chunk_assign) %>% map(function(features_chunk) {
-#         future(
-#             expr = {
-#                 lres <- map(
-#                     features_chunk, ## input
-#                     glmm_uni, ## function
-#                     formula, design, response[features_chunk, , drop = FALSE], family, nsim, has_offset ## params
-#                 )
-#                 names(lres) <- features_chunk
-#                 return(lres)
-#             }, 
-#             lazy = FALSE,
-#             globals = FALSE
-#         )
-#     })    
-#     message('COLLECT THOSE FUTURES')
-#     lres <- Reduce(append, value(futures_list))
-#     lres <- lres[which(map(lres, 'status') == 0)]    
-    
-    message('AGGREGATE MY OWN RESULTS')
     # Aggregate results 
     common_el <- purrr::reduce(map(lres, names), intersect) %>% setdiff('status')
     res <- map(common_el, function(name) {
-        as.matrix(map_dfr(lres, name))
+        if (name == 'covmat') {
+            purrr::reduce(purrr::map(lres, name), abind::abind, along = 3)
+        } else {
+            as.matrix(purrr::map_dfr(lres, name))            
+        }
     })
     names(res) <- common_el
+
+    ## clean up names in covmat
+    covmat_names <- tibble(
+        grpvar_orig = rownames(res$covmat)
+    ) %>%  
+        left_join(
+            subset(betanames_df, term %in% c('(Intercept)', 'Fixed'))    
+        ) %>% 
+        dplyr::mutate(newname = case_when(
+            is.na(grpvar) ~ grpvar_orig,
+            TRUE ~ as.character(glue::glue('{grpvar}.{grp}.{term}'))
+        )) %>% 
+        with(newname)
+    dimnames(res$covmat) <- list(
+        covmat_names,
+        covmat_names,
+        colnames(res$beta)
+    )
 
     ## remember things names
     res$betanames_df <- betanames_df
@@ -257,7 +343,8 @@ correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
 #' @export 
 query.presto <- function(object, feature) {
     return(list(
-        effect = cbind(object$betanames_df, beta = object$beta[, feature], sigma = object$sigma[, feature]), 
+        effect = cbind(object$betanames_df, beta = object$beta[, feature]), 
+#         effect = cbind(object$betanames_df, beta = object$beta[, feature], sigma = object$sigma[, feature]), 
         prior = cbind(object$priornames_df, sigma = object$prior_sd[, feature]) 
     ))
 }
@@ -441,7 +528,59 @@ plot_volcano.presto <- function(object, max_fdr=.05) {
             NULL
 }
 
+#' @export 
+contrasts.presto <- function(object, contrast_mat, one_tailed=TRUE, check_for_outliers=FALSE) {
+    terms <- colnames(contrast_mat)
 
+    ## contrast beta 
+    beta <- x$beta
+    rownames(beta) <- with(x$betanames_df, as.character(glue::glue('{grpvar}.{grp}.{term}')))
+    beta_contrast <- contrast_mat %*% beta[terms, ]
+
+    sigma_contrast <- apply(x$covmat[terms, terms, ], 3, function(.x) {
+        if (check_for_outliers) {
+            sigma_diag <- diag(.x)
+            sigma_med <- median(sigma_diag)
+            idx_outlier <- which(sigma_diag > 100 * sigma_med)
+            .x[, idx_outlier] <- 0
+            .x[idx_outlier, ] <- 0
+        }
+        res <- sqrt(diag(contrast_mat %*% .x %*% t(contrast_mat)))
+        if (check_for_outliers) {
+            res[idx_outlier] <- NA
+        }
+        return(res)
+    })
+
+
+    zscores <- beta_contrast / sigma_contrast
+    ## one-tailed
+    if (one_tailed) {
+        pvalues <- exp(pnorm(-zscores, log.p = TRUE, lower.tail = TRUE))
+    } else {
+        pvalues <- 2 * exp(pnorm(abs(zscores), log.p = TRUE, lower.tail = FALSE))
+    }
+
+
+    res_tidy <- list(
+        as_tibble(beta_contrast, rownames = NA) %>% 
+            tibble::rownames_to_column('contrast') %>% 
+            tidyr::gather(feature, beta, -contrast),
+        as_tibble(sigma_contrast, rownames = NA) %>% 
+            tibble::rownames_to_column('contrast') %>% 
+            tidyr::gather(feature, sigma, -contrast),
+        as_tibble(zscores, rownames = NA) %>% 
+            tibble::rownames_to_column('contrast') %>% 
+            tidyr::gather(feature, zscore, -contrast),
+        as_tibble(pvalues, rownames = NA) %>% 
+            tibble::rownames_to_column('contrast') %>% 
+            tidyr::gather(feature, pvalue, -contrast)
+
+    ) %>% 
+        reduce(dplyr::left_join, by = c('contrast', 'feature'))
+
+    return(res_tidy)
+}
 
 # #' @export 
 # regress_out_one_gene <- function(formula_full, formula_reduced, design, y, common_nUMI) {
