@@ -27,7 +27,9 @@ Imports:
     utils,
     arm,
     furrr,
-    lme4
+    lme4,
+    glue,
+    abind
 RoxygenNote: 7.0.2
 Suggests: 
     knitr,
