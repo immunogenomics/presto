@@ -303,34 +303,38 @@ presto.presto <- function(
 
 
 #' @export 
-correct_counts <- function (object, effects_remove, umi_common, verbose = 0) 
-{
+correct_counts <- function(object, effects_remove, umi_common, verbose=0) {
+    
     if (missing(umi_common)) {
         umi_common <- mean(log(Matrix::colSums(object$response)))
+#         umi_common <- exp(mean(object$meta_data$EXPOSURE))
     }
-    effects_remove <- setdiff(effects_remove, "EXPOSURE")
+  
+    ## read depth should not be removed but equalized
+    effects_remove <- setdiff(effects_remove, 'EXPOSURE')
     idx_keep <- object$betanames_df %>% 
-        tibble::rowid_to_column("idx") %>% 
-#         subset(!grepl(paste(effects_remove, collapse = "|"), grpvar)) %>% 
-        subset(!grpvar %in% effects_remove) %>% 
-        with(idx)
+        tibble::rowid_to_column('idx') %>% 
+        subset(!grepl(paste(effects_remove, collapse = '|'), grpvar)) %>% 
+        with(idx)    
+    
     if (verbose > 0) {
-        message("remove")
-        object$betanames_df[-idx_keep, ] %>% with(unique(grpvar)) %>% 
-            print()
-        message("preserve")
-        object$betanames_df[idx_keep, ] %>% with(unique(grpvar)) %>% 
-            print()
+        message('remove')
+        object$betanames_df[-idx_keep, ] %>% with(unique(grpvar)) %>% print()
+        message('preserve')
+        object$betanames_df[idx_keep, ] %>% with(unique(grpvar)) %>% print()        
     }
+
+#     b1 <- object$beta[which(object$betanames_df$grpvar == 'EXPOSURE'), ]
     
     design_keep <- object$design[idx_keep, ]
-    design_keep["EXPOSURE", ] <- umi_common
-    effect_keep <- exp(Matrix::crossprod(design_keep, object$beta[idx_keep, 
-        ]))
+    design_keep['EXPOSURE', ] <- umi_common
+    
+    effect_keep <- exp(Matrix::crossprod(design_keep, object$beta[idx_keep, ]))
     object$corrected <- Matrix::t(effect_keep + object$epsilon)
     object$corrected <- as(object$corrected, class(object$response)[[1]])
     colnames(object$corrected) <- colnames(object$response)
     row.names(object$corrected) <- row.names(object$response)
+    
     return(object)
 }
 
@@ -434,8 +438,7 @@ toptable.presto <- function(
     ) %>% 
         dplyr::mutate(
             wald = beta / sigma,
-            pval = -2 * pnorm(abs(beta / sigma), log.p = TRUE)
-#             pval = 2 * (1 - pnorm(abs(beta / sigma)))
+            pval = 2 * (1 - pnorm(abs(beta / sigma)))
         ) %>% 
         dplyr::mutate(fdr = p.adjust(pval, 'BH')) %>% 
         subset(pval < max_pval & beta > min_beta & beta < max_beta & fdr < max_fdr)
@@ -491,12 +494,7 @@ effects.presto <- function(object, effects) {
     suppressMessages({
         object$effect <- dplyr::full_join(beta_tidy, sigma_tidy) %>% 
             dplyr::left_join(object$log_mu) %>% 
-        
-            dplyr::mutate(
-                wald = beta/sigma, 
-                pval = -2 * pnorm(abs(beta / sigma), log.p = TRUE)
-#                 pval = 2 * (1 - pnorm(abs(beta/sigma)))
-            ) %>% 
+            dplyr::mutate(wald = beta/sigma, pval = 2 * (1 - pnorm(abs(beta/sigma)))) %>% 
             dplyr::mutate(fdr = p.adjust(pval, "BH"))
     })    
     return(object)
@@ -535,11 +533,11 @@ contrasts.presto <- function(object, contrast_mat, one_tailed=TRUE, check_for_ou
     terms <- colnames(contrast_mat)
 
     ## contrast beta 
-    beta <- x$beta
-    rownames(beta) <- with(x$betanames_df, as.character(glue::glue('{grpvar}.{grp}.{term}')))
+    beta <- object$beta
+    rownames(beta) <- with(object$betanames_df, as.character(glue::glue('{grpvar}.{grp}.{term}')))
     beta_contrast <- contrast_mat %*% beta[terms, ]
 
-    sigma_contrast <- apply(x$covmat[terms, terms, ], 3, function(.x) {
+    sigma_contrast <- apply(object$covmat[terms, terms, ], 3, function(.x) {
         if (check_for_outliers) {
             sigma_diag <- diag(.x)
             sigma_med <- median(sigma_diag)
