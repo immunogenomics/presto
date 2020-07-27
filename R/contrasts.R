@@ -71,7 +71,13 @@ make_contrast.presto <- function(object, var_contrast, var_nested=NULL, levels_c
                 tidyr::separate(grp, c(var_contrast, var_nested), sep = ':', remove = FALSE) %>% 
                 dplyr::select(covmat_name, grp, one_of(var_nested, var_contrast))
 
-        ) 
+        ) %>% 
+            dplyr::filter(
+                !!sym(var_contrast) %in% levels_contrast & 
+                !!sym(var_nested) %in% levels_nested
+            )
+#         return(contrast_design)
+        
         res <- setdiff(unique(contrast_design[[var_nested]]), NA) %>% map(function(level_nested_test) {
             .SD <- contrast_design %>% 
                 dplyr::filter(is.na(!!sym(var_nested)) | !!sym(var_nested) == level_nested_test) %>% 
