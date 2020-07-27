@@ -44,12 +44,13 @@ make_contrast.presto <- function(object, var_contrast, var_nested=NULL, levels_c
         colnames(res) <- terms
         rownames(res) <- .x$grp
     } else {
-        if (is.null(levels_contrast)) {
+        if (is.null(levels_nested)) {
             levels_nested <- betanames_df %>% 
                 subset(grpvar == var_nested) %>% 
                 with(unique(grp))
         }
         
+        ## First construct nested effects
         if (glue('{var_nested}:{var_contrast}') %in% betanames_df$grpvar) {
             contrast_design <- betanames_df %>% 
                     subset(grpvar == glue('{var_nested}:{var_contrast}')) %>% 
@@ -60,9 +61,10 @@ make_contrast.presto <- function(object, var_contrast, var_nested=NULL, levels_c
                     tidyr::separate(grp, c(var_contrast, var_nested), sep = ':', remove = FALSE)            
         }
             
-        
-         contrast_design <- rbind(
+        ## Then add back in marginal effects
+        contrast_design <- rbind(
             contrast_design %>%
+                dplyr::filter(!!sym(var_nested) %in% levels_nested) %>% 
                 dplyr::mutate(covmat_name = as.character(glue::glue('{grpvar}.{grp}.{term}'))) %>% 
                 dplyr::select(covmat_name, grp, one_of(var_nested, var_contrast)),
             betanames_df %>% 
@@ -72,11 +74,7 @@ make_contrast.presto <- function(object, var_contrast, var_nested=NULL, levels_c
                 dplyr::select(covmat_name, grp, one_of(var_nested, var_contrast))
 
         ) %>% 
-            dplyr::filter(
-                !!sym(var_contrast) %in% levels_contrast & 
-                !!sym(var_nested) %in% levels_nested
-            )
-#         return(contrast_design)
+            dplyr::filter(!!sym(var_contrast) %in% levels_contrast)
         
         res <- setdiff(unique(contrast_design[[var_nested]]), NA) %>% map(function(level_nested_test) {
             .SD <- contrast_design %>% 

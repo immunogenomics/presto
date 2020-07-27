@@ -12,10 +12,10 @@
 
 
 #' @export 
-glmm_uni <- function(feature, formula, design, response, effects_cov, family, nsim, has_offset) {
+glmm_uni <- function(feature, formula, design, response, effects_cov, family, nsim, has_offset, min_sigma=0) {
     tryCatch({ 
         ## Fit the model 
-        model <- fit_model.presto(formula, design, response[feature, ], family)
+        model <- fit_model.presto(formula, design, response[feature, ], family, min_sigma)
         
         ## residuals
         epsilon <- as.numeric(residuals(model, 'response'))
@@ -50,14 +50,9 @@ glmm_uni <- function(feature, formula, design, response, effects_cov, family, ns
         }
         covmat <- cov(sim_df)        
 
-        ##### Effect Covariance for 
-        
         if (has_offset) {
             beta <- c(1, beta)
 #             sigma <- c(0, sigma)
-#             covmat <- rbind(0, cbind(0, covmat))
-#             rownames(covmat)[1] <- 'OFFSET'
-#             colnames(covmat)[1] <- 'OFFSET'
         }
 
         ## prior distributions for random effects 
@@ -67,9 +62,6 @@ glmm_uni <- function(feature, formula, design, response, effects_cov, family, ns
             ## for GLMMs, use SD of pearson residuals
             prior_sd <- c(prior_sd, sd(residuals(model, 'pearson')))
         }
-        
-#         rm(model)
-#         gc(full = TRUE, verbose = FALSE, reset = TRUE)
         
         return(list(
             status = 0L, beta = beta, covmat = covmat, epsilon = epsilon, 
@@ -81,7 +73,7 @@ glmm_uni <- function(feature, formula, design, response, effects_cov, family, ns
 }
 
 #' @export 
-fit_model.presto <- function(formula, design, response, family) {    
+fit_model.presto <- function(formula, design, response, family, min_sigma=0) {    
     ## initialize model on one feature
     if (family == 'nb') {
         model <- lme4::glmer.nb(
@@ -89,10 +81,22 @@ fit_model.presto <- function(formula, design, response, family) {
             control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
         )        
     } else if (family == 'poisson') {
-        model <- lme4::glmer(
-            formula, cbind(design, y = response), 'poisson', 
-            control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
-        )
+        ## Modular optimization to control lower bound
+        if (min_sigma > 0) {
+            glmod <- glFormula(formula, cbind(design, y = response), family = poisson)
+            devfun <- do.call(mkGlmerDevfun, glmod)
+            environment(devfun)$lower <- rep(min_sigma, length(environment(devfun)$lower))
+            opt <- optimizeGlmer(devfun, stage = 1)
+            devfun <- updateGlmerDevfun(devfun, glmod$reTrms)
+            opt <- optimizeGlmer(devfun, stage=2)
+            model <- mkMerMod(environment(devfun), opt, glmod$reTrms, fr = glmod$fr)
+        } else {
+            model <- lme4::glmer(
+                formula, cbind(design, y = response), 'poisson', 
+                control = lme4::glmerControl(calc.derivs = FALSE, optimizer = "nloptwrap")
+            )
+        }
+            
     } else if (family == 'gaussian') {
         model <- lme4::lmer(
             formula, cbind(design, y = response),
@@ -194,7 +198,8 @@ presto.presto <- function(
     effects_cov=c(''),
     ncore=1, 
     nsim=100, 
-    family='poisson'
+    family='poisson',
+    min_sigma=0
 ) {
     if (is.null(features)) {
         features <- rownames(response)
@@ -236,11 +241,15 @@ presto.presto <- function(
         rm(.ncore)
     }
     
-    lres <- furrr::future_map(features, glmm_uni, formula, design, response, effects_cov, family, nsim, has_offset)
+    
+    lres <- furrr::future_map(features, glmm_uni, formula, design, response, effects_cov, family, nsim, has_offset, min_sigma)
     names(lres) <- features
+#     return(list(lres = lres, betanames_df = betanames_df, priornames_df = priornames_df, design = design))
 #     lres <- lres[!is.na(lres)] 
-    lres <- lres[which(equals(map(lres, 'status'), 0L))]
+    lres <- lres[which(purrr::map_lgl(as.integer(map_int(lres, 'status')), identical, 0L))]
+#     lres <- lres[which(equals(map(lres, 'status'), 0L))]
 
+    
     # Aggregate results 
     common_el <- purrr::reduce(map(lres, names), intersect) %>% setdiff('status')
     res <- map(common_el, function(name) {
