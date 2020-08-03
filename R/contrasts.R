@@ -27,7 +27,11 @@ rbind.fill.matrix2 <- function (...)
     return(output)
 }
 
-make_contrast.presto <- function(object, var_contrast, var_nested=NULL, levels_contrast=NULL, levels_nested=NULL) {
+make_contrast.presto <- function(
+    object, var_contrast, var_nested=NULL, 
+    levels_contrast=NULL, levels_nested=NULL, 
+    include_marginal=TRUE
+) {
     betanames_df <- object$betanames_df
     if (is.null(levels_contrast)) {
         levels_contrast <- betanames_df %>% 

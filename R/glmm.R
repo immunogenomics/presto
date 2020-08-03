@@ -199,7 +199,8 @@ presto.presto <- function(
     ncore=1, 
     nsim=100, 
     family='poisson',
-    min_sigma=0
+    min_sigma=0,
+    verbose=0L
 ) {
     if (is.null(features)) {
         features <- rownames(response)
@@ -216,6 +217,10 @@ presto.presto <- function(
     fstr <- gsub(size_varname, 'EXPOSURE', as.character(formula))
     formula <- as.formula(sprintf('%s~%s', fstr[[2]], fstr[[3]]))
 
+    if (verbose > 0) {
+        message('Set up models')
+    }
+    
     ## fit an initial model just to get the names
     model_base <- fit_model.presto(formula, design, response[features[[1]], ], family)
     priornames_df <- as.data.frame(VarCorr(model_base))[, 1:3]
@@ -241,16 +246,19 @@ presto.presto <- function(
         rm(.ncore)
     }
     
+    if (verbose > 0) {
+        message('Learn the models')
+    }
     
     lres <- furrr::future_map(features, glmm_uni, formula, design, response, effects_cov, family, nsim, has_offset, min_sigma)
     names(lres) <- features
-#     return(list(lres = lres, betanames_df = betanames_df, priornames_df = priornames_df, design = design))
-#     lres <- lres[!is.na(lres)] 
     lres <- lres[which(purrr::map_lgl(as.integer(map_int(lres, 'status')), identical, 0L))]
-#     lres <- lres[which(equals(map(lres, 'status'), 0L))]
 
     
     # Aggregate results 
+    if (verbose > 0) {
+        message('Aggregate the results')
+    }
     common_el <- purrr::reduce(map(lres, names), intersect) %>% setdiff('status')
     res <- map(common_el, function(name) {
         if (name == 'covmat') {
@@ -262,6 +270,9 @@ presto.presto <- function(
     names(res) <- common_el
 
     ## clean up names in covmat
+    if (verbose > 0) {
+        message('Cleap up names')
+    }
     covmat_names <- tibble(
         grpvar_orig = rownames(res$covmat)
     ) %>%  
@@ -292,12 +303,13 @@ presto.presto <- function(
             purrr::reduce(Matrix::rbind2)
     }
     row.names(res$design) <- res$betanames_df$grp
-    
     res$response <- response[names(lres), ]
 
     ## compute mean genes
+    if (verbose > 0) {
+        message('Compute gene means')
+    }
     res <- genemeans.presto(res, xpm=1e6)
-    
     
     ## flags and stuff
     res$has_offset <- has_offset
