@@ -316,7 +316,7 @@ presto.presto <- function(
     res$family <- family
     res$size_varname <- size_varname
     res$nsim <- nsim
-    res$formula <- formula
+    res$formula_str <- as.character(formula)
     
     return(res)
 }
