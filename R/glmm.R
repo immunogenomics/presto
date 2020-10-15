@@ -215,7 +215,7 @@ presto.presto <- function(
     ## TODO: check that SIZE is valid exposure type variable 
     design$EXPOSURE <- design[[size_varname]]
     fstr <- gsub(size_varname, 'EXPOSURE', as.character(formula))
-    formula <- as.formula(sprintf('%s~%s', fstr[[2]], fstr[[3]]))
+    formula <- as.formula(sprintf('%s~%s', fstr[[2]], fstr[[3]]), env=.GlobalEnv)
 
     if (verbose > 0) {
         message('Set up models')
