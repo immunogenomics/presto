@@ -12,52 +12,55 @@ compute_hash <- function(data_df, vars_use) {
 }
 
 #' @export
-collapse_counts <- function(counts_mat, meta_data, varnames, min_cells_per_group=0, keep_n=FALSE, how=c('sum', 'mean')[1]) {
-    ## give each unique row a hash value for indexing
+collapse_counts <- function (counts_mat, meta_data, varnames, min_cells_per_group=0, 
+    keep_n=TRUE, how = c("sum", "mean")[1], get_nnz=FALSE, get_norm=TRUE) 
+{
+    res <- list()
     hash <- compute_hash(meta_data, varnames)
     idx_keep <- which(!is.na(hash))
     hash <- hash[idx_keep]
-    hash <- factor(sprintf('sample_%d', as.integer(hash)))
+    hash <- factor(sprintf("sample_%d", as.integer(hash)))
     meta_data <- meta_data[idx_keep, ]
     counts_mat <- counts_mat[, idx_keep]
-    
-    ## one hot encoded design matrix, sample level
     design_collapsed <- data.frame(meta_data)[, varnames, drop = FALSE] %>% 
-        cbind(sample_id = hash) %>% 
-        unique()
-    design_collapsed <- data.table(meta_data)[
-        , varnames, drop = FALSE, with = FALSE
-    ][
-        , sample_id := hash
-    ][
-        , N := .N, by = sample_id
-    ][
-        N >= min_cells_per_group
-    ] %>% 
-    unique() %>% 
-    data.frame()
-    
-    ## sum over samples
-    counts_collapsed <- presto:::sumGroups(counts_mat, hash, 1) %>% t()
+        cbind(sample_id = hash) %>% unique()
+    design_collapsed <- data.table(meta_data)[, varnames, drop = FALSE, 
+        with = FALSE][, `:=`(sample_id, hash)][, `:=`(N, .N), 
+        by = sample_id][N >= min_cells_per_group] %>% unique() %>% 
+        data.frame()
+    counts_collapsed <- presto:::sumGroups(counts_mat, hash, 
+        1) %>% t()
     row.names(counts_collapsed) <- row.names(counts_mat)
     colnames(counts_collapsed) <- levels(hash)
-
-    ## reorder to match design matrix
     counts_collapsed <- counts_collapsed[, design_collapsed$sample_id]
-    design_collapsed$sample_id <- NULL
-
-    
-    if (how == 'mean') {
-        counts_collapsed <- as.matrix(counts_collapsed %*% Matrix::Diagonal(x = 1 / design_collapsed$N))        
+    if (how == "mean") {
+        counts_collapsed <- as.matrix(counts_collapsed %*% Matrix::Diagonal(x = 1/design_collapsed$N))
     }
     if (!keep_n) {
         design_collapsed <- dplyr::select(design_collapsed, -N)
     }
-
+    if (get_nnz) {
+        pct_nnz <- presto:::nnzeroGroups.dgCMatrix(counts_mat, hash, MARGIN = 1)
+        pct_nnz <- Diagonal(x = 1 / table(hash)) %*% pct_nnz
+        # pct_nnz <- data.frame(t(as(pct_nnz, 'matrix'))) 
+        pct_nnz <- Matrix::t(pct_nnz)
+        rownames(pct_nnz) <- rownames(counts_mat)
+        colnames(pct_nnz) <- levels(hash)
+        res$pct_nnz <- pct_nnz[, design_collapsed$sample_id]
+    }
     row.names(design_collapsed) <- design_collapsed$sample_id
-    
-    return(list(counts_mat = counts_collapsed, meta_data = design_collapsed))
+    design_collapsed$sample_id <- NULL
+    res$counts_mat <- counts_collapsed
+    res$meta_data <- design_collapsed
+    if (get_norm) {
+        message('CAREFUL: get_norm makes very strong assumptions about data')
+        res$exprs_norm <- normalizeData(res$counts_mat, 1e4, 'log')
+        res$meta_data$logUMI <- log(colSums(res$counts_mat))
+    }
+    return(res)
 }
+
+
 
 # #' @export
 # pseudobulk_pairwise <- function(dge_formula, counts_df, meta_data, contrast_var, vals_test, verbose,
