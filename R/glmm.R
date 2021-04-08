@@ -189,6 +189,32 @@ make_betanames_df <- function(model, has_offset) {
 }
 
 #' @export 
+collapse_lres <- function(lres) {
+    res <- list()
+    res$beta <- purrr::map(lres, 'beta') %>% collapse_vecs(length(lres))
+    colnames(res$beta) <- names(lres)
+
+    res$epsilon <- purrr::map(lres, 'epsilon') %>% collapse_vecs(length(lres))
+    colnames(res$epsilon) <- names(lres)
+
+    res$epsilon_pearson <- purrr::map(lres, 'epsilon_pearson') %>% collapse_vecs(length(lres))
+    colnames(res$epsilon_pearson) <- names(lres)
+
+    res$prior_sd <- purrr::map(lres, 'prior_sd') %>% collapse_vecs(length(lres))
+    colnames(res$prior_sd) <- names(lres)
+
+    covmat_list <- purrr::map(lres, 'covmat')
+    res$covmat <- collapse_mats(covmat_list, length(covmat_list))
+    dnames <- dimnames(covmat_list[[1]])
+    dnames[[3]] <- names(covmat_list)
+    dimnames(res$covmat) <- dnames    
+
+    return(res)
+}
+
+
+
+#' @export 
 presto.presto <- function(
     formula, 
     design, 
@@ -259,15 +285,17 @@ presto.presto <- function(
     if (verbose > 0) {
         message('Aggregate the results')
     }
-    common_el <- purrr::reduce(map(lres, names), intersect) %>% setdiff('status')
-    res <- map(common_el, function(name) {
-        if (name == 'covmat') {
-            purrr::reduce(purrr::map(lres, name), abind::abind, along = 3)
-        } else {
-            as.matrix(purrr::map_dfr(lres, name))            
-        }
-    })
-    names(res) <- common_el
+    res <- collapse_lres(lres) 
+    
+#     common_el <- purrr::reduce(map(lres, names), intersect) %>% setdiff('status')
+#     res <- map(common_el, function(name) {
+#         if (name == 'covmat') {
+#             purrr::reduce(purrr::map(lres, name), abind::abind, along = 3)
+#         } else {
+#             as.matrix(purrr::map_dfr(lres, name))            
+#         }
+#     })
+#     names(res) <- common_el
 
     ## clean up names in covmat
     if (verbose > 0) {
@@ -320,6 +348,7 @@ presto.presto <- function(
     
     return(res)
 }
+
 
 
 
