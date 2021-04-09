@@ -45,3 +45,11 @@ cpp_nnzeroGroups_dgc_T <- function(p, i, ncol, nrow, groups, ngroups) {
     .Call('_presto_cpp_nnzeroGroups_dgc_T', PACKAGE = 'presto', p, i, ncol, nrow, groups, ngroups)
 }
 
+collapse_mats <- function(mat_list, n) {
+    .Call('_presto_collapse_mats', PACKAGE = 'presto', mat_list, n)
+}
+
+collapse_vecs <- function(vec_list, n) {
+    .Call('_presto_collapse_vecs', PACKAGE = 'presto', vec_list, n)
+}
+
