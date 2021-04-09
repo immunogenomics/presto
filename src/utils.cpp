@@ -33,5 +33,3 @@ arma::mat collapse_vecs(vector<arma::vec> vec_list, unsigned n) {
     return result;
 }
 
-
-
