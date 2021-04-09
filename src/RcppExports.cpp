@@ -160,6 +160,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// collapse_mats
+arma::cube collapse_mats(vector<arma::mat> mat_list, unsigned n);
+RcppExport SEXP _presto_collapse_mats(SEXP mat_listSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< vector<arma::mat> >::type mat_list(mat_listSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(collapse_mats(mat_list, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// collapse_vecs
+arma::mat collapse_vecs(vector<arma::vec> vec_list, unsigned n);
+RcppExport SEXP _presto_collapse_vecs(SEXP vec_listSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< vector<arma::vec> >::type vec_list(vec_listSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(collapse_vecs(vec_list, n));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_presto_cpp_sumGroups_dgc", (DL_FUNC) &_presto_cpp_sumGroups_dgc, 6},
@@ -173,6 +197,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_presto_cpp_rank_matrix_dgc", (DL_FUNC) &_presto_cpp_rank_matrix_dgc, 4},
     {"_presto_cpp_rank_matrix_dense", (DL_FUNC) &_presto_cpp_rank_matrix_dense, 1},
     {"_presto_cpp_nnzeroGroups_dgc_T", (DL_FUNC) &_presto_cpp_nnzeroGroups_dgc_T, 6},
+    {"_presto_collapse_mats", (DL_FUNC) &_presto_collapse_mats, 2},
+    {"_presto_collapse_vecs", (DL_FUNC) &_presto_collapse_vecs, 2},
     {NULL, NULL, 0}
 };
 
