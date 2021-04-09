@@ -161,24 +161,24 @@ BEGIN_RCPP
 END_RCPP
 }
 // collapse_mats
-arma::cube collapse_mats(vector<arma::mat> mat_list, unsigned n);
+arma::cube collapse_mats(std::vector<arma::mat> mat_list, unsigned n);
 RcppExport SEXP _presto_collapse_mats(SEXP mat_listSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vector<arma::mat> >::type mat_list(mat_listSEXP);
+    Rcpp::traits::input_parameter< std::vector<arma::mat> >::type mat_list(mat_listSEXP);
     Rcpp::traits::input_parameter< unsigned >::type n(nSEXP);
     rcpp_result_gen = Rcpp::wrap(collapse_mats(mat_list, n));
     return rcpp_result_gen;
 END_RCPP
 }
 // collapse_vecs
-arma::mat collapse_vecs(vector<arma::vec> vec_list, unsigned n);
+arma::mat collapse_vecs(std::vector<arma::vec> vec_list, unsigned n);
 RcppExport SEXP _presto_collapse_vecs(SEXP vec_listSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< vector<arma::vec> >::type vec_list(vec_listSEXP);
+    Rcpp::traits::input_parameter< std::vector<arma::vec> >::type vec_list(vec_listSEXP);
     Rcpp::traits::input_parameter< unsigned >::type n(nSEXP);
     rcpp_result_gen = Rcpp::wrap(collapse_vecs(vec_list, n));
     return rcpp_result_gen;

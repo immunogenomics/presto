@@ -13,7 +13,7 @@ using namespace std;
 
 
 // [[Rcpp::export]]
-arma::cube collapse_mats(vector<arma::mat> mat_list, unsigned n) {
+arma::cube collapse_mats(std::vector<arma::mat> mat_list, unsigned n) {
 //     arma::cube result = arma::zeros<arma::cube>(10, 10, n);
     arma::cube result = arma::zeros<arma::cube>(mat_list[0].n_rows, mat_list[0].n_cols, n);
     for (int i = 0; i < n; i++) {
@@ -24,7 +24,7 @@ arma::cube collapse_mats(vector<arma::mat> mat_list, unsigned n) {
 
 
 // [[Rcpp::export]]
-arma::mat collapse_vecs(vector<arma::vec> vec_list, unsigned n) {
+arma::mat collapse_vecs(std::vector<arma::vec> vec_list, unsigned n) {
 //     arma::cube result = arma::zeros<arma::cube>(10, 10, n);
     arma::mat result = arma::zeros<arma::mat>(vec_list[0].n_elem, n);
     for (int i = 0; i < n; i++) {
