@@ -13,6 +13,7 @@ Authors@R: c(
     )
 Description: Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as genomics analysis frameworks Seurat and SingleCellExperiment. 
 License: GPL-3
+LazyData: true
 Encoding: UTF-8
 Depends: R (>= 3.4.0), Rcpp, data.table
 LinkingTo: Rcpp, RcppArmadillo
@@ -22,12 +23,13 @@ Imports:
     methods,
     tidyr, 
     reshape2,
-    Matrix,
+    purrr,
+    tibble,
+    Matrix (>= 1.5-0),
     rlang,
     stats, 
-    utils,
-    DESeq2
-RoxygenNote: 6.1.1
+    utils
+RoxygenNote: 7.2.1
 Suggests: 
     knitr,
     rmarkdown,
@@ -36,6 +38,7 @@ Suggests:
     SingleCellExperiment, 
     SummarizedExperiment,
     broom,
-    BiocStyle
+    BiocStyle,
+    DESeq2
 NeedsCompilation: yes
 VignetteBuilder: knitr

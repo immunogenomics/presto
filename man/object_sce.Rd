@@ -4,7 +4,9 @@
 \name{object_sce}
 \alias{object_sce}
 \title{SingleCellExperiment object with fake data}
-\format{An object of class \code{SingleCellExperiment} with 20 rows and 300 columns.}
+\format{
+A single cell experiment
+}
 \usage{
 object_sce
 }

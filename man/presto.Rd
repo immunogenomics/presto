@@ -3,7 +3,6 @@
 \docType{package}
 \name{presto}
 \alias{presto}
-\alias{presto-package}
 \title{presto}
 \description{
 Fast differential expression

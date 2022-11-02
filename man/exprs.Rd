@@ -3,12 +3,14 @@
 \docType{data}
 \name{exprs}
 \alias{exprs}
-\title{matrix of 25 features by 150 observations}
-\format{An object of class \code{matrix} with 25 rows and 150 columns.}
+\title{Small gene expression matrix}
+\format{
+matrix of 25 features by 150 observations
+}
 \usage{
 exprs
 }
 \description{
-matrix of 25 features by 150 observations
+Small gene expression matrix
 }
 \keyword{datasets}

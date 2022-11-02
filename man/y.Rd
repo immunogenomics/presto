@@ -3,12 +3,14 @@
 \docType{data}
 \name{y}
 \alias{y}
-\title{vector of group labels in c('A', 'B', 'C')}
-\format{An object of class \code{factor} of length 150.}
+\title{Group labels for observations in gene expression matrix}
+\format{
+a factor with 3 levels
+}
 \usage{
 y
 }
 \description{
-vector of group labels in c('A', 'B', 'C')
+Group labels for observations in gene expression matrix
 }
 \keyword{datasets}
