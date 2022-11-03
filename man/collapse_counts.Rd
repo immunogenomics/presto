@@ -39,6 +39,8 @@ colnames(m) <- paste0("C", 1:500)
 o <- CreateSeuratObject(m)
 o$md1 <- sample(c("a", "b"), 500, replace=TRUE)
 o$md2 <- sample(c("c", "d"), 500, replace=TRUE)
-data_collapsed <- collapse_counts(o@assays$RNA@counts, o@meta.data, c('md1', 'md2'))
+data_collapsed <- collapse_counts(
+    o@assays$RNA@counts, o@meta.data, c('md1', 'md2')
+)
 
 }

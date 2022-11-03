@@ -22,10 +22,9 @@ Imports:
     dplyr, 
     methods,
     tidyr, 
-    reshape2,
     purrr,
     tibble,
-    Matrix (>= 1.5-0),
+    Matrix,
     rlang,
     stats, 
     utils

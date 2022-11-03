@@ -7,10 +7,10 @@
 summarize_dge_pairs(dge_res, mode = c("min", "max")[1])
 }
 \arguments{
-\item{dge_res}{table returned by pseudobulk_deseq2() function when mode is
+\item{dge_res}{table returned by pseudobulk_deseq2() function when `mode` is
 `pairwise`}
 
-\item{mode}{tbd}
+\item{mode}{-}
 }
 \description{
 Summarize differential gene expression pairs

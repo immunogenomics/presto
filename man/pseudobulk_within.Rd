@@ -22,7 +22,7 @@ pseudobulk_within(
 
 \item{meta_data}{data.frame of cell metadata}
 
-\item{split_var}{tbd}
+\item{split_var}{-}
 
 \item{vals_test}{cell metadata columns}
 
