@@ -19,10 +19,8 @@ jobs:
       matrix:
         config:
           - {os: windows-latest, r: '4.0'}
-          - {os: macOS-latest, r: '3.6'}
           - {os: macOS-latest, r: '4.0'}
           - {os: macOS-latest, r: 'devel'}
-          - {os: ubuntu-22.04, r: '3.6'}
           - {os: ubuntu-22.04, r: '4.0'}
 
     env:
