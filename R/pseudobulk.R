@@ -13,7 +13,6 @@ globalVariables(
 #' @param vars_use vector of column names to use when computing the hash
 #'
 #' @export
-#'
 compute_hash <- function(data_df, vars_use) {
     base <- 1
     hash <- rep(0, nrow(data_df))
