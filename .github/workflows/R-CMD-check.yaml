@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: '4.0'}
-          - {os: macOS-latest, r: '4.0'}
+          - {os: windows-latest, r: '4.1'}
+          - {os: macOS-latest, r: '4.1'}
           - {os: macOS-latest, r: 'devel'}
-          - {os: ubuntu-22.04, r: '4.0'}
+          - {os: ubuntu-22.04, r: '4.1'}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -43,14 +43,6 @@ jobs:
           install.packages('remotes')
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
         shell: Rscript {0}
-
-      - name: Cache R packages
-        if: runner.os != 'Windows'
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.R_LIBS_USER }}
-          key: ${{ runner.os }}-r-${{ matrix.config.r }}-${{ hashFiles('depends.Rds') }}
-          restore-keys: ${{ runner.os }}-r-${{ matrix.config.r }}-
 
       - name: Install dependencies
         run: |
