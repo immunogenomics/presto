@@ -89,6 +89,7 @@ wilcoxauc.Seurat <- function(
     seurat_assay = "RNA",
     ...
 ) {
+    requireNamespace("Seurat")
     X_matrix <- Seurat::GetAssayData(X, assay = seurat_assay, slot = assay)
     if (is.null(group_by)) {
         y <- Seurat::Idents(X)
