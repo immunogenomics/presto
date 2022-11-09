@@ -21,4 +21,4 @@ wilcoxauc(seurat_object, 'group_name')
 wilcoxauc(sce_object, 'group_name')
 ```
 
-For examples, see `?wilcoxauc` and the [vignette](http://htmlpreview.github.io/?https://github.com/immunogenomics/presto/blob/master/docs/getting-started.html)
+For examples, see `?wilcoxauc` and the [vignette](https://austinhartman.github.io/presto/articles/getting-started.html)
