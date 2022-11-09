@@ -51,12 +51,7 @@ library(presto)
 The main function in this vignette is `wilcoxauc`. presto currently supports 3
 interfaces to `wilcoxauc`, with a matrix, Seurat object, or 
 SingleCellExperiment object. The output of `wilcoxauc` is described in the
-next section. 
-
-```{r}
-?wilcoxauc
-
-```
+next section.
 
 
 ## Matrix input
@@ -86,8 +81,8 @@ head(wilcoxauc(object_seurat, 'cell_type'))
 
 ```
 
-Seurat supports multiple assay types. This can be specified with 
-`seurat_assay`.
+Seurat objects can store multiple assays. The assay used by `wilcoxauc` can be
+specified with the `seurat_assay` argument.
 
 ```{r}
 head(wilcoxauc(object_seurat, 'cell_type', seurat_assay = 'RNA'))

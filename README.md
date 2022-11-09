@@ -5,11 +5,10 @@ Presto performs a fast Wilcoxon rank sum test and auROC analysis. Latest benchma
 
 # Installation
 
-We are working on getting presto into CRAN. For now, install Presto from github directly:
+Install presto from CRAN:
 
 ```{r}
-library(devtools)
-install_github('immunogenomics/presto')
+install.packages('presto')
 ```
 
 # Usage
