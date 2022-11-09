@@ -39,14 +39,14 @@ compute_hash <- function(data_df, vars_use) {
 #' @importFrom data.table data.table
 #'
 #' @examples
-#' m <- matrix(sample.int(8, 100*500, replace=TRUE),nrow=100, ncol=500)
+#' m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
 #' rownames(m) <- paste0("G", 1:100)
 #' colnames(m) <- paste0("C", 1:500)
 #' md1 <- sample(c("a", "b"), 500, replace=TRUE)
 #' md2 <- sample(c("c", "d"), 500, replace=TRUE)
 #' df <- data.frame(md1, md2)
 #' data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
-#' head(data_collapsed$$counts_mat)
+#' head(data_collapsed$counts_mat)
 #'
 #' @export
 #'

@@ -78,7 +78,7 @@ group labels.
 ```{r}
 data(object_seurat)
 # ensure object structure matches with the installed Seurat version
-object_seurat <- UpdateSeuratObject(object_seurat)
+object_seurat <- Seurat::UpdateSeuratObject(object_seurat)
 head(wilcoxauc(object_seurat, 'cell_type'))
 
 ```
