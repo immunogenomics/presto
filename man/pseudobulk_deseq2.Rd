@@ -43,16 +43,13 @@ Pseudobulk DESeq2
 }
 \examples{
 \dontrun{
-    library(Seurat)
-    m <- matrix(sample.int(8, 100*500, replace = TRUE), nrow=100, ncol=500)
+    m <- matrix(sample.int(8, 100*500, replace=TRUE),nrow=100, ncol=500)
     rownames(m) <- paste0("G", 1:100)
     colnames(m) <- paste0("C", 1:500)
-    o <- CreateSeuratObject(m)
-    o$md1 <- sample(c("a", "b"), 500, replace = TRUE)
-    o$md2 <- sample(c("c", "d"), 500, replace = TRUE)
-    data_collapsed <- collapse_counts(
-        o@assays$RNA@counts, o@meta.data, c('md1', 'md2')
-    )
+    md1 <- sample(c("a", "b"), 500, replace=TRUE)
+    md2 <- sample(c("c", "d"), 500, replace=TRUE)
+    df <- data.frame(md1, md2)
+    data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
     res_mat <- pseudobulk_deseq2(
         ~md1 + md1,
         data_collapsed$meta_data,

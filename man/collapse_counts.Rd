@@ -2,7 +2,7 @@
 % Please edit documentation in R/pseudobulk.R
 \name{collapse_counts}
 \alias{collapse_counts}
-\title{Collapse counts}
+\title{Collapse counts based on multiple categorical metadata columns}
 \usage{
 collapse_counts(
   counts_mat,
@@ -23,24 +23,22 @@ represent features}
 
 \item{min_cells_per_group}{minimum cells to keep collapsed group}
 
-\item{keep_n}{keep or drop the `N`` column containing the number of
+\item{keep_n}{keep or drop the `N` column containing the number of
 cells in each group. Default is `FALSE`}
 
 \item{how}{method of collapsing counts from groups. `sum` or `mean`}
 }
 \description{
-Collapse counts
+Collapse counts based on multiple categorical metadata columns
 }
 \examples{
-library(Seurat)
-m <- matrix(sample.int(8, 100*500, replace=TRUE),nrow=100, ncol=500)
+m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
 rownames(m) <- paste0("G", 1:100)
 colnames(m) <- paste0("C", 1:500)
-o <- CreateSeuratObject(m)
-o$md1 <- sample(c("a", "b"), 500, replace=TRUE)
-o$md2 <- sample(c("c", "d"), 500, replace=TRUE)
-data_collapsed <- collapse_counts(
-    o@assays$RNA@counts, o@meta.data, c('md1', 'md2')
-)
+md1 <- sample(c("a", "b"), 500, replace=TRUE)
+md2 <- sample(c("c", "d"), 500, replace=TRUE)
+df <- data.frame(md1, md2)
+data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
+head(data_collapsed$counts_mat)
 
 }

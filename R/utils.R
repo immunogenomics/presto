@@ -118,9 +118,15 @@ rank_matrix.matrix <- function(X) {
 #' @export
 sumGroups <- function(X, y, MARGIN = 2) {
     if (MARGIN == 2 & nrow(X) != length(y)) {
-        stop("wrong dims")
+        stop(
+            "nrow(X) != length(y) - the number of rows in the matrix is not
+            the same length as group labels"
+        )
     } else if (MARGIN == 1 & ncol(X) != length(y)) {
-        stop("wrong dims")
+        stop(
+            "ncol(X) != length(y) - the number of columns in the matrix is not
+             the same length as group labels"
+        )
     }
     UseMethod("sumGroups")
 }
