@@ -21,41 +21,6 @@
 #' @param verbose boolean, TRUE for warnings and messages. 
 #' @param ... input specific parameters. 
 #'
-#' @examples
-#' set.seed(42)
-#' x <- Matrix::rsparsematrix(nrow = 1e3, ncol = 1e4, density = 0.05)
-#' y <- sample(1:3, ncol(x), replace = TRUE)
-#' wilcoxauc(x, y)
-#'
-#' \dontrun{
-#'  data(exprs)
-#'  data(y)
-#'
-#'  ## on a dense matrix
-#'  head(wilcoxauc(exprs, y))
-#'
-#'  ## with only some groups
-#'  head(wilcoxauc(exprs, y, c('A', 'B')))
-#'
-#'  ## on a sparse matrix
-#'  exprs_sparse <- as(exprs, 'dgCMatrix')
-#'  head(wilcoxauc(exprs_sparse, y))
-#'
-#'  ## on a Seurat V3 object
-#'  if (requireNamespace("Seurat", quietly = TRUE)) {
-#'      pkg_version <- packageVersion('Seurat')
-#'      if (pkg_version >= "3.0" & pkg_version < "4.0") {
-#'          data(object_seurat)
-#'          head(wilcoxauc(object_seurat, 'cell_type'))
-#'      }
-#'  }
-#'
-#'  ## on a SingleCellExperiment object
-#'  if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-#'      data(object_sce)
-#'      head(wilcoxauc(object_sce, 'cell_type'))
-#'  }
-#' }
 #'
 #' @return table with the following columns:
 #' \itemize{
