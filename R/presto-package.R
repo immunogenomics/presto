@@ -8,7 +8,6 @@
 #' @import Rcpp
 #' @importClassesFrom Matrix dgCMatrix dgTMatrix dgeMatrix TsparseMatrix
 #' @importFrom Matrix Matrix
-#' @importFrom magrittr %>%
 #' @importFrom dplyr select
 #' @importFrom stats pnorm p.adjust
 #' @importFrom methods is as

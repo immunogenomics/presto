@@ -1,0 +1,11 @@
+        y <- Seurat::FetchData(X, group_by) %>% unlist %>% as.character()
+    } else if (!group_by %in% names(SummarizedExperiment::colData(X))) {
+        idx_use <- which(y %in% intersect(groups_use, y))
+    group_pct <- sweep(group_nnz, 1, as.numeric(table(y)), "/") %>% t()
+    group_pct_out <- -group_nnz %>%
+        sweep(2, colSums(group_nnz) , "+") %>% 
+        sweep(1, as.numeric(length(y) - table(y)), "/") %>% t()
+    group_means <- sweep(group_sums, 1, as.numeric(table(y)), "/") %>% t()
+    res <- Reduce(cbind, lapply(wide_res, as.numeric)) %>% data.frame()
+    }) %>% unlist
+    usigma <- sqrt(matrix(n1n2, ncol = 1) %*% matrix(rhs, nrow = 1))

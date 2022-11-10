@@ -33,4 +33,3 @@ Suggests:
     SingleCellExperiment,
     SummarizedExperiment
 NeedsCompilation: yes
-VignetteBuilder: knitr
