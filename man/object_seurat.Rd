@@ -4,7 +4,9 @@
 \name{object_seurat}
 \alias{object_seurat}
 \title{Seurat V3 object with fake data}
-\format{An object of class \code{Seurat} with 20 rows and 300 columns.}
+\format{
+A Seurat object
+}
 \usage{
 object_seurat
 }

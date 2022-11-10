@@ -12,14 +12,18 @@ wilcoxauc(X, ...)
 
 \method{wilcoxauc}{seurat}(X, ...)
 
-\method{wilcoxauc}{Seurat}(X, group_by = NULL, assay = "data",
-  groups_use = NULL, seurat_assay = "RNA", ...)
+\method{wilcoxauc}{Seurat}(
+  X,
+  group_by = NULL,
+  assay = "data",
+  groups_use = NULL,
+  seurat_assay = "RNA",
+  ...
+)
 
-\method{wilcoxauc}{SingleCellExperiment}(X, group_by = NULL,
-  assay = NULL, groups_use = NULL, ...)
+\method{wilcoxauc}{SingleCellExperiment}(X, group_by = NULL, assay = NULL, groups_use = NULL, ...)
 
-\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE,
-  ...)
+\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE, ...)
 }
 \arguments{
 \item{X}{A feature-by-sample matrix, Seurat object, or SingleCellExperiment
@@ -41,20 +45,20 @@ object}
 \item{verbose}{boolean, TRUE for warnings and messages.}
 }
 \value{
-table with the following columns: 
+table with the following columns:
 \itemize{
 \item \strong{feature} - feature name (e.g. gene name).
 \item \strong{group} - group name.
-\item \strong{avgExpr} - mean value of feature in group. 
+\item \strong{avgExpr} - mean value of feature in group.
 \item \strong{logFC} - log fold change between observations in group vs out.
-\item \strong{statistic} - Wilcoxon rank sum U statistic. 
-\item \strong{auc} - area under the receiver operator curve. 
-\item \strong{pval} - nominal p value. 
-\item \strong{padj} - Benjamini-Hochberg adjusted p value. 
+\item \strong{statistic} - Wilcoxon rank sum U statistic.
+\item \strong{auc} - area under the receiver operator curve.
+\item \strong{pval} - nominal p value.
+\item \strong{padj} - Benjamini-Hochberg adjusted p value.
 \item \strong{pct_in} - Percent of observations in the group with non-zero
-feature value. 
-\item \strong{pct_out} - Percent of observations out of the group with 
-non-zero feature value. 
+feature value.
+\item \strong{pct_out} - Percent of observations out of the group with
+non-zero feature value.
 }
 }
 \description{
@@ -69,33 +73,34 @@ Inputs can be
 For detailed examples, consult the presto vignette.
 }
 \examples{
+\dontrun{
+ data(exprs)
+ data(y)
 
-data(exprs)
-data(y)
+ ## on a dense matrix
+ head(wilcoxauc(exprs, y))
 
-## on a dense matrix
-head(wilcoxauc(exprs, y))
+ ## with only some groups
+ head(wilcoxauc(exprs, y, c('A', 'B')))
 
-## with only some groups
-head(wilcoxauc(exprs, y, c('A', 'B')))
+ ## on a sparse matrix
+ exprs_sparse <- as(exprs, 'dgCMatrix')
+ head(wilcoxauc(exprs_sparse, y))
 
-## on a sparse matrix
-exprs_sparse <- as(exprs, 'dgCMatrix')
-head(wilcoxauc(exprs_sparse, y))
+ ## on a Seurat V3 object
+ if (requireNamespace("Seurat", quietly = TRUE)) {
+     pkg_version <- packageVersion('Seurat')
+     if (pkg_version >= "3.0" & pkg_version < "4.0") {
+         data(object_seurat)
+         head(wilcoxauc(object_seurat, 'cell_type'))
+     }
+ }
 
-## on a Seurat V3 object
-if (requireNamespace("Seurat", quietly = TRUE)) {
-    pkg_version <- packageVersion('Seurat')
-    if (pkg_version >= "3.0" & pkg_version < "4.0") {
-        data(object_seurat)
-        head(wilcoxauc(object_seurat, 'cell_type'))
-    }
-}
-
-## on a SingleCellExperiment object
-if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-    data(object_sce)
-    head(wilcoxauc(object_sce, 'cell_type'))
+ ## on a SingleCellExperiment object
+ if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
+     data(object_sce)
+     head(wilcoxauc(object_sce, 'cell_type'))
+ }
 }
 
 }
