@@ -26,15 +26,11 @@ Imports:
     dplyr, 
     methods,
     stats,
-    Seurat,
-    SingleCellExperiment,
-    SummarizedExperiment,
-    magrittr,
     Matrix
 RoxygenNote: 7.2.1
 Suggests: 
-    knitr,
-    rmarkdown,
-    testthat
+    Seurat,
+    SingleCellExperiment,
+    SummarizedExperiment
 NeedsCompilation: yes
 VignetteBuilder: knitr
