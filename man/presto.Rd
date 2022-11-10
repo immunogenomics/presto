@@ -3,7 +3,26 @@
 \docType{package}
 \name{presto}
 \alias{presto}
+\alias{presto-package}
 \title{presto}
 \description{
 Fast differential expression
 }
+\author{
+\strong{Maintainer}: Kamil Slowikowski \email{kslowikowski@gmail.com} (\href{https://orcid.org/0000-0002-2843-6370}{ORCID}) [contributor]
+
+Authors:
+\itemize{
+  \item Ilya Korsunsky \email{ilya.korsunsky@gmail.com} (\href{https://orcid.org/0000-0003-4848-3948}{ORCID})
+  \item Aparna Nathan
+  \item Nghia Millard (\href{https://orcid.org/0000-0002-0518-7674}{ORCID})
+  \item Soumya Raychaudhuri (\href{https://orcid.org/0000-0002-1901-8265}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Austin Hartman (\href{https://orcid.org/0000-0001-7278-1852}{ORCID}) [contributor]
+}
+
+}
+\keyword{internal}

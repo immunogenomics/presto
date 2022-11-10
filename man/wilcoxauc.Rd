@@ -73,6 +73,11 @@ Inputs can be
 For detailed examples, consult the presto vignette.
 }
 \examples{
+set.seed(42)
+x <- Matrix::rsparsematrix(nrow = 1e3, ncol = 1e4, density = 0.05)
+y <- sample(1:3, ncol(x), replace = TRUE)
+wilcoxauc(x, y)
+
 \dontrun{
  data(exprs)
  data(y)

@@ -19,29 +19,22 @@ Description: Scalable implementation of the Wilcoxon rank sum test and auROC sta
 License: GPL-3
 LazyData: true
 Encoding: UTF-8
-Depends: R (>= 3.4.0), Rcpp, data.table
+Depends: R (>= 3.4.0), Rcpp
 LinkingTo: Rcpp, RcppArmadillo
 biocViews:
 Imports: 
     dplyr, 
     methods,
-    tidyr, 
-    purrr,
-    tibble,
-    Matrix,
-    rlang,
-    stats, 
-    utils
+    stats,
+    Seurat,
+    SingleCellExperiment,
+    SummarizedExperiment,
+    magrittr,
+    Matrix
 RoxygenNote: 7.2.1
 Suggests: 
     knitr,
     rmarkdown,
-    testthat,
-    Seurat,
-    SingleCellExperiment, 
-    SummarizedExperiment,
-    broom,
-    BiocStyle,
-    DESeq2
+    testthat
 NeedsCompilation: yes
 VignetteBuilder: knitr

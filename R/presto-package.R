@@ -2,15 +2,15 @@
 #'
 #' Fast differential expression
 #'
-#' @name presto
 #' @docType package
+#' @name presto
 #' @useDynLib presto
 #' @import Rcpp
 #' @importClassesFrom Matrix dgCMatrix dgTMatrix dgeMatrix TsparseMatrix
-#' @importFrom methods as is
 #' @importFrom Matrix Matrix
-#' @importFrom stats p.adjust pnorm wilcox.test
-#' @importFrom utils head
-#' @importFrom Rcpp evalCpp sourceCpp loadModule
-#' @importFrom rlang .data
-NULL
+#' @importFrom magrittr %>%
+#' @importFrom dplyr select
+#' @importFrom stats pnorm p.adjust
+#' @importFrom methods is as
+#' @keywords internal
+"_PACKAGE"

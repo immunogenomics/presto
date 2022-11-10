@@ -6,3 +6,5 @@ src/*.so
 src/*.o
 .ipynb_checkpoints
 **/.ipynb_checkpoints
+*.swp
+*.swo
