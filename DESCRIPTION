@@ -3,13 +3,17 @@ Title: Fast Functions for Differential Expression using Wilcox and AUC
 Version: 1.0.0
 Authors@R: c(
     person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", 
-        role = c("cre", "aut"), comment = c(ORCID = "0000-0003-4848-3948")),
+        role = c("aut"), comment = c(ORCID = "0000-0003-4848-3948")),
     person("Aparna", "Nathan", 
         role = "aut"),
     person("Nghia", "Millard", 
         role = "aut", comment = c(ORCID = "0000-0002-0518-7674")),
     person("Soumya", "Raychaudhuri", 
-        role = c("aut"), comment = c(ORCID = "0000-0002-1901-8265"))
+        role = c("aut"), comment = c(ORCID = "0000-0002-1901-8265")),
+    person("Kamil", "Slowikowski", email = "kslowikowski@gmail.com",
+        role = c("cre", "ctb"), comment = c(ORCID = "0000-0002-2843-6370")),
+    person("Austin", "Hartman",
+        role = c("ctb"), comment = c(ORCID = "0000-0001-7278-1852"))
     )
 Description: Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as genomics analysis frameworks Seurat and SingleCellExperiment. 
 License: GPL-3
