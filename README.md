@@ -7,7 +7,7 @@ Presto performs a fast Wilcoxon rank sum test and auROC analysis. Latest benchma
 
 Install presto:
 
-```{r}
+```r
 # install.packages("devtools")
 devtools::install_github("immunogenomics/presto")
 ```
@@ -16,7 +16,7 @@ devtools::install_github("immunogenomics/presto")
 
 Run presto on a matrix, Seurat, or SingleCellExperiment input object. 
 
-```
+```r
 wilcoxauc(X, y)
 wilcoxauc(seurat_object, 'group_name')
 wilcoxauc(sce_object, 'group_name')
