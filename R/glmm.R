@@ -264,11 +264,11 @@ presto.presto <- function(
         future::plan(sequential)
     } else if (ncore %in% c(0, Inf)) {
         ncore <- availableCores()
-        future::plan(multiprocess)
+        future::plan(multicore)
     } else {
         ## ncore weirdly not recognized by future
         .ncore <<- ncore
-        future::plan(future::multiprocess(workers = .ncore))
+        future::plan(future::multicore(workers = .ncore))
         rm(.ncore)
     }
     
