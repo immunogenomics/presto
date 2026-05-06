@@ -118,26 +118,21 @@ marker at that rank. Cells are <code>NA</code> for groups with fewer than
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">exprs</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">exprs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">25</span> <span class="op">*</span> <span class="fl">150</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">25</span>,</span></span>
+<span class="r-in"><span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"G"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## top 10 markers per group, restricted to nominally significant,</span></span></span>
 <span class="r-in"><span><span class="co">## up-regulated features (auc &gt; 0.5 means in-group &gt; out-of-group).</span></span></span>
 <span class="r-in"><span><span class="fu">top_markers</span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">10</span>, auc_min <span class="op">=</span> <span class="fl">0.5</span>, pval_max <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 9 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    rank A     B     C    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1 G4    G20   G1   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     2 <span style="color: #BB0000;">NA</span>    G5    G21  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     3 <span style="color: #BB0000;">NA</span>    G15   G6   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>     4 <span style="color: #BB0000;">NA</span>    G19   G16  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>     5 <span style="color: #BB0000;">NA</span>    G25   G11  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span>     6 <span style="color: #BB0000;">NA</span>    G10   G7   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span>     7 <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    G2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span>     8 <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    G17  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">9</span>     9 <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    G12  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    rank C    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1 G25  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     2 G5   </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

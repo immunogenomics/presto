@@ -1,6 +1,12 @@
-# Get top n markers from wilcoxauc
+# Top markers per group from wilcoxauc results
 
-Useful summary of the most distinguishing features in each group.
+Filters and ranks the long-form output of
+[`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
+to give the most distinguishing features per group. The filter arguments
+combine multiplicatively, then the top `n` features per group are kept
+by descending `auc` and pivoted into wide form. Counterpart to
+[`top_markers_dds()`](https://immunogenomics.github.io/presto/reference/top_markers_dds.md)
+for DESeq2-based pseudobulk results.
 
 ## Usage
 
@@ -20,61 +26,64 @@ top_markers(
 
 - res:
 
-  table returned by wilcoxauc() function.
+  Long-form results table from
+  [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md).
 
 - n:
 
-  number of markers to find for each.
+  Number of top markers to return per group. Default `10`.
 
 - auc_min:
 
-  filter features with auc \< auc_min.
+  Drop features with `auc < auc_min`. Default `0` (no filter); set to
+  `0.5` to keep only features that are positive markers (more highly
+  expressed in-group than out).
 
 - pval_max:
 
-  filter features with pval \> pval_max.
+  Drop features with raw `pval > pval_max`. Default `1`.
 
 - padj_max:
 
-  filter features with padj \> padj_max.
+  Drop features with adjusted `padj > padj_max`. Default `1`.
 
 - pct_in_min:
 
-  Minimum percent (0-100) of observations with non-zero entries in
-  group.
+  Minimum percent (0-100) of in-group observations with non-zero feature
+  value. Default `0`.
 
 - pct_out_max:
 
-  Maximum percent (0-100) of observations with non-zero entries out of
-  group.
+  Maximum percent (0-100) of out-of-group observations with non-zero
+  feature value. Default `100`.
 
 ## Value
 
-table with the top n markers for each cluster.
+tibble in wide form: a `rank` column (1..`n`) and one column per group
+containing the feature name of the top-ranked marker at that rank. Cells
+are `NA` for groups with fewer than `n` features that pass the filters.
+
+## See also
+
+[`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md),
+[`top_markers_dds()`](https://immunogenomics.github.io/presto/reference/top_markers_dds.md)
 
 ## Examples
 
 ``` r
+set.seed(42)
+exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                dimnames = list(paste0("G", 1:25), NULL))
+y <- rep(c("A", "B", "C"), each = 50)
 
-data(exprs)
-data(y)
-
-## first, run wilcoxauc
 res <- wilcoxauc(exprs, y)
 
-## top 10 markers for each group
-## filter for nominally significant (p<0.05) and over-expressed (auc>0.5)
-top_markers(res, 10, auc_min = 0.5, pval_max = 0.05)
-#> # A tibble: 9 × 4
-#>    rank A     B     C    
-#>   <int> <chr> <chr> <chr>
-#> 1     1 G4    G20   G1   
-#> 2     2 NA    G5    G21  
-#> 3     3 NA    G15   G6   
-#> 4     4 NA    G19   G16  
-#> 5     5 NA    G25   G11  
-#> 6     6 NA    G10   G7   
-#> 7     7 NA    NA    G2   
-#> 8     8 NA    NA    G17  
-#> 9     9 NA    NA    G12  
+## top 10 markers per group, restricted to nominally significant,
+## up-regulated features (auc > 0.5 means in-group > out-of-group).
+top_markers(res, n = 10, auc_min = 0.5, pval_max = 0.05)
+#> # A tibble: 2 × 2
+#>    rank C    
+#>   <int> <chr>
+#> 1     1 G25  
+#> 2     2 G5   
 ```

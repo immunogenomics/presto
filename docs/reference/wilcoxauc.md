@@ -1,17 +1,12 @@
-# Fast Wilcoxon rank sum test and auROC
+# Fast Wilcoxon rank-sum test and auROC across groups
 
-Computes auROC and Wilcoxon p-value based on Gaussian approximation.
-Inputs can be
-
-- Dense matrix or data.frame
-
-- Sparse matrix, such as dgCMatrix
-
-- Seurat V3 object
-
-- SingleCellExperiment object
-
-For detailed examples, consult the presto vignette.
+For every (feature, group) pair, computes the Wilcoxon rank-sum
+statistic comparing observations in that group against all other
+observations, and the area under the ROC curve as a measure of
+separability. P-values come from the standard Gaussian approximation to
+the U statistic with a tie correction. Returns one row per (feature,
+group) with effect-size and percent-expressed columns alongside the test
+statistics.
 
 ## Usage
 
@@ -42,37 +37,52 @@ wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, ...)
 
 - X:
 
-  A feature-by-sample matrix, Seurat object, or SingleCellExperiment
-  object
+  Input data. One of:
+
+  - a numeric feature-by-observation matrix or `data.frame`,
+
+  - a sparse `dgCMatrix` of the same shape,
+
+  - a `Seurat` (v3+) object,
+
+  - a `SingleCellExperiment` object.
 
 - ...:
 
-  input specific parameters.
+  Passed to the input-specific method.
 
 - group_by:
 
-  (Seurat & SCE) name of groups variable ('e.g. Cluster').
+  For `Seurat` and `SingleCellExperiment` input, name of the metadata
+  column that holds the group labels (e.g. `"cluster"`). For `Seurat`,
+  defaults to `Idents(X)`.
 
 - assay:
 
-  (Seurat & SCE) name of feature matrix slot (e.g. 'data' or
-  'logcounts').
+  For `Seurat`, the layer name within the selected assay (e.g. `"data"`,
+  `"counts"`, `"scale.data"`). For `SingleCellExperiment`, the assay
+  name (e.g. `"logcounts"`, `"counts"`). Defaults pick a sensible value
+  per input class.
 
 - groups_use:
 
-  (optional) which groups from y vector to test.
+  Optional character vector restricting the test to a subset of groups
+  in `y` (or `group_by`). Default `NULL` tests every group.
 
 - seurat_assay:
 
-  (Seurat) name of Seurat Assay (e.g. 'RNA').
+  For `Seurat` input, the name of the assay to pull from (e.g. `"RNA"`).
+  Default `"RNA"`.
 
 - y:
 
-  vector of group labels.
+  For matrix input, a character/factor vector of group labels with
+  length equal to `ncol(X)`. Ignored for `Seurat` /
+  `SingleCellExperiment` input (use `group_by` instead).
 
 - verbose:
 
-  boolean, TRUE for warnings and messages.
+  Logical. Print warnings and informational messages. Default `TRUE`.
 
 ## Value
 
@@ -100,12 +110,31 @@ table with the following columns:
 - **pct_out** - Percent of observations out of the group with non-zero
   feature value.
 
+## Details
+
+Designed to be fast enough to run on whole-genome × hundred-thousand-
+cell single-cell matrices in seconds. Sparse `dgCMatrix` inputs are
+processed without densification. Convenience dispatchers extract the
+counts matrix and group labels from `Seurat` and `SingleCellExperiment`
+objects. See the `getting-started` vignette for an end-to-end example on
+a real dataset.
+
+## See also
+
+[`top_markers()`](https://immunogenomics.github.io/presto/reference/top_markers.md)
+to summarize markers per group;
+[`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md)
+for a count-based pseudobulk alternative.
+
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
- data(exprs)
- data(y)
+ ## generate a tiny toy dataset
+ set.seed(42)
+ exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                 dimnames = list(paste0("G", 1:25), NULL))
+ y <- rep(c("A", "B", "C"), each = 50)
 
  ## on a dense matrix
  head(wilcoxauc(exprs, y))

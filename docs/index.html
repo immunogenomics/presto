@@ -81,29 +81,32 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">presto</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">exprs</span><span class="op">)</span>  <span class="co"># 25-gene × 150-cell toy matrix</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>      <span class="co"># 3 group labels</span></span>
+<span><span class="co">## Generate a tiny toy dataset deterministically.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">exprs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">25</span> <span class="op">*</span> <span class="fl">150</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"G"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   feature group avgExpr   logFC statistic   auc   pval  padj pct_in pct_out</span></span>
-<span><span class="co">#&gt; 1      G1     A   1.145  0.0823      2890 0.553 0.2572 0.643   74.5    58.9</span></span>
-<span><span class="co">#&gt; 2      G2     A   0.764 -0.2995      2190 0.419 0.0809 0.409   49.1    65.3</span></span>
-<span><span class="co">#&gt; 3      G3     A   0.982 -0.1866      2429 0.465 0.4522 0.748   65.5    68.4</span></span>
-<span><span class="co">#&gt; 4      G4     A   1.218  0.3971      3176 0.608 0.0200 0.409   70.9    55.8</span></span>
-<span><span class="co">#&gt; 5      G5     A   1.418  0.3656      3026 0.579 0.0931 0.409   72.7    56.8</span></span>
-<span><span class="co">#&gt; 6      G6     A   0.927 -0.1780      2424 0.464 0.4387 0.748   56.4    60.0</span></span></code></pre></div>
+<span><span class="co">#&gt;   feature group avgExpr  logFC statistic   auc   pval  padj pct_in pct_out</span></span>
+<span><span class="co">#&gt; 1      G1     A    2.10  0.200      2740 0.548 0.3264 0.510     86      89</span></span>
+<span><span class="co">#&gt; 2      G2     A    1.58 -0.560      1896 0.379 0.0137 0.172     84      86</span></span>
+<span><span class="co">#&gt; 3      G3     A    1.86  0.020      2432 0.486 0.7826 0.893     84      89</span></span>
+<span><span class="co">#&gt; 4      G4     A    1.96 -0.210      2384 0.477 0.6362 0.884     90      90</span></span>
+<span><span class="co">#&gt; 5      G5     A    2.00 -0.280      2214 0.443 0.2442 0.505     82      88</span></span>
+<span><span class="co">#&gt; 6      G6     A    2.26  0.240      2775 0.555 0.2627 0.505     90      83</span></span></code></pre></div>
 <p><code><a href="reference/top_markers.html">top_markers()</a></code> summarises the most distinguishing features per group:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/top_markers.html">top_markers</a></span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">5</span>, auc_min <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/top_markers.html">top_markers</a></span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">5</span>, auc_min <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
 <span><span class="co">#&gt;    rank A     B     C</span></span>
 <span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1     1 G4    G20   G1</span></span>
-<span><span class="co">#&gt; 2     2 NA    G5    G21</span></span>
-<span><span class="co">#&gt; 3     3 NA    G15   G6</span></span>
-<span><span class="co">#&gt; 4     4 NA    G19   G16</span></span>
-<span><span class="co">#&gt; 5     5 NA    G25   G11</span></span></code></pre></div>
+<span><span class="co">#&gt; 1     1 G10   G15   G25</span></span>
+<span><span class="co">#&gt; 2     2 G24   G13   G5</span></span>
+<span><span class="co">#&gt; 3     3 G16   G22   G18</span></span>
+<span><span class="co">#&gt; 4     4 G6    G2    G14</span></span>
+<span><span class="co">#&gt; 5     5 G7    G20   G2</span></span></code></pre></div>
 <p>The same call also works on Seurat and SingleCellExperiment objects:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">seurat_object</span>, group_by <span class="op">=</span> <span class="st">"cluster"</span><span class="op">)</span></span>
