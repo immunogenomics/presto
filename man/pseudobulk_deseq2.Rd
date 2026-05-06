@@ -2,7 +2,7 @@
 % Please edit documentation in R/pseudobulk.R
 \name{pseudobulk_deseq2}
 \alias{pseudobulk_deseq2}
-\title{Pseudobulk DESeq2}
+\title{Pseudobulk differential expression with DESeq2}
 \usage{
 pseudobulk_deseq2(
   dge_formula,
@@ -17,33 +17,72 @@ pseudobulk_deseq2(
 )
 }
 \arguments{
-\item{dge_formula}{differential gene expression formula for DESeq2}
+\item{dge_formula}{One-sided formula such as \code{~cluster + donor}.
+The first term is treated as the contrast variable in
+\code{"one_vs_all"} and \code{"pairwise"} modes, or as the split variable
+in \code{"within"} mode (in which case the second term becomes the
+contrast variable). Additional terms are kept as covariates in
+the DESeq2 design.}
 
-\item{meta_data}{data.frame of cell metadata}
+\item{meta_data}{data.frame of pseudobulk metadata. One row per
+pseudobulk; should contain only the variables used in
+\code{dge_formula}.}
 
-\item{counts_df}{A feature-by-sample matrix}
+\item{counts_df}{Feature-by-pseudobulk integer count matrix. Rows
+are features; columns must align with rows of \code{meta_data}.}
 
-\item{verbose}{verbose}
+\item{verbose}{Logical. Print progress messages. Default \code{TRUE}.}
 
-\item{min_counts_per_sample}{minimum counts per sample to include in
-differential gene expression}
+\item{min_counts_per_sample}{Minimum count per pseudobulk for a
+gene to be considered expressed in that pseudobulk. Default \code{10}.}
 
-\item{present_in_min_samples}{minimum samples with gene counts to
-include in differential gene expression}
+\item{present_in_min_samples}{Minimum number of pseudobulks in
+which a gene must reach \code{min_counts_per_sample} to be retained.
+Default \code{5}.}
 
-\item{collapse_background}{collapse background. Default is `TRUE`}
+\item{collapse_background}{Used only when \code{mode = "one_vs_all"}. If
+\code{TRUE}, background pseudobulks are collapsed across the contrast
+variable before each DESeq2 fit, which helps when donor
+representation is unbalanced across clusters. Default \code{TRUE}.}
 
-\item{vals_test}{cell metadata columns}
+\item{vals_test}{Character vector of contrast levels to test. If
+\code{NULL} (default), every level of the contrast variable is tested.}
 
-\item{mode}{kind of pseudobulk testing to perform. One of `one_vs_all`,
-`pairwise`, or `within`}
+\item{mode}{One of \code{"one_vs_all"} (default), \code{"pairwise"}, or
+\code{"within"}. See description.}
+}
+\value{
+A long-form data.frame of DESeq2 results. Columns include
+the group identifier(s) (\code{group}, or \code{group1} / \code{group2} in
+\code{pairwise} mode), \code{feature}, and the DESeq2 columns \code{baseMean},
+\code{log2FoldChange}, \code{lfcSE}, \code{stat}, \code{pvalue}, \code{padj}.
 }
 \description{
-Pseudobulk DESeq2
+Runs \code{DESeq2::DESeq()} on a feature-by-pseudobulk count matrix to
+identify genes whose expression differs between groups of
+pseudobulks. Three test designs are supported, selected by \code{mode}:
+\itemize{
+\item \code{"one_vs_all"} (default) - test each level of the contrast
+variable against the union of all others. Useful for marker
+discovery. Dispatched to \code{\link[=pseudobulk_one_vs_all]{pseudobulk_one_vs_all()}}.
+\item \code{"pairwise"} - test every ordered pair of levels separately.
+Useful for high-confidence markers; combine with
+\code{\link[=summarize_dge_pairs]{summarize_dge_pairs()}} to keep the most conservative pair.
+Dispatched to \code{\link[=pseudobulk_pairwise]{pseudobulk_pairwise()}}.
+\item \code{"within"} - split on the first term of \code{dge_formula} and
+test the second term within each split level. Useful for
+condition / case-vs-control comparisons restricted to one
+cluster at a time. Dispatched to \code{\link[=pseudobulk_within]{pseudobulk_within()}}.
+}
+Pseudobulk inputs are typically produced by \code{\link[=collapse_counts]{collapse_counts()}}.
+Genes with low counts across pseudobulks are filtered out before
+fitting (controlled by \code{min_counts_per_sample} and
+\code{present_in_min_samples}). See the \code{pseudobulk} vignette for an
+end-to-end walkthrough on a real single-cell dataset.
 }
 \examples{
 \dontrun{
-    m <- matrix(sample.int(8, 100*500, replace=TRUE),nrow=100, ncol=500)
+    m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
     rownames(m) <- paste0("G", 1:100)
     colnames(m) <- paste0("C", 1:500)
     md1 <- sample(c("a", "b"), 500, replace=TRUE)
@@ -51,12 +90,18 @@ Pseudobulk DESeq2
     df <- data.frame(md1, md2)
     data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
     res_mat <- pseudobulk_deseq2(
-        ~md1 + md1,
-        data_collapsed$meta_data,
+        ~md1,
+        data_collapsed$meta_data["md1"],
         data_collapsed$counts_mat,
-        verbose = TRUE,
-        present_in_min_samples = 1
+        verbose = FALSE,
+        present_in_min_samples = 1,
+        mode = "one_vs_all"
     )
     head(res_mat)
 }
+
+}
+\seealso{
+\code{\link[=collapse_counts]{collapse_counts()}}, \code{\link[=top_markers_dds]{top_markers_dds()}},
+\code{\link[=summarize_dge_pairs]{summarize_dge_pairs()}}
 }

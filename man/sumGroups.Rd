@@ -4,7 +4,7 @@
 \alias{sumGroups}
 \alias{sumGroups.dgCMatrix}
 \alias{sumGroups.matrix}
-\title{sumGroups}
+\title{Group-wise sum of a matrix along one axis}
 \usage{
 sumGroups(X, y, MARGIN = 2)
 
@@ -13,23 +13,34 @@ sumGroups(X, y, MARGIN = 2)
 \method{sumGroups}{matrix}(X, y, MARGIN = 2)
 }
 \arguments{
-\item{X}{matrix}
+\item{X}{Numeric matrix or \code{dgCMatrix}.}
 
-\item{y}{group labels}
+\item{y}{Group label vector. Coerced to integer factor codes.}
 
-\item{MARGIN}{whether observations are rows (=2) or columns (=1)}
+\item{MARGIN}{Whether observations are along rows or columns of \code{X}.
+\code{MARGIN = 2} (default): observations are rows
+(\code{length(y) == nrow(X)}); rows are summed within each group.
+\code{MARGIN = 1}: observations are columns
+(\code{length(y) == ncol(X)}); columns are summed within each group.}
 }
 \value{
-Matrix of groups by features
+Numeric matrix of shape \verb{n_groups x n_features}. Row order
+matches the integer order of \code{factor(y)}.
 }
 \description{
-Utility function to sum over group labels
+For each unique value of the grouping vector \code{y}, sums the
+corresponding rows (or columns) of \code{X}. Used internally by
+\code{\link[=wilcoxauc]{wilcoxauc()}} and \code{\link[=collapse_counts]{collapse_counts()}}, but exposed as a fast
+group-wise reduction primitive that works on both dense matrices
+and \code{dgCMatrix} sparse inputs.
 }
 \examples{
-
 data(exprs)
 data(y)
 sumGroups_res <- sumGroups(exprs, y, 1)
 sumGroups_res <- sumGroups(t(exprs), y, 2)
 
+}
+\seealso{
+\code{\link[=nnzeroGroups]{nnzeroGroups()}}, \code{\link[=wilcoxauc]{wilcoxauc()}}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pseudobulk.R
 \name{pseudobulk_within}
 \alias{pseudobulk_within}
-\title{Pseudobulk within}
+\title{Pseudobulk DESeq2: within-group contrasts}
 \usage{
 pseudobulk_within(
   dge_formula,
@@ -16,24 +16,58 @@ pseudobulk_within(
 )
 }
 \arguments{
-\item{dge_formula}{differential gene expression formula for DESeq2}
+\item{dge_formula}{One-sided formula such as \code{~cluster + donor}.
+The first term is treated as the contrast variable in
+\code{"one_vs_all"} and \code{"pairwise"} modes, or as the split variable
+in \code{"within"} mode (in which case the second term becomes the
+contrast variable). Additional terms are kept as covariates in
+the DESeq2 design.}
 
-\item{counts_df}{counts matrix}
+\item{counts_df}{Feature-by-pseudobulk integer count matrix. Rows
+are features; columns must align with rows of \code{meta_data}.}
 
-\item{meta_data}{data.frame of cell metadata}
+\item{meta_data}{data.frame of pseudobulk metadata. One row per
+pseudobulk; should contain only the variables used in
+\code{dge_formula}.}
 
-\item{split_var}{-}
+\item{split_var}{Name of the column in \code{meta_data} to split on
+(the first term of \code{dge_formula}). Each unique level of
+\code{split_var} produces an independent DESeq2 fit.}
 
-\item{vals_test}{cell metadata columns}
+\item{vals_test}{Character vector of contrast levels to test. If
+\code{NULL} (default), every level of the contrast variable is tested.}
 
-\item{verbose}{verbose}
+\item{verbose}{Logical. Print progress messages. Default \code{TRUE}.}
 
-\item{min_counts_per_sample}{minimum counts per sample to include in
-differential gene expression}
+\item{min_counts_per_sample}{Minimum count per pseudobulk for a
+gene to be considered expressed in that pseudobulk. Default \code{10}.}
 
-\item{present_in_min_samples}{minimum samples with gene counts to
-include in differential gene expression}
+\item{present_in_min_samples}{Minimum number of pseudobulks in
+which a gene must reach \code{min_counts_per_sample} to be retained.
+Default \code{5}.}
+}
+\value{
+data.frame of DESeq2 results with columns \code{group} (the
+value of \code{split_var}), \code{feature}, \code{baseMean}, \code{log2FoldChange},
+\code{lfcSE}, \code{stat}, \code{pvalue}, \code{padj}.
 }
 \description{
-Pseudobulk within
+Splits the pseudobulks by \code{split_var} and, within each split level,
+fits a DESeq2 model whose contrast variable is the second term of
+\code{dge_formula}. Used to test for an effect (e.g. case vs. control)
+restricted to one cluster at a time, where pooling across clusters
+would mix biology and batch.
+}
+\details{
+Two-level contrasts (factor or character) yield the standard
+\verb{<var>_<level2>_vs_<level1>} Wald coefficient. Three or more levels
+are integer-encoded and the fit returns an ordinal trend. Most
+users should call \code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}} with \code{mode = "within"}
+rather than this function directly. See the \code{pseudobulk} vignette
+for a worked example using case-vs-control DGE within each cell
+cluster.
+}
+\seealso{
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}, \code{\link[=pseudobulk_one_vs_all]{pseudobulk_one_vs_all()}},
+\code{\link[=pseudobulk_pairwise]{pseudobulk_pairwise()}}
 }

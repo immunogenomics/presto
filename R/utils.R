@@ -64,22 +64,32 @@ compute_pval <- function(ustat, ties, N, n1n2) {
 }
 
 
-#' rank_matrix
+#' Column-wise tied ranks of a matrix
 #'
-#' Utility function to rank columns of matrix
+#' Ranks the entries of each column independently using the average
+#' rank for ties, and returns the per-column tie group sizes needed
+#' for the Wilcoxon variance correction. Used internally by
+#' [wilcoxauc()] (on a transposed input, so that rows become
+#' observations) but exposed as a fast standalone ranking primitive
+#' for sparse and dense numeric matrices.
 #'
-#' @param X feature by observation matrix.
+#' @param X Numeric matrix or `dgCMatrix`.
+#'
+#' @return List with two elements:
+#' \itemize{
+#'   \item `X_ranked` - matrix with the same shape as `X` containing
+#'     per-column tied ranks.
+#'   \item `ties` - list of integer vectors, one per column, giving
+#'     the sizes of all tie groups encountered in that column. Used
+#'     by the Wilcoxon statistic to correct for ties.
+#' }
 #'
 #' @examples
-#'
 #' data(exprs)
 #' rank_res <- rank_matrix(exprs)
 #'
-#' @return List with 2 items
-#' \itemize{
-#' \item X_ranked - matrix of entry ranks
-#' \item ties - list of tied group sizes
-#' }
+#' @seealso [wilcoxauc()]
+#'
 #' @export
 rank_matrix <- function(X) {
     UseMethod("rank_matrix")
@@ -99,22 +109,33 @@ rank_matrix.matrix <- function(X) {
     cpp_rank_matrix_dense(X)
 }
 
-#' sumGroups
+#' Group-wise sum of a matrix along one axis
 #'
-#' Utility function to sum over group labels
+#' For each unique value of the grouping vector `y`, sums the
+#' corresponding rows (or columns) of `X`. Used internally by
+#' [wilcoxauc()] and [collapse_counts()], but exposed as a fast
+#' group-wise reduction primitive that works on both dense matrices
+#' and `dgCMatrix` sparse inputs.
 #'
-#' @param X matrix
-#' @param y group labels
-#' @param MARGIN whether observations are rows (=2) or columns (=1)
+#' @param X Numeric matrix or `dgCMatrix`.
+#' @param y Group label vector. Coerced to integer factor codes.
+#' @param MARGIN Whether observations are along rows or columns of `X`.
+#'   `MARGIN = 2` (default): observations are rows
+#'   (`length(y) == nrow(X)`); rows are summed within each group.
+#'   `MARGIN = 1`: observations are columns
+#'   (`length(y) == ncol(X)`); columns are summed within each group.
+#'
+#' @return Numeric matrix of shape `n_groups x n_features`. Row order
+#'   matches the integer order of `factor(y)`.
 #'
 #' @examples
-#'
 #' data(exprs)
 #' data(y)
 #' sumGroups_res <- sumGroups(exprs, y, 1)
 #' sumGroups_res <- sumGroups(t(exprs), y, 2)
 #'
-#' @return Matrix of groups by features
+#' @seealso [nnzeroGroups()], [wilcoxauc()]
+#'
 #' @export
 sumGroups <- function(X, y, MARGIN = 2) {
     if (MARGIN == 2 & nrow(X) != length(y)) {
@@ -155,22 +176,34 @@ sumGroups.matrix <- function(X, y, MARGIN = 2) {
 
 
 
-#' nnzeroGroups
+#' Group-wise non-zero counts of a matrix along one axis
 #'
-#' Utility function to compute number of zeros-per-feature within group
+#' For each unique value of the grouping vector `y`, counts the number
+#' of non-zero entries among the corresponding rows (or columns) of
+#' `X`. Used internally by [wilcoxauc()] to compute the
+#' percent-expressed columns (`pct_in`, `pct_out`), but exposed as a
+#' fast group-wise reduction primitive for both dense and `dgCMatrix`
+#' inputs.
 #'
-#' @param X matrix
-#' @param y group labels
-#' @param MARGIN whether observations are rows (=2) or columns (=1)
+#' @param X Numeric matrix or `dgCMatrix`.
+#' @param y Group label vector. Coerced to integer factor codes.
+#' @param MARGIN Whether observations are along rows or columns of `X`.
+#'   `MARGIN = 2` (default): observations are rows
+#'   (`length(y) == nrow(X)`). `MARGIN = 1`: observations are columns
+#'   (`length(y) == ncol(X)`).
+#'
+#' @return Integer matrix of shape `n_groups x n_features`, where
+#'   entry `(g, j)` is the number of observations in group `g` for
+#'   which feature `j` is non-zero.
 #'
 #' @examples
-#'
 #' data(exprs)
 #' data(y)
 #' nnz_res <- nnzeroGroups(exprs, y, 1)
 #' nnz_res <- nnzeroGroups(t(exprs), y, 2)
 #'
-#' @return Matrix of groups by features
+#' @seealso [sumGroups()], [wilcoxauc()]
+#'
 #' @export
 nnzeroGroups <- function(X, y, MARGIN = 2) {
     if (MARGIN == 2 & nrow(X) != length(y)) {

@@ -2,23 +2,40 @@
 % Please edit documentation in R/pseudobulk.R
 \name{top_markers_dds}
 \alias{top_markers_dds}
-\title{Get top n markers from pseudobulk DESeq2}
+\title{Top markers per group from pseudobulk DESeq2 results}
 \usage{
 top_markers_dds(res, n = 10, pval_max = 1, padj_max = 1, lfc_min = 1)
 }
 \arguments{
-\item{res}{table returned by pseudobulk_deseq2() function.}
+\item{res}{Long-form DESeq2 results from \code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}.
+Must have columns \code{group}, \code{feature}, \code{pvalue}, \code{padj},
+\code{log2FoldChange}, and \code{stat}.}
 
-\item{n}{number of markers to find for each.}
+\item{n}{Number of top features to return per group. Default \code{10}.}
 
-\item{pval_max}{filter features with pval > pval_max.}
+\item{pval_max}{Filter features with raw \code{pvalue > pval_max}.
+Default \code{1} (no filter).}
 
-\item{padj_max}{filter features with padj > padj_max.}
+\item{padj_max}{Filter features with adjusted \code{padj > padj_max}.
+Default \code{1} (no filter).}
 
-\item{lfc_min}{filter features with log2FoldChange < lfc_min
-
- @return table with the top n markers for each cluster.}
+\item{lfc_min}{Filter features with \code{log2FoldChange < lfc_min}.
+Default \code{1} keeps only upregulated features; set to \code{0} to
+include downregulated as well, or \code{-Inf} to disable.}
+}
+\value{
+tibble in wide form: a \code{rank} column (1..\code{n}) and one
+column per group containing the gene identifier of the top-ranked
+feature at that rank. Cells are \code{NA} for groups that have fewer
+than \code{n} features passing the filters.
 }
 \description{
-Useful summary of the most distinguishing features in each group.
+Filters and ranks the long-form output of \code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}} to
+give the most distinguishing features per group. The filtering
+arguments combine multiplicatively, then the top \code{n} features per
+group are kept by descending Wald statistic and pivoted into wide
+form. Counterpart to \code{\link[=top_markers]{top_markers()}} for Wilcoxon-based results.
+}
+\seealso{
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}, \code{\link[=top_markers]{top_markers()}}
 }

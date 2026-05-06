@@ -1,25 +1,45 @@
-#' Fast Wilcoxon rank sum test and auROC 
-#' 
-#' Computes auROC and Wilcoxon p-value based on Gaussian approximation. 
-#' Inputs can be 
+#' Fast Wilcoxon rank-sum test and auROC across groups
+#'
+#' For every (feature, group) pair, computes the Wilcoxon rank-sum
+#' statistic comparing observations in that group against all other
+#' observations, and the area under the ROC curve as a measure of
+#' separability. P-values come from the standard Gaussian approximation
+#' to the U statistic with a tie correction. Returns one row per
+#' (feature, group) with effect-size and percent-expressed columns
+#' alongside the test statistics.
+#'
+#' Designed to be fast enough to run on whole-genome × hundred-thousand-
+#' cell single-cell matrices in seconds. Sparse `dgCMatrix` inputs are
+#' processed without densification. Convenience dispatchers extract the
+#' counts matrix and group labels from `Seurat` and
+#' `SingleCellExperiment` objects. See the `getting-started` vignette
+#' for an end-to-end example on a real dataset.
+#'
+#' @param X Input data. One of:
 #' \itemize{
-#' \item Dense matrix or data.frame
-#' \item Sparse matrix, such as dgCMatrix
-#' \item Seurat V3 object
-#' \item SingleCellExperiment object
+#'   \item a numeric feature-by-observation matrix or `data.frame`,
+#'   \item a sparse `dgCMatrix` of the same shape,
+#'   \item a `Seurat` (v3+) object,
+#'   \item a `SingleCellExperiment` object.
 #' }
-#' For detailed examples, consult the presto vignette. 
-#' 
-#' @param X A feature-by-sample matrix, Seurat object, or SingleCellExperiment
-#'  object
-#' @param y vector of group labels. 
-#' @param groups_use (optional) which groups from y vector to test. 
-#' @param group_by (Seurat & SCE) name of groups variable ('e.g. Cluster').
-#' @param assay (Seurat & SCE) name of feature matrix slot (e.g. 'data' or
-#'  'logcounts'). 
-#' @param seurat_assay (Seurat) name of Seurat Assay (e.g. 'RNA'). 
-#' @param verbose boolean, TRUE for warnings and messages. 
-#' @param ... input specific parameters. 
+#' @param y For matrix input, a character/factor vector of group labels
+#'   with length equal to `ncol(X)`. Ignored for `Seurat` /
+#'   `SingleCellExperiment` input (use `group_by` instead).
+#' @param groups_use Optional character vector restricting the test to
+#'   a subset of groups in `y` (or `group_by`). Default `NULL` tests
+#'   every group.
+#' @param group_by For `Seurat` and `SingleCellExperiment` input, name
+#'   of the metadata column that holds the group labels (e.g.
+#'   `"cluster"`). For `Seurat`, defaults to `Idents(X)`.
+#' @param assay For `Seurat`, the layer name within the selected
+#'   assay (e.g. `"data"`, `"counts"`, `"scale.data"`). For
+#'   `SingleCellExperiment`, the assay name (e.g. `"logcounts"`,
+#'   `"counts"`). Defaults pick a sensible value per input class.
+#' @param seurat_assay For `Seurat` input, the name of the assay to
+#'   pull from (e.g. `"RNA"`). Default `"RNA"`.
+#' @param verbose Logical. Print warnings and informational messages.
+#'   Default `TRUE`.
+#' @param ... Passed to the input-specific method.
 #'
 #' @examples
 #' \dontrun{
@@ -67,6 +87,10 @@
 #' \item \strong{pct_out} - Percent of observations out of the group with
 #' non-zero feature value.
 #' }
+#'
+#' @seealso [top_markers()] to summarize markers per group;
+#'   [pseudobulk_deseq2()] for a count-based pseudobulk alternative.
+#'
 #' @export
 wilcoxauc <- function(X, ...) {
     UseMethod("wilcoxauc")
@@ -204,32 +228,44 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE, ...) {
 }
 
 
-#' Get top n markers from wilcoxauc
+#' Top markers per group from wilcoxauc results
 #'
-#' Useful summary of the most distinguishing features in each group.
+#' Filters and ranks the long-form output of [wilcoxauc()] to give the
+#' most distinguishing features per group. The filter arguments combine
+#' multiplicatively, then the top `n` features per group are kept by
+#' descending `auc` and pivoted into wide form. Counterpart to
+#' [top_markers_dds()] for DESeq2-based pseudobulk results.
 #'
-#' @param res table returned by wilcoxauc() function.
-#' @param n number of markers to find for each.
-#' @param auc_min filter features with auc < auc_min.
-#' @param pval_max filter features with pval > pval_max.
-#' @param padj_max  filter features with padj > padj_max.
-#' @param pct_in_min Minimum percent (0-100) of observations with non-zero
-#' entries in group.
-#' @param pct_out_max Maximum percent (0-100) of observations with non-zero
-#' entries out of group.
+#' @param res Long-form results table from [wilcoxauc()].
+#' @param n Number of top markers to return per group. Default `10`.
+#' @param auc_min Drop features with `auc < auc_min`. Default `0`
+#'   (no filter); set to `0.5` to keep only features that are positive
+#'   markers (more highly expressed in-group than out).
+#' @param pval_max Drop features with raw `pval > pval_max`. Default `1`.
+#' @param padj_max Drop features with adjusted `padj > padj_max`.
+#'   Default `1`.
+#' @param pct_in_min Minimum percent (0-100) of in-group observations
+#'   with non-zero feature value. Default `0`.
+#' @param pct_out_max Maximum percent (0-100) of out-of-group
+#'   observations with non-zero feature value. Default `100`.
+#'
+#' @return tibble in wide form: a `rank` column (1..`n`) and one
+#'   column per group containing the feature name of the top-ranked
+#'   marker at that rank. Cells are `NA` for groups with fewer than
+#'   `n` features that pass the filters.
+#'
 #' @examples
-#'
 #' data(exprs)
 #' data(y)
 #'
-#' ## first, run wilcoxauc
 #' res <- wilcoxauc(exprs, y)
 #'
-#' ## top 10 markers for each group
-#' ## filter for nominally significant (p<0.05) and over-expressed (auc>0.5)
-#' top_markers(res, 10, auc_min = 0.5, pval_max = 0.05)
+#' ## top 10 markers per group, restricted to nominally significant,
+#' ## up-regulated features (auc > 0.5 means in-group > out-of-group).
+#' top_markers(res, n = 10, auc_min = 0.5, pval_max = 0.05)
 #'
-#' @return table with the top n markers for each cluster.
+#' @seealso [wilcoxauc()], [top_markers_dds()]
+#'
 #' @export
 top_markers <- function(res, n = 10, auc_min = 0, pval_max = 1, padj_max = 1,
                         pct_in_min = 0, pct_out_max = 100) {

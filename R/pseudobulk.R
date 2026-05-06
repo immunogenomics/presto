@@ -7,10 +7,21 @@ globalVariables(
     add = TRUE
 )
 
-#' Compute unique hash for each row of data.frame
+#' Compute a unique integer hash for each row of a data.frame
 #'
-#' @param data_df data.frame
-#' @param vars_use vector of column names to use when computing the hash
+#' Treats the supplied columns as a composite key: rows that agree on
+#' every value in `vars_use` receive the same integer hash, distinct
+#' combinations receive distinct hashes. Used internally by
+#' [collapse_counts()] to identify pseudobulk groups, but exposed for
+#' callers who need the same indexing in their own code.
+#'
+#' @param data_df A data.frame.
+#' @param vars_use Character vector of column names in `data_df`. Each
+#'   column is coerced to factor before hashing.
+#'
+#' @return Integer vector of length `nrow(data_df)`.
+#'
+#' @seealso [collapse_counts()]
 #'
 #' @export
 compute_hash <- function(data_df, vars_use) {
@@ -25,16 +36,38 @@ compute_hash <- function(data_df, vars_use) {
     return(hash)
 }
 
-#' Collapse counts based on multiple categorical metadata columns
+#' Collapse a single-cell count matrix into pseudobulks
 #'
-#' @param counts_mat counts matrix where columns represent cells and rows
-#' represent features
-#' @param meta_data data.frame containing cell metadata
-#' @param varnames subset of `meta_data` column names
-#' @param min_cells_per_group minimum cells to keep collapsed group
-#' @param keep_n keep or drop the `N` column containing the number of
-#' cells in each group. Default is `FALSE`
-#' @param how method of collapsing counts from groups. `sum` or `mean`
+#' Sums (or averages) the columns of a feature-by-cell count matrix
+#' according to one or more cell-metadata columns. The result is a
+#' feature-by-pseudobulk matrix where each column pools all cells that
+#' share the same combination of metadata values (e.g. all cells from a
+#' given donor in a given cluster). The resulting matrix is suitable
+#' for bulk-RNA-seq tools such as DESeq2, edgeR, or limma. See the
+#' `pseudobulk` vignette for an end-to-end walkthrough.
+#'
+#' @param counts_mat Counts matrix. Rows are features (genes), columns
+#'   are cells. Sparse (`dgCMatrix`) or dense.
+#' @param meta_data data.frame of cell metadata. Must have one row per
+#'   column of `counts_mat`.
+#' @param varnames Character vector of column names in `meta_data` that
+#'   together define the pseudobulk grouping. Each unique combination of
+#'   values across these columns becomes one pseudobulk sample.
+#' @param min_cells_per_group Drop pseudobulks containing fewer than
+#'   this many cells. Default `0` (keep all).
+#' @param keep_n If `TRUE`, retain the per-pseudobulk cell count as
+#'   column `N` in the returned `meta_data`. Default `FALSE`.
+#' @param how `"sum"` (default) sums counts across cells in each
+#'   pseudobulk; `"mean"` divides by `N` to give the mean expression
+#'   per cell. `DESeq2` and other count-based regressions expect sums.
+#'
+#' @return A list with two elements:
+#' \itemize{
+#'   \item `counts_mat` - feature-by-pseudobulk numeric matrix.
+#'   \item `meta_data` - data.frame with one row per pseudobulk
+#'     containing the columns named in `varnames` (and `N` if
+#'     `keep_n = TRUE`).
+#' }
 #'
 #' @importFrom data.table data.table
 #'
@@ -47,6 +80,9 @@ compute_hash <- function(data_df, vars_use) {
 #' df <- data.frame(md1, md2)
 #' data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
 #' head(data_collapsed$counts_mat)
+#' head(data_collapsed$meta_data)
+#'
+#' @seealso [pseudobulk_deseq2()], [compute_hash()]
 #'
 #' @export
 #'
@@ -103,19 +139,33 @@ collapse_counts <- function(
     return(list(counts_mat = counts_collapsed, meta_data = design_collapsed))
 }
 
-#' Pseudobulk pairwise
+#' Pseudobulk DESeq2: pairwise contrasts
 #'
-#' @param dge_formula differential gene expression formula for DESeq2
-#' @param counts_df counts matrix
-#' @param meta_data data.frame of cell metadata
-#' @param contrast_var cell metadata column to use for differential
-#' gene expression
-#' @param vals_test cell metadata columns
-#' @param verbose verbose
-#' @param min_counts_per_sample minimum counts per sample to include in
-#' differential gene expression
-#' @param present_in_min_samples  minimum samples with gene counts to
-#' include in differential gene expression
+#' For each ordered pair of contrast levels in `vals_test`, fits a
+#' DESeq2 model on just those two groups of pseudobulks and returns the
+#' foreground-vs-background coefficient. This is more conservative than
+#' one-vs-all because a marker has to differentiate the foreground from
+#' *every* other group, not just the average background. Cost grows as
+#' O(N^2) in the number of levels, so subset to the levels of interest
+#' first.
+#'
+#' Most users should call [pseudobulk_deseq2()] with `mode = "pairwise"`
+#' rather than this function directly. The companion
+#' [summarize_dge_pairs()] collapses the directional pairs to a single
+#' row per (gene, group).
+#'
+#' @inheritParams pseudobulk_deseq2
+#' @param contrast_var Name of the contrast column in `meta_data`
+#'   (the first term of `dge_formula`).
+#'
+#' @return data.frame of DESeq2 results with columns `group1`,
+#'   `group2`, `feature`, `baseMean`, `log2FoldChange`, `lfcSE`,
+#'   `stat`, `pvalue`, `padj`. Each row reports the test where
+#'   pseudobulks of `group1` are the foreground and pseudobulks of
+#'   `group2` are the background.
+#'
+#' @seealso [pseudobulk_deseq2()], [pseudobulk_one_vs_all()],
+#'   [pseudobulk_within()], [summarize_dge_pairs()]
 #'
 #' @importFrom purrr reduce
 #' @importFrom tibble rownames_to_column
@@ -193,17 +243,30 @@ pseudobulk_pairwise <- function(
     dplyr::arrange(group1, -stat)
 }
 
-#' Pseudobulk one versus all
+#' Pseudobulk DESeq2: one-vs-all contrasts
 #'
-#' @param dge_formula differential gene expression formula for DESeq2
-#' @param counts_df counts matrix
-#' @param meta_data data.frame of cell metadata
-#' @param contrast_var cell metadata column to use for differential
-#' gene expression
-#' @param vals_test cell metadata columns
-#' @param collapse_background collapse background counts according to
-#' `contrast_var`
-#' @param verbose verbose
+#' For each level of `contrast_var`, fits a DESeq2 model where that
+#' level is the foreground and every other level is pooled as the
+#' background. Useful for marker-style differential expression: the
+#' return is one set of `(log2FoldChange, padj)` per gene per group,
+#' giving a quick view of what's elevated in each group relative to
+#' the rest.
+#'
+#' Most users should call [pseudobulk_deseq2()] with
+#' `mode = "one_vs_all"` rather than this function directly; the
+#' wrapper handles formula parsing, gene-count filtering, and
+#' dispatch. See the `pseudobulk` vignette for a worked example.
+#'
+#' @inheritParams pseudobulk_deseq2
+#' @param contrast_var Name of the contrast column in `meta_data`
+#'   (the first term of `dge_formula`).
+#'
+#' @return data.frame of DESeq2 results with columns `group`,
+#'   `feature`, `baseMean`, `log2FoldChange`, `lfcSE`, `stat`,
+#'   `pvalue`, `padj`. Sorted by `stat` descending within each group.
+#'
+#' @seealso [pseudobulk_deseq2()], [pseudobulk_pairwise()],
+#'   [pseudobulk_within()], [top_markers_dds()]
 #'
 #' @export
 #'
@@ -263,18 +326,33 @@ pseudobulk_one_vs_all <- function(
 
 }
 
-#' Pseudobulk within
+#' Pseudobulk DESeq2: within-group contrasts
 #'
-#' @param dge_formula differential gene expression formula for DESeq2
-#' @param counts_df counts matrix
-#' @param meta_data data.frame of cell metadata
-#' @param split_var -
-#' @param vals_test cell metadata columns
-#' @param verbose verbose
-#' @param min_counts_per_sample minimum counts per sample to include in
-#' differential gene expression
-#' @param present_in_min_samples  minimum samples with gene counts to
-#' include in differential gene expression
+#' Splits the pseudobulks by `split_var` and, within each split level,
+#' fits a DESeq2 model whose contrast variable is the second term of
+#' `dge_formula`. Used to test for an effect (e.g. case vs. control)
+#' restricted to one cluster at a time, where pooling across clusters
+#' would mix biology and batch.
+#'
+#' Two-level contrasts (factor or character) yield the standard
+#' `<var>_<level2>_vs_<level1>` Wald coefficient. Three or more levels
+#' are integer-encoded and the fit returns an ordinal trend. Most
+#' users should call [pseudobulk_deseq2()] with `mode = "within"`
+#' rather than this function directly. See the `pseudobulk` vignette
+#' for a worked example using case-vs-control DGE within each cell
+#' cluster.
+#'
+#' @inheritParams pseudobulk_deseq2
+#' @param split_var Name of the column in `meta_data` to split on
+#'   (the first term of `dge_formula`). Each unique level of
+#'   `split_var` produces an independent DESeq2 fit.
+#'
+#' @return data.frame of DESeq2 results with columns `group` (the
+#'   value of `split_var`), `feature`, `baseMean`, `log2FoldChange`,
+#'   `lfcSE`, `stat`, `pvalue`, `padj`.
+#'
+#' @seealso [pseudobulk_deseq2()], [pseudobulk_one_vs_all()],
+#'   [pseudobulk_pairwise()]
 #'
 #' @importFrom stats as.formula
 #' @export
@@ -360,24 +438,64 @@ pseudobulk_within <- function(
     dplyr::arrange(group, -stat)
 }
 
-#' Pseudobulk DESeq2
+#' Pseudobulk differential expression with DESeq2
 #'
-#' @param dge_formula differential gene expression formula for DESeq2
-#' @param meta_data data.frame of cell metadata
-#' @param counts_df A feature-by-sample matrix
-#' @param verbose verbose
-#' @param min_counts_per_sample minimum counts per sample to include in
-#' differential gene expression
-#' @param present_in_min_samples  minimum samples with gene counts to
-#' include in differential gene expression
-#' @param collapse_background collapse background. Default is `TRUE`
-#' @param vals_test cell metadata columns
-#' @param mode kind of pseudobulk testing to perform. One of `one_vs_all`,
-#' `pairwise`, or `within`
+#' Runs `DESeq2::DESeq()` on a feature-by-pseudobulk count matrix to
+#' identify genes whose expression differs between groups of
+#' pseudobulks. Three test designs are supported, selected by `mode`:
+#' \itemize{
+#'   \item `"one_vs_all"` (default) - test each level of the contrast
+#'     variable against the union of all others. Useful for marker
+#'     discovery. Dispatched to [pseudobulk_one_vs_all()].
+#'   \item `"pairwise"` - test every ordered pair of levels separately.
+#'     Useful for high-confidence markers; combine with
+#'     [summarize_dge_pairs()] to keep the most conservative pair.
+#'     Dispatched to [pseudobulk_pairwise()].
+#'   \item `"within"` - split on the first term of `dge_formula` and
+#'     test the second term within each split level. Useful for
+#'     condition / case-vs-control comparisons restricted to one
+#'     cluster at a time. Dispatched to [pseudobulk_within()].
+#' }
+#' Pseudobulk inputs are typically produced by [collapse_counts()].
+#' Genes with low counts across pseudobulks are filtered out before
+#' fitting (controlled by `min_counts_per_sample` and
+#' `present_in_min_samples`). See the `pseudobulk` vignette for an
+#' end-to-end walkthrough on a real single-cell dataset.
+#'
+#' @param dge_formula One-sided formula such as `~cluster + donor`.
+#'   The first term is treated as the contrast variable in
+#'   `"one_vs_all"` and `"pairwise"` modes, or as the split variable
+#'   in `"within"` mode (in which case the second term becomes the
+#'   contrast variable). Additional terms are kept as covariates in
+#'   the DESeq2 design.
+#' @param meta_data data.frame of pseudobulk metadata. One row per
+#'   pseudobulk; should contain only the variables used in
+#'   `dge_formula`.
+#' @param counts_df Feature-by-pseudobulk integer count matrix. Rows
+#'   are features; columns must align with rows of `meta_data`.
+#' @param verbose Logical. Print progress messages. Default `TRUE`.
+#' @param min_counts_per_sample Minimum count per pseudobulk for a
+#'   gene to be considered expressed in that pseudobulk. Default `10`.
+#' @param present_in_min_samples Minimum number of pseudobulks in
+#'   which a gene must reach `min_counts_per_sample` to be retained.
+#'   Default `5`.
+#' @param collapse_background Used only when `mode = "one_vs_all"`. If
+#'   `TRUE`, background pseudobulks are collapsed across the contrast
+#'   variable before each DESeq2 fit, which helps when donor
+#'   representation is unbalanced across clusters. Default `TRUE`.
+#' @param vals_test Character vector of contrast levels to test. If
+#'   `NULL` (default), every level of the contrast variable is tested.
+#' @param mode One of `"one_vs_all"` (default), `"pairwise"`, or
+#'   `"within"`. See description.
+#'
+#' @return A long-form data.frame of DESeq2 results. Columns include
+#'   the group identifier(s) (`group`, or `group1` / `group2` in
+#'   `pairwise` mode), `feature`, and the DESeq2 columns `baseMean`,
+#'   `log2FoldChange`, `lfcSE`, `stat`, `pvalue`, `padj`.
 #'
 #' @examples
 #' \dontrun{
-#'     m <- matrix(sample.int(8, 100*500, replace=TRUE),nrow=100, ncol=500)
+#'     m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
 #'     rownames(m) <- paste0("G", 1:100)
 #'     colnames(m) <- paste0("C", 1:500)
 #'     md1 <- sample(c("a", "b"), 500, replace=TRUE)
@@ -385,14 +503,19 @@ pseudobulk_within <- function(
 #'     df <- data.frame(md1, md2)
 #'     data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
 #'     res_mat <- pseudobulk_deseq2(
-#'         ~md1 + md1,
-#'         data_collapsed$meta_data,
+#'         ~md1,
+#'         data_collapsed$meta_data["md1"],
 #'         data_collapsed$counts_mat,
-#'         verbose = TRUE,
-#'         present_in_min_samples = 1
+#'         verbose = FALSE,
+#'         present_in_min_samples = 1,
+#'         mode = "one_vs_all"
 #'     )
 #'     head(res_mat)
 #' }
+#'
+#' @seealso [collapse_counts()], [top_markers_dds()],
+#'   [summarize_dge_pairs()]
+#'
 #' @export
 #'
 pseudobulk_deseq2 <- function(
@@ -460,17 +583,33 @@ pseudobulk_deseq2 <- function(
     return(res)
 }
 
-#' Get top n markers from pseudobulk DESeq2
+#' Top markers per group from pseudobulk DESeq2 results
 #'
-#' Useful summary of the most distinguishing features in each group.
+#' Filters and ranks the long-form output of [pseudobulk_deseq2()] to
+#' give the most distinguishing features per group. The filtering
+#' arguments combine multiplicatively, then the top `n` features per
+#' group are kept by descending Wald statistic and pivoted into wide
+#' form. Counterpart to [top_markers()] for Wilcoxon-based results.
 #'
-#' @param res table returned by pseudobulk_deseq2() function.
-#' @param n number of markers to find for each.
-#' @param pval_max filter features with pval > pval_max.
-#' @param padj_max  filter features with padj > padj_max.
-#' @param lfc_min filter features with log2FoldChange < lfc_min
+#' @param res Long-form DESeq2 results from [pseudobulk_deseq2()].
+#'   Must have columns `group`, `feature`, `pvalue`, `padj`,
+#'   `log2FoldChange`, and `stat`.
+#' @param n Number of top features to return per group. Default `10`.
+#' @param pval_max Filter features with raw `pvalue > pval_max`.
+#'   Default `1` (no filter).
+#' @param padj_max Filter features with adjusted `padj > padj_max`.
+#'   Default `1` (no filter).
+#' @param lfc_min Filter features with `log2FoldChange < lfc_min`.
+#'   Default `1` keeps only upregulated features; set to `0` to
+#'   include downregulated as well, or `-Inf` to disable.
 #'
-#'  @return table with the top n markers for each cluster.
+#' @return tibble in wide form: a `rank` column (1..`n`) and one
+#'   column per group containing the gene identifier of the top-ranked
+#'   feature at that rank. Cells are `NA` for groups that have fewer
+#'   than `n` features passing the filters.
+#'
+#' @seealso [pseudobulk_deseq2()], [top_markers()]
+#'
 #' @export
 top_markers_dds <- function(
     res,
@@ -494,11 +633,27 @@ top_markers_dds <- function(
         identity()
 }
 
-#' Summarize differential gene expression pairs
+#' Summarize directional pairwise DGE results
 #'
-#' @param dge_res table returned by pseudobulk_deseq2() function when `mode` is
-#' `pairwise`
-#' @param mode -
+#' Collapses the long-form output of `pseudobulk_deseq2(mode = "pairwise")`
+#' to a single row per `(group, gene)` by selecting one comparison per
+#' gene-group pair. With `mode = "min"` it keeps the worst comparison
+#' (most conservative — the gene must beat *every* other group to
+#' have a high statistic). With `mode = "max"` it keeps the best
+#' (most permissive — the gene need only beat one).
+#'
+#' @param dge_res data.frame of pairwise results from
+#'   [pseudobulk_deseq2()] with `mode = "pairwise"`. Must have columns
+#'   `group1`, `group2`, `feature`, and `stat`.
+#' @param mode `"min"` (default) keeps the comparison with the
+#'   smallest `stat` for each (group, gene); `"max"` keeps the
+#'   largest.
+#'
+#' @return data.frame with one row per (group, gene), sorted by `stat`
+#'   descending within each group. The `group2` column is dropped and
+#'   `group1` is renamed to `group`.
+#'
+#' @seealso [pseudobulk_deseq2()], [pseudobulk_pairwise()]
 #'
 #' @export
 #'

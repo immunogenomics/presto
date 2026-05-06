@@ -2,7 +2,7 @@
 % Please edit documentation in R/pseudobulk.R
 \name{collapse_counts}
 \alias{collapse_counts}
-\title{Collapse counts based on multiple categorical metadata columns}
+\title{Collapse a single-cell count matrix into pseudobulks}
 \usage{
 collapse_counts(
   counts_mat,
@@ -14,22 +14,43 @@ collapse_counts(
 )
 }
 \arguments{
-\item{counts_mat}{counts matrix where columns represent cells and rows
-represent features}
+\item{counts_mat}{Counts matrix. Rows are features (genes), columns
+are cells. Sparse (\code{dgCMatrix}) or dense.}
 
-\item{meta_data}{data.frame containing cell metadata}
+\item{meta_data}{data.frame of cell metadata. Must have one row per
+column of \code{counts_mat}.}
 
-\item{varnames}{subset of `meta_data` column names}
+\item{varnames}{Character vector of column names in \code{meta_data} that
+together define the pseudobulk grouping. Each unique combination of
+values across these columns becomes one pseudobulk sample.}
 
-\item{min_cells_per_group}{minimum cells to keep collapsed group}
+\item{min_cells_per_group}{Drop pseudobulks containing fewer than
+this many cells. Default \code{0} (keep all).}
 
-\item{keep_n}{keep or drop the `N` column containing the number of
-cells in each group. Default is `FALSE`}
+\item{keep_n}{If \code{TRUE}, retain the per-pseudobulk cell count as
+column \code{N} in the returned \code{meta_data}. Default \code{FALSE}.}
 
-\item{how}{method of collapsing counts from groups. `sum` or `mean`}
+\item{how}{\code{"sum"} (default) sums counts across cells in each
+pseudobulk; \code{"mean"} divides by \code{N} to give the mean expression
+per cell. \code{DESeq2} and other count-based regressions expect sums.}
+}
+\value{
+A list with two elements:
+\itemize{
+\item \code{counts_mat} - feature-by-pseudobulk numeric matrix.
+\item \code{meta_data} - data.frame with one row per pseudobulk
+containing the columns named in \code{varnames} (and \code{N} if
+\code{keep_n = TRUE}).
+}
 }
 \description{
-Collapse counts based on multiple categorical metadata columns
+Sums (or averages) the columns of a feature-by-cell count matrix
+according to one or more cell-metadata columns. The result is a
+feature-by-pseudobulk matrix where each column pools all cells that
+share the same combination of metadata values (e.g. all cells from a
+given donor in a given cluster). The resulting matrix is suitable
+for bulk-RNA-seq tools such as DESeq2, edgeR, or limma. See the
+\code{pseudobulk} vignette for an end-to-end walkthrough.
 }
 \examples{
 m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
@@ -40,5 +61,9 @@ md2 <- sample(c("c", "d"), 500, replace=TRUE)
 df <- data.frame(md1, md2)
 data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
 head(data_collapsed$counts_mat)
+head(data_collapsed$meta_data)
 
+}
+\seealso{
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}, \code{\link[=compute_hash]{compute_hash()}}
 }

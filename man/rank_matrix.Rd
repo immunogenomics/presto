@@ -4,7 +4,7 @@
 \alias{rank_matrix}
 \alias{rank_matrix.dgCMatrix}
 \alias{rank_matrix.matrix}
-\title{rank_matrix}
+\title{Column-wise tied ranks of a matrix}
 \usage{
 rank_matrix(X)
 
@@ -13,21 +13,31 @@ rank_matrix(X)
 \method{rank_matrix}{matrix}(X)
 }
 \arguments{
-\item{X}{feature by observation matrix.}
+\item{X}{Numeric matrix or \code{dgCMatrix}.}
 }
 \value{
-List with 2 items
+List with two elements:
 \itemize{
-\item X_ranked - matrix of entry ranks
-\item ties - list of tied group sizes
+\item \code{X_ranked} - matrix with the same shape as \code{X} containing
+per-column tied ranks.
+\item \code{ties} - list of integer vectors, one per column, giving
+the sizes of all tie groups encountered in that column. Used
+by the Wilcoxon statistic to correct for ties.
 }
 }
 \description{
-Utility function to rank columns of matrix
+Ranks the entries of each column independently using the average
+rank for ties, and returns the per-column tie group sizes needed
+for the Wilcoxon variance correction. Used internally by
+\code{\link[=wilcoxauc]{wilcoxauc()}} (on a transposed input, so that rows become
+observations) but exposed as a fast standalone ranking primitive
+for sparse and dense numeric matrices.
 }
 \examples{
-
 data(exprs)
 rank_res <- rank_matrix(exprs)
 
+}
+\seealso{
+\code{\link[=wilcoxauc]{wilcoxauc()}}
 }

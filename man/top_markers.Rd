@@ -2,7 +2,7 @@
 % Please edit documentation in R/wilcoxauc.R
 \name{top_markers}
 \alias{top_markers}
-\title{Get top n markers from wilcoxauc}
+\title{Top markers per group from wilcoxauc results}
 \usage{
 top_markers(
   res,
@@ -15,38 +15,49 @@ top_markers(
 )
 }
 \arguments{
-\item{res}{table returned by wilcoxauc() function.}
+\item{res}{Long-form results table from \code{\link[=wilcoxauc]{wilcoxauc()}}.}
 
-\item{n}{number of markers to find for each.}
+\item{n}{Number of top markers to return per group. Default \code{10}.}
 
-\item{auc_min}{filter features with auc < auc_min.}
+\item{auc_min}{Drop features with \code{auc < auc_min}. Default \code{0}
+(no filter); set to \code{0.5} to keep only features that are positive
+markers (more highly expressed in-group than out).}
 
-\item{pval_max}{filter features with pval > pval_max.}
+\item{pval_max}{Drop features with raw \code{pval > pval_max}. Default \code{1}.}
 
-\item{padj_max}{filter features with padj > padj_max.}
+\item{padj_max}{Drop features with adjusted \code{padj > padj_max}.
+Default \code{1}.}
 
-\item{pct_in_min}{Minimum percent (0-100) of observations with non-zero
-entries in group.}
+\item{pct_in_min}{Minimum percent (0-100) of in-group observations
+with non-zero feature value. Default \code{0}.}
 
-\item{pct_out_max}{Maximum percent (0-100) of observations with non-zero
-entries out of group.}
+\item{pct_out_max}{Maximum percent (0-100) of out-of-group
+observations with non-zero feature value. Default \code{100}.}
 }
 \value{
-table with the top n markers for each cluster.
+tibble in wide form: a \code{rank} column (1..\code{n}) and one
+column per group containing the feature name of the top-ranked
+marker at that rank. Cells are \code{NA} for groups with fewer than
+\code{n} features that pass the filters.
 }
 \description{
-Useful summary of the most distinguishing features in each group.
+Filters and ranks the long-form output of \code{\link[=wilcoxauc]{wilcoxauc()}} to give the
+most distinguishing features per group. The filter arguments combine
+multiplicatively, then the top \code{n} features per group are kept by
+descending \code{auc} and pivoted into wide form. Counterpart to
+\code{\link[=top_markers_dds]{top_markers_dds()}} for DESeq2-based pseudobulk results.
 }
 \examples{
-
 data(exprs)
 data(y)
 
-## first, run wilcoxauc
 res <- wilcoxauc(exprs, y)
 
-## top 10 markers for each group
-## filter for nominally significant (p<0.05) and over-expressed (auc>0.5)
-top_markers(res, 10, auc_min = 0.5, pval_max = 0.05)
+## top 10 markers per group, restricted to nominally significant,
+## up-regulated features (auc > 0.5 means in-group > out-of-group).
+top_markers(res, n = 10, auc_min = 0.5, pval_max = 0.05)
 
+}
+\seealso{
+\code{\link[=wilcoxauc]{wilcoxauc()}}, \code{\link[=top_markers_dds]{top_markers_dds()}}
 }

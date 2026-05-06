@@ -4,7 +4,7 @@
 \alias{nnzeroGroups}
 \alias{nnzeroGroups.dgCMatrix}
 \alias{nnzeroGroups.matrix}
-\title{nnzeroGroups}
+\title{Group-wise non-zero counts of a matrix along one axis}
 \usage{
 nnzeroGroups(X, y, MARGIN = 2)
 
@@ -13,23 +13,35 @@ nnzeroGroups(X, y, MARGIN = 2)
 \method{nnzeroGroups}{matrix}(X, y, MARGIN = 2)
 }
 \arguments{
-\item{X}{matrix}
+\item{X}{Numeric matrix or \code{dgCMatrix}.}
 
-\item{y}{group labels}
+\item{y}{Group label vector. Coerced to integer factor codes.}
 
-\item{MARGIN}{whether observations are rows (=2) or columns (=1)}
+\item{MARGIN}{Whether observations are along rows or columns of \code{X}.
+\code{MARGIN = 2} (default): observations are rows
+(\code{length(y) == nrow(X)}). \code{MARGIN = 1}: observations are columns
+(\code{length(y) == ncol(X)}).}
 }
 \value{
-Matrix of groups by features
+Integer matrix of shape \verb{n_groups x n_features}, where
+entry \verb{(g, j)} is the number of observations in group \code{g} for
+which feature \code{j} is non-zero.
 }
 \description{
-Utility function to compute number of zeros-per-feature within group
+For each unique value of the grouping vector \code{y}, counts the number
+of non-zero entries among the corresponding rows (or columns) of
+\code{X}. Used internally by \code{\link[=wilcoxauc]{wilcoxauc()}} to compute the
+percent-expressed columns (\code{pct_in}, \code{pct_out}), but exposed as a
+fast group-wise reduction primitive for both dense and \code{dgCMatrix}
+inputs.
 }
 \examples{
-
 data(exprs)
 data(y)
 nnz_res <- nnzeroGroups(exprs, y, 1)
 nnz_res <- nnzeroGroups(t(exprs), y, 2)
 
+}
+\seealso{
+\code{\link[=sumGroups]{sumGroups()}}, \code{\link[=wilcoxauc]{wilcoxauc()}}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pseudobulk.R
 \name{pseudobulk_pairwise}
 \alias{pseudobulk_pairwise}
-\title{Pseudobulk pairwise}
+\title{Pseudobulk DESeq2: pairwise contrasts}
 \usage{
 pseudobulk_pairwise(
   dge_formula,
@@ -16,25 +16,58 @@ pseudobulk_pairwise(
 )
 }
 \arguments{
-\item{dge_formula}{differential gene expression formula for DESeq2}
+\item{dge_formula}{One-sided formula such as \code{~cluster + donor}.
+The first term is treated as the contrast variable in
+\code{"one_vs_all"} and \code{"pairwise"} modes, or as the split variable
+in \code{"within"} mode (in which case the second term becomes the
+contrast variable). Additional terms are kept as covariates in
+the DESeq2 design.}
 
-\item{counts_df}{counts matrix}
+\item{counts_df}{Feature-by-pseudobulk integer count matrix. Rows
+are features; columns must align with rows of \code{meta_data}.}
 
-\item{meta_data}{data.frame of cell metadata}
+\item{meta_data}{data.frame of pseudobulk metadata. One row per
+pseudobulk; should contain only the variables used in
+\code{dge_formula}.}
 
-\item{contrast_var}{cell metadata column to use for differential
-gene expression}
+\item{contrast_var}{Name of the contrast column in \code{meta_data}
+(the first term of \code{dge_formula}).}
 
-\item{vals_test}{cell metadata columns}
+\item{vals_test}{Character vector of contrast levels to test. If
+\code{NULL} (default), every level of the contrast variable is tested.}
 
-\item{verbose}{verbose}
+\item{verbose}{Logical. Print progress messages. Default \code{TRUE}.}
 
-\item{min_counts_per_sample}{minimum counts per sample to include in
-differential gene expression}
+\item{min_counts_per_sample}{Minimum count per pseudobulk for a
+gene to be considered expressed in that pseudobulk. Default \code{10}.}
 
-\item{present_in_min_samples}{minimum samples with gene counts to
-include in differential gene expression}
+\item{present_in_min_samples}{Minimum number of pseudobulks in
+which a gene must reach \code{min_counts_per_sample} to be retained.
+Default \code{5}.}
+}
+\value{
+data.frame of DESeq2 results with columns \code{group1},
+\code{group2}, \code{feature}, \code{baseMean}, \code{log2FoldChange}, \code{lfcSE},
+\code{stat}, \code{pvalue}, \code{padj}. Each row reports the test where
+pseudobulks of \code{group1} are the foreground and pseudobulks of
+\code{group2} are the background.
 }
 \description{
-Pseudobulk pairwise
+For each ordered pair of contrast levels in \code{vals_test}, fits a
+DESeq2 model on just those two groups of pseudobulks and returns the
+foreground-vs-background coefficient. This is more conservative than
+one-vs-all because a marker has to differentiate the foreground from
+\emph{every} other group, not just the average background. Cost grows as
+O(N^2) in the number of levels, so subset to the levels of interest
+first.
+}
+\details{
+Most users should call \code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}} with \code{mode = "pairwise"}
+rather than this function directly. The companion
+\code{\link[=summarize_dge_pairs]{summarize_dge_pairs()}} collapses the directional pairs to a single
+row per (gene, group).
+}
+\seealso{
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}, \code{\link[=pseudobulk_one_vs_all]{pseudobulk_one_vs_all()}},
+\code{\link[=pseudobulk_within]{pseudobulk_within()}}, \code{\link[=summarize_dge_pairs]{summarize_dge_pairs()}}
 }

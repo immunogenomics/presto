@@ -2,7 +2,7 @@
 % Please edit documentation in R/pseudobulk.R
 \name{pseudobulk_one_vs_all}
 \alias{pseudobulk_one_vs_all}
-\title{Pseudobulk one versus all}
+\title{Pseudobulk DESeq2: one-vs-all contrasts}
 \usage{
 pseudobulk_one_vs_all(
   dge_formula,
@@ -15,22 +15,53 @@ pseudobulk_one_vs_all(
 )
 }
 \arguments{
-\item{dge_formula}{differential gene expression formula for DESeq2}
+\item{dge_formula}{One-sided formula such as \code{~cluster + donor}.
+The first term is treated as the contrast variable in
+\code{"one_vs_all"} and \code{"pairwise"} modes, or as the split variable
+in \code{"within"} mode (in which case the second term becomes the
+contrast variable). Additional terms are kept as covariates in
+the DESeq2 design.}
 
-\item{counts_df}{counts matrix}
+\item{counts_df}{Feature-by-pseudobulk integer count matrix. Rows
+are features; columns must align with rows of \code{meta_data}.}
 
-\item{meta_data}{data.frame of cell metadata}
+\item{meta_data}{data.frame of pseudobulk metadata. One row per
+pseudobulk; should contain only the variables used in
+\code{dge_formula}.}
 
-\item{contrast_var}{cell metadata column to use for differential
-gene expression}
+\item{contrast_var}{Name of the contrast column in \code{meta_data}
+(the first term of \code{dge_formula}).}
 
-\item{vals_test}{cell metadata columns}
+\item{vals_test}{Character vector of contrast levels to test. If
+\code{NULL} (default), every level of the contrast variable is tested.}
 
-\item{collapse_background}{collapse background counts according to
-`contrast_var`}
+\item{collapse_background}{Used only when \code{mode = "one_vs_all"}. If
+\code{TRUE}, background pseudobulks are collapsed across the contrast
+variable before each DESeq2 fit, which helps when donor
+representation is unbalanced across clusters. Default \code{TRUE}.}
 
-\item{verbose}{verbose}
+\item{verbose}{Logical. Print progress messages. Default \code{TRUE}.}
+}
+\value{
+data.frame of DESeq2 results with columns \code{group},
+\code{feature}, \code{baseMean}, \code{log2FoldChange}, \code{lfcSE}, \code{stat},
+\code{pvalue}, \code{padj}. Sorted by \code{stat} descending within each group.
 }
 \description{
-Pseudobulk one versus all
+For each level of \code{contrast_var}, fits a DESeq2 model where that
+level is the foreground and every other level is pooled as the
+background. Useful for marker-style differential expression: the
+return is one set of \verb{(log2FoldChange, padj)} per gene per group,
+giving a quick view of what's elevated in each group relative to
+the rest.
+}
+\details{
+Most users should call \code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}} with
+\code{mode = "one_vs_all"} rather than this function directly; the
+wrapper handles formula parsing, gene-count filtering, and
+dispatch. See the \code{pseudobulk} vignette for a worked example.
+}
+\seealso{
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}, \code{\link[=pseudobulk_pairwise]{pseudobulk_pairwise()}},
+\code{\link[=pseudobulk_within]{pseudobulk_within()}}, \code{\link[=top_markers_dds]{top_markers_dds()}}
 }

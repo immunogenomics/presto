@@ -2,15 +2,26 @@
 % Please edit documentation in R/pseudobulk.R
 \name{compute_hash}
 \alias{compute_hash}
-\title{Compute unique hash for each row of data.frame}
+\title{Compute a unique integer hash for each row of a data.frame}
 \usage{
 compute_hash(data_df, vars_use)
 }
 \arguments{
-\item{data_df}{data.frame}
+\item{data_df}{A data.frame.}
 
-\item{vars_use}{vector of column names to use when computing the hash}
+\item{vars_use}{Character vector of column names in \code{data_df}. Each
+column is coerced to factor before hashing.}
+}
+\value{
+Integer vector of length \code{nrow(data_df)}.
 }
 \description{
-Compute unique hash for each row of data.frame
+Treats the supplied columns as a composite key: rows that agree on
+every value in \code{vars_use} receive the same integer hash, distinct
+combinations receive distinct hashes. Used internally by
+\code{\link[=collapse_counts]{collapse_counts()}} to identify pseudobulk groups, but exposed for
+callers who need the same indexing in their own code.
+}
+\seealso{
+\code{\link[=collapse_counts]{collapse_counts()}}
 }

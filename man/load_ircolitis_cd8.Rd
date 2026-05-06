@@ -11,32 +11,32 @@ load_ircolitis_cd8(
 )
 }
 \arguments{
-\item{cache_dir}{Directory for the cached `.h5ad` file. Defaults to
-`tools::R_user_dir("presto", which = "cache")`.}
+\item{cache_dir}{Directory for the cached \code{.h5ad} file. Defaults to
+\code{tools::R_user_dir("presto", which = "cache")}.}
 
-\item{overwrite}{If `TRUE`, re-download even if the file is cached.}
+\item{overwrite}{If \code{TRUE}, re-download even if the file is cached.}
 
 \item{verbose}{Print download / parsing progress.}
 }
 \value{
 A list with elements:
 \itemize{
-  \item `counts` - gene-by-cell `dgCMatrix` of raw UMI counts.
-  \item `obs` - cell metadata `data.frame` (categorical fields decoded
-    to character; `UMAP1`/`UMAP2` and `PC1..PC24` kept as numeric).
-  \item `var` - gene metadata `data.frame`.
+\item \code{counts} - gene-by-cell \code{dgCMatrix} of raw UMI counts.
+\item \code{obs} - cell metadata \code{data.frame} (categorical fields decoded
+to character; \code{UMAP1}/\code{UMAP2} and \code{PC1..PC24} kept as numeric).
+\item \code{var} - gene metadata \code{data.frame}.
 }
 }
 \description{
-Downloads `GSE206299_ircolitis-tissue-cd8.h5ad.gz` from GEO on first call
-and caches it under [tools::R_user_dir()]. Subsequent calls reuse the cache.
+Downloads \code{GSE206299_ircolitis-tissue-cd8.h5ad.gz} from GEO on first call
+and caches it under \code{\link[tools:userdir]{tools::R_user_dir()}}. Subsequent calls reuse the cache.
 Used to demonstrate presto on a realistic single-cell dataset.
 }
 \details{
 Source: Thomas et al. (Nat. Med. 2024), GSE206299. 25,341 colon-tissue
 CD8 T cells from immune checkpoint colitis patients and controls.
 
-Requires the suggested package `rhdf5` (Bioconductor).
+Requires the suggested package \code{rhdf5} (Bioconductor).
 }
 \examples{
 \dontrun{

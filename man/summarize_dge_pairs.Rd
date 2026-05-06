@@ -2,16 +2,32 @@
 % Please edit documentation in R/pseudobulk.R
 \name{summarize_dge_pairs}
 \alias{summarize_dge_pairs}
-\title{Summarize differential gene expression pairs}
+\title{Summarize directional pairwise DGE results}
 \usage{
 summarize_dge_pairs(dge_res, mode = c("min", "max")[1])
 }
 \arguments{
-\item{dge_res}{table returned by pseudobulk_deseq2() function when `mode` is
-`pairwise`}
+\item{dge_res}{data.frame of pairwise results from
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}} with \code{mode = "pairwise"}. Must have columns
+\code{group1}, \code{group2}, \code{feature}, and \code{stat}.}
 
-\item{mode}{-}
+\item{mode}{\code{"min"} (default) keeps the comparison with the
+smallest \code{stat} for each (group, gene); \code{"max"} keeps the
+largest.}
+}
+\value{
+data.frame with one row per (group, gene), sorted by \code{stat}
+descending within each group. The \code{group2} column is dropped and
+\code{group1} is renamed to \code{group}.
 }
 \description{
-Summarize differential gene expression pairs
+Collapses the long-form output of \code{pseudobulk_deseq2(mode = "pairwise")}
+to a single row per \verb{(group, gene)} by selecting one comparison per
+gene-group pair. With \code{mode = "min"} it keeps the worst comparison
+(most conservative — the gene must beat \emph{every} other group to
+have a high statistic). With \code{mode = "max"} it keeps the best
+(most permissive — the gene need only beat one).
+}
+\seealso{
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}}, \code{\link[=pseudobulk_pairwise]{pseudobulk_pairwise()}}
 }

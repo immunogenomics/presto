@@ -6,7 +6,7 @@
 \alias{wilcoxauc.Seurat}
 \alias{wilcoxauc.SingleCellExperiment}
 \alias{wilcoxauc.default}
-\title{Fast Wilcoxon rank sum test and auROC}
+\title{Fast Wilcoxon rank-sum test and auROC across groups}
 \usage{
 wilcoxauc(X, ...)
 
@@ -26,23 +26,38 @@ wilcoxauc(X, ...)
 \method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE, ...)
 }
 \arguments{
-\item{X}{A feature-by-sample matrix, Seurat object, or SingleCellExperiment
-object}
+\item{X}{Input data. One of:
+\itemize{
+\item a numeric feature-by-observation matrix or \code{data.frame},
+\item a sparse \code{dgCMatrix} of the same shape,
+\item a \code{Seurat} (v3+) object,
+\item a \code{SingleCellExperiment} object.
+}}
 
-\item{...}{input specific parameters.}
+\item{...}{Passed to the input-specific method.}
 
-\item{group_by}{(Seurat & SCE) name of groups variable ('e.g. Cluster').}
+\item{group_by}{For \code{Seurat} and \code{SingleCellExperiment} input, name
+of the metadata column that holds the group labels (e.g.
+\code{"cluster"}). For \code{Seurat}, defaults to \code{Idents(X)}.}
 
-\item{assay}{(Seurat & SCE) name of feature matrix slot (e.g. 'data' or
-'logcounts').}
+\item{assay}{For \code{Seurat}, the layer name within the selected
+assay (e.g. \code{"data"}, \code{"counts"}, \code{"scale.data"}). For
+\code{SingleCellExperiment}, the assay name (e.g. \code{"logcounts"},
+\code{"counts"}). Defaults pick a sensible value per input class.}
 
-\item{groups_use}{(optional) which groups from y vector to test.}
+\item{groups_use}{Optional character vector restricting the test to
+a subset of groups in \code{y} (or \code{group_by}). Default \code{NULL} tests
+every group.}
 
-\item{seurat_assay}{(Seurat) name of Seurat Assay (e.g. 'RNA').}
+\item{seurat_assay}{For \code{Seurat} input, the name of the assay to
+pull from (e.g. \code{"RNA"}). Default \code{"RNA"}.}
 
-\item{y}{vector of group labels.}
+\item{y}{For matrix input, a character/factor vector of group labels
+with length equal to \code{ncol(X)}. Ignored for \code{Seurat} /
+\code{SingleCellExperiment} input (use \code{group_by} instead).}
 
-\item{verbose}{boolean, TRUE for warnings and messages.}
+\item{verbose}{Logical. Print warnings and informational messages.
+Default \code{TRUE}.}
 }
 \value{
 table with the following columns:
@@ -62,15 +77,21 @@ non-zero feature value.
 }
 }
 \description{
-Computes auROC and Wilcoxon p-value based on Gaussian approximation. 
-Inputs can be 
-\itemize{
-\item Dense matrix or data.frame
-\item Sparse matrix, such as dgCMatrix
-\item Seurat V3 object
-\item SingleCellExperiment object
+For every (feature, group) pair, computes the Wilcoxon rank-sum
+statistic comparing observations in that group against all other
+observations, and the area under the ROC curve as a measure of
+separability. P-values come from the standard Gaussian approximation
+to the U statistic with a tie correction. Returns one row per
+(feature, group) with effect-size and percent-expressed columns
+alongside the test statistics.
 }
-For detailed examples, consult the presto vignette.
+\details{
+Designed to be fast enough to run on whole-genome × hundred-thousand-
+cell single-cell matrices in seconds. Sparse \code{dgCMatrix} inputs are
+processed without densification. Convenience dispatchers extract the
+counts matrix and group labels from \code{Seurat} and
+\code{SingleCellExperiment} objects. See the \code{getting-started} vignette
+for an end-to-end example on a real dataset.
 }
 \examples{
 \dontrun{
@@ -103,4 +124,8 @@ For detailed examples, consult the presto vignette.
  }
 }
 
+}
+\seealso{
+\code{\link[=top_markers]{top_markers()}} to summarize markers per group;
+\code{\link[=pseudobulk_deseq2]{pseudobulk_deseq2()}} for a count-based pseudobulk alternative.
 }
