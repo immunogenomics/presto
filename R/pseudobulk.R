@@ -307,10 +307,17 @@ pseudobulk_within <- function(
         suppressMessages({suppressWarnings({
             ## setup design
             idx_use <- which(meta_data[[split_var]] == group_test)
-            design <- meta_data[idx_use, ]
+            design <- meta_data[idx_use, , drop = FALSE]
 
-            ## assume that contrast variable is two-level, otherwise ordinal
-            if (nlevels(design[[contrast_var]]) > 2) {
+            ## Coerce character to factor so nlevels() reflects the data.
+            if (is.character(design[[contrast_var]])) {
+                design[[contrast_var]] <- factor(design[[contrast_var]])
+            }
+
+            ## Two-level factor: keep as factor for a Wald contrast.
+            ## More than two levels: treat as ordinal by integer-encoding.
+            if (is.factor(design[[contrast_var]]) &&
+                nlevels(design[[contrast_var]]) > 2) {
                 design[[contrast_var]] <- as.integer(design[[contrast_var]])
             }
 
@@ -329,10 +336,18 @@ pseudobulk_within <- function(
                 design = dge_formula) %>%
                 DESeq2::DESeq()
 
-            ## Get results
-            contrast_name <- grep(
-                contrast_var, DESeq2::resultsNames(dds), value = TRUE
-            )
+            ## Build the result coefficient name explicitly. For a 2-level
+            ## factor it is "<var>_<level2>_vs_<level1>"; for an
+            ## integer-encoded ordinal contrast it is just "<var>".
+            final <- design[[contrast_var]]
+            if (is.factor(final) && nlevels(final) == 2) {
+                contrast_name <- paste0(
+                    contrast_var, "_",
+                    levels(final)[2], "_vs_", levels(final)[1]
+                )
+            } else {
+                contrast_name <- contrast_var
+            }
             dge_res <- DESeq2::results(dds, name = contrast_name) %>%
                     data.frame() %>%
                     tibble::rownames_to_column("feature") %>%
