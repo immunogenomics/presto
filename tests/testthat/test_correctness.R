@@ -1,7 +1,10 @@
 context('Test correctness of Wilcox results')
 library(presto)
-data(exprs)
-data(y)
+
+set.seed(42)
+exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                dimnames = list(paste0("G", 1:25), NULL))
+y <- rep(c("A", "B", "C"), each = 50)
 
 test_that('presto::wilcoxauc gives same results as stats::wilcox.test', {
     N <- ncol(exprs)

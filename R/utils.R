@@ -85,7 +85,9 @@ compute_pval <- function(ustat, ties, N, n1n2) {
 #' }
 #'
 #' @examples
-#' data(exprs)
+#' set.seed(42)
+#' exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+#'                 dimnames = list(paste0("G", 1:25), NULL))
 #' rank_res <- rank_matrix(exprs)
 #'
 #' @seealso [wilcoxauc()]
@@ -129,8 +131,10 @@ rank_matrix.matrix <- function(X) {
 #'   matches the integer order of `factor(y)`.
 #'
 #' @examples
-#' data(exprs)
-#' data(y)
+#' set.seed(42)
+#' exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+#'                 dimnames = list(paste0("G", 1:25), NULL))
+#' y <- rep(c("A", "B", "C"), each = 50)
 #' sumGroups_res <- sumGroups(exprs, y, 1)
 #' sumGroups_res <- sumGroups(t(exprs), y, 2)
 #'
@@ -197,8 +201,10 @@ sumGroups.matrix <- function(X, y, MARGIN = 2) {
 #'   which feature `j` is non-zero.
 #'
 #' @examples
-#' data(exprs)
-#' data(y)
+#' set.seed(42)
+#' exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+#'                 dimnames = list(paste0("G", 1:25), NULL))
+#' y <- rep(c("A", "B", "C"), each = 50)
 #' nnz_res <- nnzeroGroups(exprs, y, 1)
 #' nnz_res <- nnzeroGroups(t(exprs), y, 2)
 #'

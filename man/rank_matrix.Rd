@@ -34,7 +34,9 @@ observations) but exposed as a fast standalone ranking primitive
 for sparse and dense numeric matrices.
 }
 \examples{
-data(exprs)
+set.seed(42)
+exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                dimnames = list(paste0("G", 1:25), NULL))
 rank_res <- rank_matrix(exprs)
 
 }

@@ -1,8 +1,11 @@
 context('Test main presto runs on variety of input types')
 
 library(presto)
-data(y)
-data(exprs)
+
+set.seed(42)
+exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                dimnames = list(paste0("G", 1:25), NULL))
+y <- rep(c("A", "B", "C"), each = 50)
 
 test_that('presto executes on all dense and sparse 2D inputs', {
     N <- nrow(exprs) * length(unique(y))

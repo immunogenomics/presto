@@ -43,8 +43,11 @@
 #'
 #' @examples
 #' \dontrun{
-#'  data(exprs)
-#'  data(y)
+#'  ## generate a tiny toy dataset
+#'  set.seed(42)
+#'  exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+#'                  dimnames = list(paste0("G", 1:25), NULL))
+#'  y <- rep(c("A", "B", "C"), each = 50)
 #'
 #'  ## on a dense matrix
 #'  head(wilcoxauc(exprs, y))
@@ -255,8 +258,10 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE, ...) {
 #'   `n` features that pass the filters.
 #'
 #' @examples
-#' data(exprs)
-#' data(y)
+#' set.seed(42)
+#' exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+#'                 dimnames = list(paste0("G", 1:25), NULL))
+#' y <- rep(c("A", "B", "C"), each = 50)
 #'
 #' res <- wilcoxauc(exprs, y)
 #'

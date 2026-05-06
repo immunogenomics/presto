@@ -33,32 +33,35 @@ devtools::install_github("immunogenomics/presto")
 ```r
 library(presto)
 
-data(exprs)  # 25-gene × 150-cell toy matrix
-data(y)      # 3 group labels
+## Generate a tiny toy dataset deterministically.
+set.seed(42)
+exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                dimnames = list(paste0("G", 1:25), NULL))
+y <- rep(c("A", "B", "C"), each = 50)
 
 res <- wilcoxauc(exprs, y)
 head(res)
-#>   feature group avgExpr   logFC statistic   auc   pval  padj pct_in pct_out
-#> 1      G1     A   1.145  0.0823      2890 0.553 0.2572 0.643   74.5    58.9
-#> 2      G2     A   0.764 -0.2995      2190 0.419 0.0809 0.409   49.1    65.3
-#> 3      G3     A   0.982 -0.1866      2429 0.465 0.4522 0.748   65.5    68.4
-#> 4      G4     A   1.218  0.3971      3176 0.608 0.0200 0.409   70.9    55.8
-#> 5      G5     A   1.418  0.3656      3026 0.579 0.0931 0.409   72.7    56.8
-#> 6      G6     A   0.927 -0.1780      2424 0.464 0.4387 0.748   56.4    60.0
+#>   feature group avgExpr  logFC statistic   auc   pval  padj pct_in pct_out
+#> 1      G1     A    2.10  0.200      2740 0.548 0.3264 0.510     86      89
+#> 2      G2     A    1.58 -0.560      1896 0.379 0.0137 0.172     84      86
+#> 3      G3     A    1.86  0.020      2432 0.486 0.7826 0.893     84      89
+#> 4      G4     A    1.96 -0.210      2384 0.477 0.6362 0.884     90      90
+#> 5      G5     A    2.00 -0.280      2214 0.443 0.2442 0.505     82      88
+#> 6      G6     A    2.26  0.240      2775 0.555 0.2627 0.505     90      83
 ```
 
 `top_markers()` summarises the most distinguishing features per group:
 
 ```r
-top_markers(res, n = 5, auc_min = 0.6)
+top_markers(res, n = 5, auc_min = 0.5)
 #> # A tibble: 5 × 4
 #>    rank A     B     C
 #>   <int> <chr> <chr> <chr>
-#> 1     1 G4    G20   G1
-#> 2     2 NA    G5    G21
-#> 3     3 NA    G15   G6
-#> 4     4 NA    G19   G16
-#> 5     5 NA    G25   G11
+#> 1     1 G10   G15   G25
+#> 2     2 G24   G13   G5
+#> 3     3 G16   G22   G18
+#> 4     4 G6    G2    G14
+#> 5     5 G7    G20   G2
 ```
 
 The same call also works on Seurat and SingleCellExperiment objects:
