@@ -3,3 +3,6 @@
 ^CRAN-RELEASE$
 ^LICENSE$
 ^.github$
+^_pkgdown\.yml$
+^pkgdown$
+^\.claude$

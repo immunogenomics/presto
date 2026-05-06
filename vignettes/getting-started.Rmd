@@ -1,225 +1,137 @@
 ---
-title: "Quick start to presto"
-author: "Ilya Korsunsky"
+title: "Getting started with presto"
 output:
-  BiocStyle::html_document:
-    code_folding: show
-    number_sections: yes
-    toc: yes  
+  rmarkdown::html_vignette:
+    toc: true
     fig_width: 7
-    fig_height: 2.5
+    fig_height: 5
 vignette: >
-    %\VignetteIndexEntry{Quick start to presto}
+    %\VignetteIndexEntry{Getting started with presto}
     %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteEncoding{UTF-8} 
+    %\VignetteEncoding{UTF-8}
 ---
 
-
-
-# Introduction
-
-presto makes it fast and easy to run Wilcoxon rank sum test and auROC analysis 
-on large datasets. The tutorial below shows how to install presto, walks 
-through the 3 major ways you can use presto with your data, and finally
-explores more advanced use cases. 
-
-# Installation 
-
-To install the current stable release from CRAN:
-
-```{r, eval=FALSE}
-install.packages('presto')
-
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    fig.align = "center"
+)
+options(digits = 3)
 ```
 
-For the cutting edge version of presto: 
+`presto` runs the Wilcoxon rank-sum test and computes the auROC statistic
+quickly enough to be used as a routine marker-finding step on whole-genome,
+hundred-thousand-cell single-cell experiments.
 
-```{r, eval=FALSE}
-library(devtools)
-install_github('immunogenomics/presto')
+# Demo data
 
-```
+This vignette uses CD8 T cells from human colon tissue published by
+[Thomas et al., *Nature Medicine* 2024](https://www.nature.com/articles/s41591-024-02895-x)
+([GSE206299](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206299)).
+`load_ircolitis_cd8()` downloads the 121 MB `.h5ad.gz` file on first use,
+caches it under `tools::R_user_dir("presto", "cache")`, and parses it with
+`rhdf5`.
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-options(digits=2)
+```{r load-data, message = FALSE}
 library(presto)
+library(Matrix)
+library(dplyr)
+
+d <- load_ircolitis_cd8(verbose = FALSE)
+dim(d$counts)
 ```
 
+`d$counts` is a 28,165 × 25,341 sparse matrix of UMI counts (genes × cells).
+`d$obs` carries cell metadata, including a `cluster` column we will use to
+identify markers.
 
-# Input Types
+```{r show-meta}
+table(d$obs$cluster)
+```
 
-The main function in this vignette is `wilcoxauc`. presto currently supports 3
-interfaces to `wilcoxauc`, with a matrix, Seurat object, or 
-SingleCellExperiment object. The output of `wilcoxauc` is described in the
-next section.
+# Quick start
 
+The simplest call passes a feature-by-cell matrix and a vector of group
+labels:
 
-## Matrix input
+```{r wilcoxauc-basic}
+res <- wilcoxauc(d$counts, d$obs$cluster)
+head(res)
+```
 
-The most general use of presto is with a matrix of features and observations 
-(exprs) paired with a vector of group labels (y). 
+Each row reports one (gene, group) test. Rows are returned for every gene
+× cluster combination, comparing observations in that cluster against
+all other observations.
+
+# Result columns
+
+| column     | description                                                    |
+|------------|----------------------------------------------------------------|
+| `feature`  | name of the feature (gene)                                     |
+| `group`    | name of the group / cluster                                    |
+| `avgExpr`  | mean expression of the feature in the group                    |
+| `logFC`    | log fold change between in-group vs out-of-group observations  |
+| `statistic`| Wilcoxon rank-sum U statistic                                  |
+| `auc`      | area under the ROC curve                                       |
+| `pval`     | nominal p-value, two-sided Gaussian approximation of U         |
+| `padj`     | Benjamini-Hochberg adjusted p-value                            |
+| `pct_in`   | percent of in-group cells with non-zero expression             |
+| `pct_out`  | percent of out-of-group cells with non-zero expression         |
+
+# Top markers per cluster
+
+`top_markers()` extracts the most distinguishing features per group. Use
+`auc_min`, `padj_max`, `pct_in_min`, and `pct_out_max` to filter.
+
+```{r top-markers}
+top_markers(res, n = 5, auc_min = 0.6, padj_max = 1e-3)
+```
+
+The gene identifiers are the verbatim row names from the input matrix
+(`ENSG…|SYMBOL`). To plot just the symbol portion, split at `|`:
+
+```{r symbol-only}
+top5 <- top_markers(res, n = 5, auc_min = 0.6, padj_max = 1e-3)
+top5 %>%
+    dplyr::mutate(across(-rank, ~ sub(".*\\|", "", .x)))
+```
+
+# Restricting to a subset of groups
+
+Use `groups_use` to compare only a subset of groups against each other:
+
+```{r groups-use}
+res_12 <- wilcoxauc(d$counts, d$obs$cluster, groups_use = c("1", "2"))
+top_markers(res_12, n = 10, auc_min = 0.6, padj_max = 1e-3)
+```
+
+# Seurat and SingleCellExperiment
+
+`wilcoxauc()` dispatches on the input class. For Seurat or
+SingleCellExperiment objects, pass the object and the name of the
+metadata column that defines the groups:
+
+```{r seurat-sce, eval = FALSE}
+# Seurat
+wilcoxauc(seurat_object, group_by = "cluster")
+
+# SingleCellExperiment
+wilcoxauc(sce_object, group_by = "cluster")
+```
+
+For the full set of arguments (assay selection, layer, etc.), see
+`?wilcoxauc`.
+
+# Notes on input types
+
+`wilcoxauc()` accepts dense matrices, sparse `dgCMatrix` inputs, and
+`data.frame`s. Sparse input is faster and uses far less memory on
+single-cell data. The matrix should be **features × observations** (rows
+are genes, columns are cells).
+
+# Session info
 
 ```{r}
-data(exprs)
-head(exprs)[, 1:10]
-data(y)
-head(y)
-head(wilcoxauc(exprs, y))
-
+sessionInfo()
 ```
-
-
-## Seurat 
-
-We support interfacing with Seurat Version 3 objects. In the most basic use
-case, specify the Seurat object and the meta data variable that defines the 
-group labels. 
-
-```{r}
-data(object_seurat)
-# ensure object structure matches with the installed Seurat version
-object_seurat <- Seurat::UpdateSeuratObject(object_seurat)
-head(wilcoxauc(object_seurat, 'cell_type'))
-
-```
-
-Seurat objects can store multiple assays. The assay used by `wilcoxauc` can be
-specified with the `seurat_assay` argument.
-
-```{r}
-head(wilcoxauc(object_seurat, 'cell_type', seurat_assay = 'RNA'))
-
-```
-
-
-Seurat supports multiple feature expression matrices, such as raw counts, 
-library normalized data, and scaled data. These can be accessed with `assay`.
-
-```{r}
-head(wilcoxauc(object_seurat, 'cell_type', assay = 'counts'))
-head(wilcoxauc(object_seurat, 'cell_type', assay = 'data'))
-head(wilcoxauc(object_seurat, 'cell_type', assay = 'scale.data'))
-
-```
-
-
-## SingleCellExperiment
-
-presto supports the Bioconductor data structure SingleCellExperiment. Again, 
-the most simple use case takes a SingleCellExperiment object and the metadata
-field with group labels. 
-
-
-```{r}
-data(object_sce)
-head(wilcoxauc(object_sce, 'cell_type'))
-
-```
-
-SingleCellExperiment can have several data slots, such as counts and logcounts.
-These can be accessed with `assay`. 
-
-```{r}
-head(wilcoxauc(object_sce, 'cell_type', assay = 'counts'))
-head(wilcoxauc(object_sce, 'cell_type', assay = 'logcounts'))
-
-```
-
-
-# Description of outputs
-
-## Results table
-
-All inputs for `wilcoxauc` give the same table of results. 
-
-parameter | description 
---------- | ----------- 
-feature | name of feature.
-group | name of group label. 
-avgExpr | mean value of feature in group. 
-logFC | log fold change between observations in group vs out.
-statistic | Wilcoxon rank sum U statistic. 
-auc | area under the receiver operator curve. 
-pval | nominal p value, from two-tailed Gaussian approximation of U statistic.
-padj | Benjamini-Hochberg adjusted p value. 
-pct_in | Percent of observations in the group with non-zero feature value. 
-pct_out | Percent of observations out of the group with non-zero feature value. 
-
-```{r}
-head(wilcoxauc(exprs, y))
-
-```
-
-
-## Top markers
-
-We often find it helpful to summarize what the most distinguishing features
-are in each group. 
-
-```{r}
-res <- wilcoxauc(exprs, y)
-top_markers(res, n = 10)
-
-```
-
-We can also filter for some criteria. For instance, the top features must be 
-in at least 70% of all observations within the group. Note that not all groups
-have 10 markers that meet these criteria. 
-
-
-```{r}
-res <- wilcoxauc(exprs, y)
-top_markers(res, n = 10, auc_min = .5, pct_in_min = 70)
-
-```
-
-
-# Options
-
-## Dense vs sparse
-
-presto is optimized for dense and sparse matrix inputs. When possible, use 
-sparse inputs. In our toy dataset, almost 39% of elements are zeros. Thus, it 
-makes sense to cast it as a sparse dgCMatrix and run wilcoxauc on that. 
-
-```{r}
-sum(exprs == 0) / prod(dim(exprs))
-exprs_sparse <- as(exprs, 'dgCMatrix')
-head(wilcoxauc(exprs_sparse, y))
-
-```
-
-
-
-## groups_use
-
-Sometimes, you don't want to test all groups in the dataset against all other 
-groups. For instance, I want to compare only observations in group 'A' to
-those in group 'B'. This is achieved with the groups_use argument. 
-
-```{r}
-res_AB <- wilcoxauc(exprs, y, groups_use = c('A', 'B'))
-head(res_AB)
-top_markers(res_AB)
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

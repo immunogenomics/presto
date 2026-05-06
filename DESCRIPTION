@@ -33,15 +33,17 @@ Imports:
     stats, 
     utils
 RoxygenNote: 7.3.3
-Suggests: 
+Suggests:
     knitr,
     rmarkdown,
     testthat,
     Seurat,
-    SingleCellExperiment, 
+    SingleCellExperiment,
     SummarizedExperiment,
     broom,
     BiocStyle,
-    DESeq2
+    DESeq2,
+    rhdf5,
+    R.utils
 NeedsCompilation: yes
 VignetteBuilder: knitr

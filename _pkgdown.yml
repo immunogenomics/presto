@@ -1,0 +1,64 @@
+url: https://immunogenomics.github.io/presto
+
+template:
+  bootstrap: 5
+
+home:
+  title: presto — fast Wilcoxon and auROC for single-cell data
+  description: >
+    Scalable Wilcoxon rank-sum tests, area-under-the-ROC, and DESeq2-based
+    pseudobulk differential expression for large single-cell experiments.
+
+navbar:
+  structure:
+    left:  [intro, articles, reference, news]
+    right: [search, github]
+  components:
+    intro:
+      text: Get started
+      href: articles/getting-started.html
+    articles:
+      text: Articles
+      menu:
+        - text: "Getting started"
+          href: articles/getting-started.html
+        - text: "Pseudobulk DGE with DESeq2"
+          href: articles/pseudobulk.html
+
+reference:
+  - title: Wilcoxon and auROC
+    desc: Single-cell marker discovery with the rank-sum test.
+    contents:
+      - wilcoxauc
+      - top_markers
+
+  - title: Pseudobulk differential expression
+    desc: >
+      Collapse cells to per-donor pseudobulks and run DESeq2 across them.
+    contents:
+      - collapse_counts
+      - pseudobulk_deseq2
+      - top_markers_dds
+      - summarize_dge_pairs
+      - pseudobulk_one_vs_all
+      - pseudobulk_pairwise
+      - pseudobulk_within
+
+  - title: Matrix utilities
+    desc: Group-wise reductions used internally by `wilcoxauc()`.
+    contents:
+      - sumGroups
+      - nnzeroGroups
+      - rank_matrix
+      - compute_hash
+
+  - title: Demo data
+    desc: >
+      `load_ircolitis_cd8()` downloads a real 25k-cell dataset on demand.
+      The other entries are tiny shipped objects used in examples.
+    contents:
+      - load_ircolitis_cd8
+      - exprs
+      - "y"
+      - object_seurat
+      - object_sce

@@ -1,0 +1,245 @@
+---
+title: "Pseudobulk differential expression with DESeq2"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    fig_width: 7
+    fig_height: 5
+vignette: >
+    %\VignetteIndexEntry{Pseudobulk differential expression with DESeq2}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    fig.align = "center",
+    warning = FALSE,
+    message = FALSE
+)
+options(digits = 3)
+```
+
+# Why pseudobulk?
+
+Single cells from the same donor are not statistically independent: they
+share genetic background, batch effects, and ambient RNA. Treating each
+cell as an independent observation in a regression inflates the effective
+sample size and distorts p-values.
+
+A common, principled remedy is **pseudobulk**: sum each donor's cells
+within a group (e.g. cluster) to produce a per-donor count vector, then
+run a count-based regression like `DESeq2::DESeq` over donors. The unit
+of replication becomes the donor, not the cell.
+
+`presto` provides:
+
+- `collapse_counts()` — fast collapse of a cell-by-gene count matrix to
+  pseudobulks defined by one or more metadata columns.
+- `pseudobulk_deseq2()` — run DESeq2 across the resulting pseudobulks in
+  a one-vs-all, pairwise, or within-group design.
+- `top_markers_dds()` — extract top features per group from the result.
+
+# Demo data
+
+We use the colon-tissue CD8 T-cell dataset from
+[Thomas et al. *Nat. Med.* 2024](https://www.nature.com/articles/s41591-024-02895-x)
+([GSE206299](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206299)).
+27 donors, 9 cell clusters, 25,341 cells.
+
+```{r load}
+library(presto)
+library(Matrix)
+library(dplyr)
+
+d <- load_ircolitis_cd8(verbose = FALSE)
+dim(d$counts)
+table(d$obs$donor, d$obs$cluster)[1:5, ]
+```
+
+The crosstab confirms most donors contribute cells to most clusters —
+good news for pseudobulk, since clusters with few represented donors
+will have low statistical power.
+
+# Step 1: collapse cells to pseudobulks
+
+`collapse_counts()` sums the columns of a count matrix according to one
+or more metadata columns. Here we collapse by `(donor, cluster)`, drop
+any (donor, cluster) pair with fewer than 10 cells, and keep the cell
+count `N` so we can inspect what came through.
+
+```{r collapse}
+md <- data.frame(
+    donor   = as.character(d$obs$donor),
+    cluster = as.character(d$obs$cluster),
+    case    = as.character(d$obs$case),
+    stringsAsFactors = FALSE
+)
+cc <- collapse_counts(
+    d$counts, md, c("donor", "cluster", "case"),
+    min_cells_per_group = 10,
+    keep_n = TRUE
+)
+dim(cc$counts_mat)
+head(cc$meta_data)
+```
+
+We collapse by `(donor, cluster, case)` instead of just `(donor, cluster)`
+because `case` is constant within donor — including it now makes it
+available for the within-cluster contrast in
+[Step 4](#step-4-within-cluster-case-vs-control).
+
+`cc$counts_mat` is now a 28,165-gene × `r ncol(cc$counts_mat)`-pseudobulk
+matrix. Each column is one (donor, cluster) sample; `cc$meta_data` is the
+matching `data.frame` of pseudobulk identities.
+
+```{r per-cluster}
+table(cc$meta_data$cluster)
+```
+
+# Step 2: one-vs-all DESeq2
+
+`pseudobulk_deseq2()` with `mode = "one_vs_all"` tests each cluster
+against the union of the others. With `collapse_background = FALSE` we
+keep each background pseudobulk as its own observation; setting it to
+`TRUE` collapses the background pseudobulks per donor first, which is
+preferable when donors are unbalanced across clusters.
+
+The first variable in the formula is the contrast variable. `meta_data`
+should contain only the pseudobulk identifying variables used in the
+formula.
+
+```{r dge}
+md_dge <- cc$meta_data[, "cluster", drop = FALSE]
+res <- pseudobulk_deseq2(
+    ~cluster, md_dge, cc$counts_mat,
+    verbose = FALSE,
+    min_counts_per_sample = 10,
+    present_in_min_samples = 5,
+    collapse_background = FALSE,
+    mode = "one_vs_all"
+)
+head(res)
+```
+
+Result columns come straight from `DESeq2::results()`, prepended with the
+group identifier:
+
+| column          | description                                       |
+|-----------------|---------------------------------------------------|
+| `group`         | foreground cluster                                 |
+| `feature`       | gene identifier                                    |
+| `baseMean`      | mean of normalized counts                          |
+| `log2FoldChange`| effect size, group vs background                   |
+| `lfcSE`         | standard error of `log2FoldChange`                 |
+| `stat`          | Wald statistic                                     |
+| `pvalue`        | nominal p-value                                    |
+| `padj`          | Benjamini-Hochberg adjusted p-value                |
+
+# Step 3: top markers per cluster
+
+`top_markers_dds()` filters by `padj_max` and `lfc_min` and returns a
+wide table of the top features per group:
+
+```{r top}
+top5 <- top_markers_dds(res, n = 5, padj_max = 1e-4, lfc_min = 1)
+top5 %>%
+    dplyr::mutate(across(-rank, ~ sub(".*\\|", "", .x)))
+```
+
+The signal is biologically reasonable: cluster 1 is dominated by
+S-phase / DNA-replication genes (`DUT`, `LIG1`, `H2AFX`, `TMPO`),
+cluster 2 by effector chemokines (`CCL4`, `CCL3L1`).
+
+# Step 4: pairwise cluster contrasts
+
+`mode = "pairwise"` tests each cluster against each other cluster
+individually, returning a long-form table with `group1` and `group2`
+columns. This is more conservative than one-vs-all because a true
+marker has to differentiate the cluster from *every* other cluster, not
+just the average background.
+
+The cost grows quickly — *N* clusters means *N × (N−1)* directional
+DESeq2 fits — so it's worth subsetting to the levels you care about
+first. Here we contrast clusters 1, 2, and 3:
+
+```{r pairwise}
+keep <- cc$meta_data$cluster %in% c("1", "2", "3")
+md_p  <- cc$meta_data[keep, "cluster", drop = FALSE]
+mat_p <- cc$counts_mat[, keep]
+
+res_p <- pseudobulk_deseq2(
+    ~cluster, md_p, mat_p,
+    verbose = FALSE,
+    min_counts_per_sample = 10,
+    present_in_min_samples = 5,
+    mode = "pairwise"
+)
+head(res_p)
+```
+
+`summarize_dge_pairs()` collapses the directional pairs to one row per
+(group, gene). Pass `"min"` to keep each gene's worst comparison (the
+*most conservative* effect, useful for high-confidence markers) or
+`"max"` for the best.
+
+```{r summarize-pairs}
+summarize_dge_pairs(res_p, "min") %>%
+    head(10) %>%
+    dplyr::mutate(feature = sub(".*\\|", "", feature))
+```
+
+# Step 5: within-cluster Case vs Control
+
+A more interesting biological question than "what defines each cluster"
+is "for each cluster, which genes change between irColitis cases and
+healthy controls?". `mode = "within"` answers this. The first variable
+in the formula is the **split variable** (the cluster), and the second
+is the **contrast variable** (`case`). Within each level of the split
+variable, DESeq2 fits the inner formula (here `~case`).
+
+```{r within}
+md_w <- cc$meta_data[, c("cluster", "case")]
+
+res_w <- pseudobulk_deseq2(
+    ~cluster + case, md_w, cc$counts_mat,
+    verbose = FALSE,
+    min_counts_per_sample = 10,
+    present_in_min_samples = 5,
+    mode = "within"
+)
+head(res_w)
+```
+
+Top genes upregulated in cases per cluster:
+
+```{r within-top}
+top_markers_dds(res_w, n = 5, padj_max = 1e-4, lfc_min = 1) %>%
+    dplyr::mutate(across(-rank, ~ sub(".*\\|", "", .x)))
+```
+
+Cluster-1 cases up-regulate `NCF1`, `PRNP`, `TXNIP` — interferon-response
+and oxidative-stress genes consistent with inflamed tissue.
+
+# Tips
+
+- **Filter low-count genes early.** `min_counts_per_sample` and
+  `present_in_min_samples` are applied before fitting; tighter filters
+  speed up the DESeq2 step substantially.
+- **Always include batch / channel covariates when possible.** Add them
+  to the formula after the contrast variable (e.g. `~cluster + channel`)
+  if the design supports it.
+- **`collapse_background = TRUE`** (in `mode = "one_vs_all"`) can
+  stabilize results when donor representation is uneven across clusters.
+- **`mode = "within"` supports both 2-level and ordinal contrasts.**
+  Two-level contrasts (factor or character) get a Wald test on the
+  level-vs-reference coefficient. Three or more levels are
+  integer-encoded and treated as an ordinal trend.
+
+# Session info
+
+```{r}
+sessionInfo()
+```
