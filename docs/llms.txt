@@ -1,0 +1,101 @@
+# Overview
+
+Presto performs a fast Wilcoxon rank sum test and auROC analysis. Latest
+benchmark ran 1 million observations, 1K features, and 10 groups in 16
+seconds (sparse input) and 85 seconds (dense input).
+
+# Installation
+
+Install presto:
+
+``` r
+
+# install.packages("devtools")
+devtools::install_github("immunogenomics/presto")
+```
+
+# Usage
+
+Run presto on a matrix, Seurat, or SingleCellExperiment input object.
+
+``` r
+
+wilcoxauc(X, y)
+wilcoxauc(seurat_object, 'group_name')
+wilcoxauc(sce_object, 'group_name')
+```
+
+For examples, see
+[`?wilcoxauc`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
+and the
+[vignette](https://immunogenomics.github.io/presto/articles/getting-started.html)
+
+# Package index
+
+## Wilcoxon and auROC
+
+Single-cell marker discovery with the rank-sum test.
+
+- [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
+  : Fast Wilcoxon rank sum test and auROC
+- [`top_markers()`](https://immunogenomics.github.io/presto/reference/top_markers.md)
+  : Get top n markers from wilcoxauc
+
+## Pseudobulk differential expression
+
+Collapse cells to per-donor pseudobulks and run DESeq2 across them.
+
+- [`collapse_counts()`](https://immunogenomics.github.io/presto/reference/collapse_counts.md)
+  : Collapse counts based on multiple categorical metadata columns
+- [`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md)
+  : Pseudobulk DESeq2
+- [`top_markers_dds()`](https://immunogenomics.github.io/presto/reference/top_markers_dds.md)
+  : Get top n markers from pseudobulk DESeq2
+- [`summarize_dge_pairs()`](https://immunogenomics.github.io/presto/reference/summarize_dge_pairs.md)
+  : Summarize differential gene expression pairs
+- [`pseudobulk_one_vs_all()`](https://immunogenomics.github.io/presto/reference/pseudobulk_one_vs_all.md)
+  : Pseudobulk one versus all
+- [`pseudobulk_pairwise()`](https://immunogenomics.github.io/presto/reference/pseudobulk_pairwise.md)
+  : Pseudobulk pairwise
+- [`pseudobulk_within()`](https://immunogenomics.github.io/presto/reference/pseudobulk_within.md)
+  : Pseudobulk within
+
+## Matrix utilities
+
+Group-wise reductions used internally by
+[`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md).
+
+- [`sumGroups()`](https://immunogenomics.github.io/presto/reference/sumGroups.md)
+  : sumGroups
+- [`nnzeroGroups()`](https://immunogenomics.github.io/presto/reference/nnzeroGroups.md)
+  : nnzeroGroups
+- [`rank_matrix()`](https://immunogenomics.github.io/presto/reference/rank_matrix.md)
+  : rank_matrix
+- [`compute_hash()`](https://immunogenomics.github.io/presto/reference/compute_hash.md)
+  : Compute unique hash for each row of data.frame
+
+## Demo data
+
+[`load_ircolitis_cd8()`](https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.md)
+downloads a real 25k-cell dataset on demand. The other entries are tiny
+shipped objects used in examples.
+
+- [`load_ircolitis_cd8()`](https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.md)
+  : Download and load the ircolitis tissue CD8 demo dataset
+- [`exprs`](https://immunogenomics.github.io/presto/reference/exprs.md)
+  : Small gene expression matrix
+- [`y`](https://immunogenomics.github.io/presto/reference/y.md) : Group
+  labels for observations in gene expression matrix
+- [`object_seurat`](https://immunogenomics.github.io/presto/reference/object_seurat.md)
+  : Seurat V3 object with fake data
+- [`object_sce`](https://immunogenomics.github.io/presto/reference/object_sce.md)
+  : SingleCellExperiment object with fake data
+
+# Articles
+
+### All vignettes
+
+- [Getting started with
+  presto](https://immunogenomics.github.io/presto/articles/getting-started.md):
+- [Pseudobulk differential expression with
+  DESeq2](https://immunogenomics.github.io/presto/articles/pseudobulk.md):
