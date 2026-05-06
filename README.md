@@ -25,7 +25,7 @@ devtools::install_github("immunogenomics/presto")
 
 `pseudobulk_deseq2()` additionally requires
 [`DESeq2`](https://bioconductor.org/packages/DESeq2/), and the
-[`load_ircolitis_cd8()`](https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.html)
+[`load_ircolitis_cd8()`](reference/load_ircolitis_cd8.html)
 demo loader requires `rhdf5`. Both live in `Suggests`, so you only need
 them if you use those features.
 
@@ -73,11 +73,11 @@ wilcoxauc(sce_object,    group_by = "cluster")
 
 For full examples on a real 25,000-cell single-cell RNA-seq dataset, see:
 
-- [**Getting started**](https://immunogenomics.github.io/presto/articles/getting-started.html)
+- [**Getting started**](articles/getting-started.html)
   — `wilcoxauc()` and `top_markers()` for marker discovery, including a
   description of every output column and how to restrict the comparison
   to a subset of groups.
-- [**Pseudobulk differential expression with DESeq2**](https://immunogenomics.github.io/presto/articles/pseudobulk.html)
+- [**Pseudobulk differential expression with DESeq2**](articles/pseudobulk.html)
   — `collapse_counts()` and the three `pseudobulk_deseq2()` modes
   (one-vs-all, pairwise, within), plus `top_markers_dds()` and
   `summarize_dge_pairs()`.

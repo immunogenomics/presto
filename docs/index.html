@@ -73,7 +73,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"immunogenomics/presto"</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> additionally requires <a href="https://bioconductor.org/packages/DESeq2/" class="external-link"><code>DESeq2</code></a>, and the <a href="https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.html"><code>load_ircolitis_cd8()</code></a> demo loader requires <code>rhdf5</code>. Both live in <code>Suggests</code>, so you only need them if you use those features.</p>
+<p><code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> additionally requires <a href="https://bioconductor.org/packages/DESeq2/" class="external-link"><code>DESeq2</code></a>, and the <a href="reference/load_ircolitis_cd8.html"><code>load_ircolitis_cd8()</code></a> demo loader requires <code>rhdf5</code>. Both live in <code>Suggests</code>, so you only need them if you use those features.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-example">Quick example<a class="anchor" aria-label="anchor" href="#quick-example"></a>
@@ -115,9 +115,9 @@
 <p>For full examples on a real 25,000-cell single-cell RNA-seq dataset, see:</p>
 <ul>
 <li>
-<a href="https://immunogenomics.github.io/presto/articles/getting-started.html"><strong>Getting started</strong></a> — <code><a href="reference/wilcoxauc.html">wilcoxauc()</a></code> and <code><a href="reference/top_markers.html">top_markers()</a></code> for marker discovery, including a description of every output column and how to restrict the comparison to a subset of groups.</li>
+<a href="articles/getting-started.html"><strong>Getting started</strong></a> — <code><a href="reference/wilcoxauc.html">wilcoxauc()</a></code> and <code><a href="reference/top_markers.html">top_markers()</a></code> for marker discovery, including a description of every output column and how to restrict the comparison to a subset of groups.</li>
 <li>
-<a href="https://immunogenomics.github.io/presto/articles/pseudobulk.html"><strong>Pseudobulk differential expression with DESeq2</strong></a> — <code><a href="reference/collapse_counts.html">collapse_counts()</a></code> and the three <code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> modes (one-vs-all, pairwise, within), plus <code><a href="reference/top_markers_dds.html">top_markers_dds()</a></code> and <code><a href="reference/summarize_dge_pairs.html">summarize_dge_pairs()</a></code>.</li>
+<a href="articles/pseudobulk.html"><strong>Pseudobulk differential expression with DESeq2</strong></a> — <code><a href="reference/collapse_counts.html">collapse_counts()</a></code> and the three <code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> modes (one-vs-all, pairwise, within), plus <code><a href="reference/top_markers_dds.html">top_markers_dds()</a></code> and <code><a href="reference/summarize_dge_pairs.html">summarize_dge_pairs()</a></code>.</li>
 </ul>
 </div>
 <div class="section level2">
