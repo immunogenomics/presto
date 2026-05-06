@@ -54,8 +54,9 @@ reference:
 
   - title: Demo data
     desc: >
-      `load_ircolitis_cd8()` downloads a real 25k-cell dataset on demand.
-      The other entries are tiny shipped objects used in examples.
+      Example datasets used by the vignettes. The first is a real
+      25,000-cell dataset downloaded on demand; the others are tiny
+      shipped objects used in argument examples.
     contents:
       - load_ircolitis_cd8
       - exprs
