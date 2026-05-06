@@ -56,29 +56,76 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+<div class="page-header"><h1 id="presto">presto<a class="anchor" aria-label="anchor" href="#presto"></a>
 </h1></div>
-<p>Presto performs a fast Wilcoxon rank sum test and auROC analysis. Latest benchmark ran 1 million observations, 1K features, and 10 groups in 16 seconds (sparse input) and 85 seconds (dense input).</p>
-</div>
-<div class="section level1">
-<h1 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h1>
-<p>Install presto:</p>
+<p>Fast differential expression and marker discovery for single-cell data.</p>
+<p><code>presto</code> is built around two function families:</p>
+<ul>
+<li>
+<strong><code><a href="reference/wilcoxauc.html">wilcoxauc()</a></code></strong> — Wilcoxon rank-sum test and area-under-the-ROC across groups, fast enough to run on whole-genome × hundred-thousand- cell matrices in seconds.</li>
+<li>
+<strong><code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code></strong> — collapse cells into per-donor pseudobulks with <code><a href="reference/collapse_counts.html">collapse_counts()</a></code> and run a count-based regression with <code>DESeq2</code> in one-vs-all, pairwise, or within-cluster designs.</li>
+</ul>
+<p>Both work directly with sparse <code>dgCMatrix</code> input and have dispatchers for <a href="https://satijalab.org/seurat/" class="external-link"><code>Seurat</code></a> and <a href="https://bioconductor.org/packages/SingleCellExperiment/" class="external-link"><code>SingleCellExperiment</code></a> objects.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"immunogenomics/presto"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> additionally requires <a href="https://bioconductor.org/packages/DESeq2/" class="external-link"><code>DESeq2</code></a>, and the <a href="https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.html"><code>load_ircolitis_cd8()</code></a> demo loader requires <code>rhdf5</code>. Both live in <code>Suggests</code>, so you only need them if you use those features.</p>
 </div>
-<div class="section level1">
-<h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
-</h1>
-<p>Run presto on a matrix, Seurat, or SingleCellExperiment input object.</p>
+<div class="section level2">
+<h2 id="quick-example">Quick example<a class="anchor" aria-label="anchor" href="#quick-example"></a>
+</h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">seurat_object</span>, <span class="st">'group_name'</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">sce_object</span>, <span class="st">'group_name'</span><span class="op">)</span></span></code></pre></div>
-<p>For examples, see <code><a href="reference/wilcoxauc.html">?wilcoxauc</a></code> and the <a href="https://immunogenomics.github.io/presto/articles/getting-started.html">vignette</a></p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">presto</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">exprs</span><span class="op">)</span>  <span class="co"># 25-gene × 150-cell toy matrix</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>      <span class="co"># 3 group labels</span></span>
+<span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   feature group avgExpr   logFC statistic   auc   pval  padj pct_in pct_out</span></span>
+<span><span class="co">#&gt; 1      G1     A   1.145  0.0823      2890 0.553 0.2572 0.643   74.5    58.9</span></span>
+<span><span class="co">#&gt; 2      G2     A   0.764 -0.2995      2190 0.419 0.0809 0.409   49.1    65.3</span></span>
+<span><span class="co">#&gt; 3      G3     A   0.982 -0.1866      2429 0.465 0.4522 0.748   65.5    68.4</span></span>
+<span><span class="co">#&gt; 4      G4     A   1.218  0.3971      3176 0.608 0.0200 0.409   70.9    55.8</span></span>
+<span><span class="co">#&gt; 5      G5     A   1.418  0.3656      3026 0.579 0.0931 0.409   72.7    56.8</span></span>
+<span><span class="co">#&gt; 6      G6     A   0.927 -0.1780      2424 0.464 0.4387 0.748   56.4    60.0</span></span></code></pre></div>
+<p><code><a href="reference/top_markers.html">top_markers()</a></code> summarises the most distinguishing features per group:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/top_markers.html">top_markers</a></span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">5</span>, auc_min <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;    rank A     B     C</span></span>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; 1     1 G4    G20   G1</span></span>
+<span><span class="co">#&gt; 2     2 NA    G5    G21</span></span>
+<span><span class="co">#&gt; 3     3 NA    G15   G6</span></span>
+<span><span class="co">#&gt; 4     4 NA    G19   G16</span></span>
+<span><span class="co">#&gt; 5     5 NA    G25   G11</span></span></code></pre></div>
+<p>The same call also works on Seurat and SingleCellExperiment objects:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">seurat_object</span>, group_by <span class="op">=</span> <span class="st">"cluster"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">sce_object</span>,    group_by <span class="op">=</span> <span class="st">"cluster"</span><span class="op">)</span></span></code></pre></div>
 </div>
-
+<div class="section level2">
+<h2 id="walkthroughs">Walkthroughs<a class="anchor" aria-label="anchor" href="#walkthroughs"></a>
+</h2>
+<p>For full examples on a real 25,000-cell single-cell RNA-seq dataset, see:</p>
+<ul>
+<li>
+<a href="https://immunogenomics.github.io/presto/articles/getting-started.html"><strong>Getting started</strong></a> — <code><a href="reference/wilcoxauc.html">wilcoxauc()</a></code> and <code><a href="reference/top_markers.html">top_markers()</a></code> for marker discovery, including a description of every output column and how to restrict the comparison to a subset of groups.</li>
+<li>
+<a href="https://immunogenomics.github.io/presto/articles/pseudobulk.html"><strong>Pseudobulk differential expression with DESeq2</strong></a> — <code><a href="reference/collapse_counts.html">collapse_counts()</a></code> and the three <code><a href="reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> modes (one-vs-all, pairwise, within), plus <code><a href="reference/top_markers_dds.html">top_markers_dds()</a></code> and <code><a href="reference/summarize_dge_pairs.html">summarize_dge_pairs()</a></code>.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
+</h2>
+<p>A benchmark on 1,000,000 observations × 1,000 features × 10 groups runs in 16 seconds on sparse input and 85 seconds on dense input.</p>
+</div>
+</div>
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
