@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   getting-started: getting-started.html
   pseudobulk: pseudobulk.html
-last_built: 2026-05-06T15:05Z
+last_built: 2026-05-06T16:05Z
 urls:
   reference: https://immunogenomics.github.io/presto/reference
   article: https://immunogenomics.github.io/presto/articles
