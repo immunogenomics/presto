@@ -156,7 +156,7 @@ pseudobulk_pairwise <- function(
             counts_df <- counts_df[genes_keep, idx_use]
 
             suppressMessages({suppressWarnings({
-                design <- meta_data[idx_use, ]
+                design <- meta_data[idx_use, , drop = FALSE]
                 design[[contrast_var]] <- factor(
                     ifelse(design[[contrast_var]] == foreground_id,
                     paste0("cluster_", foreground_id),
