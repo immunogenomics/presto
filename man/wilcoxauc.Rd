@@ -94,37 +94,34 @@ counts matrix and group labels from \code{Seurat} and
 for an end-to-end example on a real dataset.
 }
 \examples{
-\dontrun{
- ## generate a tiny toy dataset
- set.seed(42)
- exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
-                 dimnames = list(paste0("G", 1:25), NULL))
- y <- rep(c("A", "B", "C"), each = 50)
+## generate a tiny toy dataset
+set.seed(42)
+exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
+                dimnames = list(paste0("G", 1:25), NULL))
+y <- rep(c("A", "B", "C"), each = 50)
 
- ## on a dense matrix
- head(wilcoxauc(exprs, y))
+## on a dense matrix
+head(wilcoxauc(exprs, y))
 
- ## with only some groups
- head(wilcoxauc(exprs, y, c('A', 'B')))
+## restrict the comparison to a subset of groups
+head(wilcoxauc(exprs, y, c('A', 'B')))
 
- ## on a sparse matrix
- exprs_sparse <- as(exprs, 'dgCMatrix')
- head(wilcoxauc(exprs_sparse, y))
+## on a sparse matrix
+exprs_sparse <- as(exprs, 'dgCMatrix')
+head(wilcoxauc(exprs_sparse, y))
 
- ## on a Seurat V3 object
- if (requireNamespace("Seurat", quietly = TRUE)) {
-     pkg_version <- packageVersion('Seurat')
-     if (pkg_version >= "3.0" & pkg_version < "4.0") {
-         data(object_seurat)
-         head(wilcoxauc(object_seurat, 'cell_type'))
-     }
- }
+## on a Seurat object (>= v3)
+if (requireNamespace("Seurat", quietly = TRUE) &&
+    packageVersion("Seurat") >= "3.0") {
+    data(object_seurat)
+    object_seurat <- Seurat::UpdateSeuratObject(object_seurat)
+    head(wilcoxauc(object_seurat, 'cell_type'))
+}
 
- ## on a SingleCellExperiment object
- if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-     data(object_sce)
-     head(wilcoxauc(object_sce, 'cell_type'))
- }
+## on a SingleCellExperiment object
+if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
+    data(object_sce)
+    head(wilcoxauc(object_sce, 'cell_type'))
 }
 
 }

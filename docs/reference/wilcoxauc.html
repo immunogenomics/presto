@@ -167,38 +167,120 @@ for an end-to-end example on a real dataset.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span> <span class="co">## generate a tiny toy dataset</span></span></span>
-<span class="r-in"><span> <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span></span>
-<span class="r-in"><span> <span class="va">exprs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">25</span> <span class="op">*</span> <span class="fl">150</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">25</span>,</span></span>
-<span class="r-in"><span>                 dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"G"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span> <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">## generate a tiny toy dataset</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">exprs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">25</span> <span class="op">*</span> <span class="fl">150</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">25</span>,</span></span>
+<span class="r-in"><span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"G"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span> <span class="co">## on a dense matrix</span></span></span>
-<span class="r-in"><span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">## on a dense matrix</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature group avgExpr logFC statistic    auc       pval      padj pct_in</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643843 0.5100600     86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2     A    1.58 -0.56    1896.0 0.3792 0.01372592 0.1715740     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78264917 0.8933112     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4     A    1.96 -0.21    2384.0 0.4768 0.63616986 0.8835693     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419217 0.5052190     82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.24    2775.0 0.5550 0.26271390 0.5052190     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      88</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      83</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span> <span class="co">## with only some groups</span></span></span>
-<span class="r-in"><span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'A'</span>, <span class="st">'B'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">## restrict the comparison to a subset of groups</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'A'</span>, <span class="st">'B'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature group avgExpr logFC statistic    auc       pval      padj pct_in</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.02      1284 0.5136 0.81297858 0.9680542     86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2     A    1.58 -0.52       950 0.3800 0.03365247 0.4716572     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86 -0.02      1197 0.4788 0.70871296 0.9325171     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4     A    1.96 -0.28      1158 0.4632 0.51725570 0.8474382     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.02      1236 0.4944 0.92392119 0.9802096     82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.36      1437 0.5748 0.18871553 0.6739840     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      88</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      82</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span> <span class="co">## on a sparse matrix</span></span></span>
-<span class="r-in"><span> <span class="va">exprs_sparse</span> <span class="op">&lt;-</span> <span class="fu">as</span><span class="op">(</span><span class="va">exprs</span>, <span class="st">'dgCMatrix'</span><span class="op">)</span></span></span>
-<span class="r-in"><span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs_sparse</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co">## on a sparse matrix</span></span></span>
+<span class="r-in"><span><span class="va">exprs_sparse</span> <span class="op">&lt;-</span> <span class="fu">as</span><span class="op">(</span><span class="va">exprs</span>, <span class="st">'dgCMatrix'</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs_sparse</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature group avgExpr logFC statistic    auc       pval      padj pct_in</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643843 0.5100600     86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2     A    1.58 -0.56    1896.0 0.3792 0.01372592 0.1715740     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78264917 0.8933112     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4     A    1.96 -0.21    2384.0 0.4768 0.63616986 0.8835693     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419217 0.5052190     82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.24    2775.0 0.5550 0.26271390 0.5052190     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      88</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      83</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span> <span class="co">## on a Seurat V3 object</span></span></span>
-<span class="r-in"><span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"Seurat"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>     <span class="va">pkg_version</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">'Seurat'</span><span class="op">)</span></span></span>
-<span class="r-in"><span>     <span class="kw">if</span> <span class="op">(</span><span class="va">pkg_version</span> <span class="op">&gt;=</span> <span class="st">"3.0"</span> <span class="op">&amp;</span> <span class="va">pkg_version</span> <span class="op">&lt;</span> <span class="st">"4.0"</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>         <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">object_seurat</span><span class="op">)</span></span></span>
-<span class="r-in"><span>         <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">object_seurat</span>, <span class="st">'cell_type'</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>     <span class="op">}</span></span></span>
-<span class="r-in"><span> <span class="op">}</span></span></span>
+<span class="r-in"><span><span class="co">## on a Seurat object (&gt;= v3)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"Seurat"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"Seurat"</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"3.0"</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">object_seurat</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">object_seurat</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/UpdateSeuratObject.html" class="external-link">UpdateSeuratObject</a></span><span class="op">(</span><span class="va">object_seurat</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">object_seurat</span>, <span class="st">'cell_type'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Validating object structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating object slots</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring keys are in the proper structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating matrix keys for DimReduc ‘pca’</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring keys are in the proper structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring feature names don't have underscores or pipes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating slots in RNA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating slots in pca</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for NormalizeData.RNA to RNA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for FindVariableFeatures.RNA to RNA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for ScaleData.RNA to RNA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for RunPCA.RNA to RNA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Validating object structure for Assay ‘RNA’</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Validating object structure for DimReduc ‘pca’</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Object representation is consistent with the most current Seurat version</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature  group  avgExpr        logFC statistic       auc      pval      padj</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1 jurkat 5.957396  0.040642962     11343 0.5043351 0.8972436 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2 jurkat 5.945143 -0.027840659     11209 0.4983771 0.9617722 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3 jurkat 5.919214 -0.058395057     10306 0.4582277 0.2112380 0.9913131</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4 jurkat 5.931007 -0.059677089     10859 0.4828153 0.6073122 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5 jurkat 5.957468 -0.020184665     11244 0.4999333 0.9989377 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6 jurkat 5.919087 -0.007454977     11038 0.4907741 0.7828582 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_in pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6    100     100</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span> <span class="co">## on a SingleCellExperiment object</span></span></span>
-<span class="r-in"><span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"SingleCellExperiment"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>     <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">object_sce</span><span class="op">)</span></span></span>
-<span class="r-in"><span>     <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">object_sce</span>, <span class="st">'cell_type'</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span> <span class="op">}</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co">## on a SingleCellExperiment object</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"SingleCellExperiment"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">object_sce</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">object_sce</span>, <span class="st">'cell_type'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature  group  avgExpr        logFC statistic       auc      pval      padj</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1 jurkat 5.957396  0.040642962     11343 0.5043351 0.8972436 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2 jurkat 5.945143 -0.027840659     11209 0.4983771 0.9617722 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3 jurkat 5.919214 -0.058395057     10306 0.4582277 0.2112380 0.9913131</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4 jurkat 5.931007 -0.059677089     10859 0.4828153 0.6073122 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5 jurkat 5.957468 -0.020184665     11244 0.4999333 0.9989377 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6 jurkat 5.919087 -0.007454977     11038 0.4907741 0.7828582 0.9989377</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_in pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6    100     100</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
