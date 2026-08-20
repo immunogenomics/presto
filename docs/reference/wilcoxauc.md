@@ -30,7 +30,7 @@ wilcoxauc(
 wilcoxauc(X, group_by = NULL, assay = NULL, groups_use = NULL, ...)
 
 # Default S3 method
-wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, ...)
+wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, nthreads = 1, ...)
 ```
 
 ## Arguments
@@ -89,6 +89,15 @@ wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, ...)
 - verbose:
 
   Logical. Print warnings and informational messages. Default `TRUE`.
+
+- nthreads:
+
+  Number of threads for the per-feature ranking of sparse (`dgCMatrix`)
+  input. Default `1` (serial). Values above `1` split the ranking across
+  threads; the result is identical regardless of the thread count. Only
+  sparse input is parallelized – dense matrix and `data.frame` input are
+  always processed serially. When running under `R CMD check` or on
+  CRAN, keep this at the default so no more than two cores are used.
 
 ## Value
 

@@ -81,7 +81,7 @@ alongside the test statistics.</p>
 <span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">X</span>, group_by <span class="op">=</span> <span class="cn">NULL</span>, assay <span class="op">=</span> <span class="cn">NULL</span>, groups_use <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Default S3 method</span></span>
-<span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, groups_use <span class="op">=</span> <span class="cn">NULL</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, groups_use <span class="op">=</span> <span class="cn">NULL</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, nthreads <span class="op">=</span> <span class="fl">1</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -136,6 +136,16 @@ with length equal to <code>ncol(X)</code>. Ignored for <code>Seurat</code> /
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical. Print warnings and informational messages.
 Default <code>TRUE</code>.</p></dd>
+
+
+<dt id="arg-nthreads">nthreads<a class="anchor" aria-label="anchor" href="#arg-nthreads"></a></dt>
+<dd><p>Number of threads for the per-feature ranking of sparse
+(<code>dgCMatrix</code>) input. Default <code>1</code> (serial). Values above <code>1</code> split the
+ranking across threads; the result is identical regardless of the
+thread count. Only sparse input is parallelized – dense matrix and
+<code>data.frame</code> input are always processed serially. When running under
+<code>R CMD check</code> or on CRAN, keep this at the default so no more than two
+cores are used.</p></dd>
 
 </dl></div>
     <div class="section level2">
