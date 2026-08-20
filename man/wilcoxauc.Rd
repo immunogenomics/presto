@@ -32,7 +32,11 @@ wilcoxauc(X, ...)
 \item a sparse \code{dgCMatrix} of the same shape,
 \item a \code{Seurat} (v3+) object,
 \item a \code{SingleCellExperiment} object.
-}}
+}
+\code{X} must not contain \code{NA} values. Unlike \code{\link[stats:wilcox.test]{stats::wilcox.test()}},
+which drops missing values per observation, \code{wilcoxauc()} errors on
+\code{NA} input rather than returning silently incorrect results; remove
+or impute missing values first.}
 
 \item{...}{Passed to the input-specific method.}
 

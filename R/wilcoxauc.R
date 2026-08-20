@@ -22,6 +22,10 @@
 #'   \item a `Seurat` (v3+) object,
 #'   \item a `SingleCellExperiment` object.
 #' }
+#'   `X` must not contain `NA` values. Unlike [stats::wilcox.test()],
+#'   which drops missing values per observation, `wilcoxauc()` errors on
+#'   `NA` input rather than returning silently incorrect results; remove
+#'   or impute missing values first.
 #' @param y For matrix input, a character/factor vector of group labels
 #'   with length equal to `ncol(X)`. Ignored for `Seurat` /
 #'   `SingleCellExperiment` input (use `group_by` instead).
@@ -186,6 +190,18 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE, ...) {
 
     if (is.null(row.names(X))) {
         row.names(X) <- paste0("Feature", seq_len(nrow(X)))
+    }
+
+    ## Missing values in X would silently corrupt the ranks (the ranking
+    ## code sorts values and cannot drop NAs the way stats::wilcox.test
+    ## does), so fail loudly instead of returning wrong numbers. See #25.
+    if (anyNA(X)) {
+        stop(
+            "X contains NA values. Unlike stats::wilcox.test(), which drops ",
+            "missing values per observation, wilcoxauc() cannot handle NAs ",
+            "and would return silently incorrect results. Remove or impute ",
+            "the NA values before calling wilcoxauc()."
+        )
     }
 
     ## Compute primary statistics

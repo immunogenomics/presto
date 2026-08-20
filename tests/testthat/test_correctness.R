@@ -43,3 +43,18 @@ test_that('presto::wilcoxauc gives same results as stats::wilcox.test', {
 
 })
 
+test_that('wilcoxauc errors on NA values in X instead of silent wrong results', {
+    ## Regression test for #25: NA in the data matrix used to silently
+    ## corrupt the ranks and return an incorrect p-value.
+    exprs_na <- exprs
+    exprs_na[3, 10] <- NA
+
+    expect_error(wilcoxauc(exprs_na, y), "NA")
+    expect_error(wilcoxauc(as(exprs_na, 'dgCMatrix'), y), "NA")
+
+    ## The clean matrix still works.
+    res_ok <- wilcoxauc(exprs, y, verbose = FALSE)
+    expect_equal(nrow(res_ok), nrow(exprs) * length(unique(y)))
+    expect_true(all(!is.na(res_ok)))
+})
+
