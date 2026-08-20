@@ -20,11 +20,11 @@
 ## Citation
 
 Korsunsky I, Nathan A, Millard N, Raychaudhuri S (2026). *presto: Fast
-Functions for Differential Expression using Wilcox and AUC*. R package
+Functions for Differential Expression Using Wilcoxon and AUC*. R package
 version 1.0.0.
 
     @Manual{,
-      title = {presto: Fast Functions for Differential Expression using Wilcox and AUC},
+      title = {presto: Fast Functions for Differential Expression Using Wilcoxon and AUC},
       author = {Ilya Korsunsky and Aparna Nathan and Nghia Millard and Soumya Raychaudhuri},
       year = {2026},
       note = {R package version 1.0.0},

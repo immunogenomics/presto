@@ -105,20 +105,20 @@ group labels:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">counts</span>, <span class="va">d</span><span class="op">$</span><span class="va">obs</span><span class="op">$</span><span class="va">cluster</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                       feature group  avgExpr     logFC statistic   auc     pval</span></span>
-<span><span class="co">#&gt; 1 ENSG00000243485|MIR1302-2HG     1 0.000000  0.000000  71066590 0.500 1.000000</span></span>
-<span><span class="co">#&gt; 2  ENSG00000238009|AL627309.1     1 0.000239 -0.000233  71050031 0.500 0.379630</span></span>
-<span><span class="co">#&gt; 3  ENSG00000241599|AL627309.4     1 0.000000  0.000000  71066590 0.500 1.000000</span></span>
-<span><span class="co">#&gt; 4  ENSG00000235146|AC114498.1     1 0.000000  0.000000  71066590 0.500 1.000000</span></span>
-<span><span class="co">#&gt; 5  ENSG00000237491|AL669831.5     1 0.053938  0.011016  71757724 0.505 0.000418</span></span>
-<span><span class="co">#&gt; 6      ENSG00000177757|FAM87B     1 0.000000  0.000000  71066590 0.500 1.000000</span></span>
-<span><span class="co">#&gt;      padj pct_in pct_out</span></span>
-<span><span class="co">#&gt; 1 1.00000 0.0000  0.0000</span></span>
-<span><span class="co">#&gt; 2 0.67361 0.0239  0.0472</span></span>
-<span><span class="co">#&gt; 3 1.00000 0.0000  0.0000</span></span>
-<span><span class="co">#&gt; 4 1.00000 0.0000  0.0000</span></span>
-<span><span class="co">#&gt; 5 0.00187 5.1074  4.1389</span></span>
-<span><span class="co">#&gt; 6 1.00000 0.0000  0.0000</span></span></code></pre></div>
+<span><span class="co">#&gt;                       feature group  avgExpr     logFC statistic   auc     pval    padj pct_in</span></span>
+<span><span class="co">#&gt; 1 ENSG00000243485|MIR1302-2HG     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000</span></span>
+<span><span class="co">#&gt; 2  ENSG00000238009|AL627309.1     1 0.000239 -0.000233  71050031 0.500 0.379630 0.67361 0.0239</span></span>
+<span><span class="co">#&gt; 3  ENSG00000241599|AL627309.4     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000</span></span>
+<span><span class="co">#&gt; 4  ENSG00000235146|AC114498.1     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000</span></span>
+<span><span class="co">#&gt; 5  ENSG00000237491|AL669831.5     1 0.053938  0.011016  71757724 0.505 0.000418 0.00187 5.1074</span></span>
+<span><span class="co">#&gt; 6      ENSG00000177757|FAM87B     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000</span></span>
+<span><span class="co">#&gt;   pct_out</span></span>
+<span><span class="co">#&gt; 1  0.0000</span></span>
+<span><span class="co">#&gt; 2  0.0472</span></span>
+<span><span class="co">#&gt; 3  0.0000</span></span>
+<span><span class="co">#&gt; 4  0.0000</span></span>
+<span><span class="co">#&gt; 5  4.1389</span></span>
+<span><span class="co">#&gt; 6  0.0000</span></span></code></pre></div>
 <p>Each row reports one (gene, group) test. Rows are returned for every
 gene × cluster combination, comparing observations in that cluster
 against all other observations.</p>
@@ -187,14 +187,14 @@ per group. Use <code>auc_min</code>, <code>padj_max</code>,
 <code>pct_in_min</code>, and <code>pct_out_max</code> to filter.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/top_markers.html">top_markers</a></span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">5</span>, auc_min <span class="op">=</span> <span class="fl">0.6</span>, padj_max <span class="op">=</span> <span class="fl">1e-3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
-<span><span class="co">#&gt;    rank `1`                    `2`     `3`   `4`   `5`   `6`   `7`   `8`   `9`  </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 ENSG00000198727|MT-CYB ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 ENSG00000117632|STMN1  ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 ENSG00000128951|DUT    ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4 ENSG00000198804|MT-CO1 ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5 ENSG00000198938|MT-CO3 ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span></code></pre></div>
+<span><span class="co">#&gt; # A tibble: 5 × 10</span></span>
+<span><span class="co">#&gt;    rank `1`                    `2`                      `3`      `4`   `5`   `6`   `7`   `8`   `9`  </span></span>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;                  &lt;chr&gt;                    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;</span></span>
+<span><span class="co">#&gt; 1     1 ENSG00000198727|MT-CYB ENSG00000153563|CD8A     ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
+<span><span class="co">#&gt; 2     2 ENSG00000117632|STMN1  ENSG00000142669|SH3BGRL3 ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
+<span><span class="co">#&gt; 3     3 ENSG00000128951|DUT    ENSG00000196154|S100A4   ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
+<span><span class="co">#&gt; 4     4 ENSG00000198804|MT-CO1 ENSG00000116824|CD2      ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span>
+<span><span class="co">#&gt; 5     5 ENSG00000198938|MT-CO3 ENSG00000167286|CD3D     ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…</span></span></code></pre></div>
 <p>The gene identifiers are the verbatim row names from the input matrix
 (<code>ENSG…|SYMBOL</code>). To plot just the symbol portion, split at
 <code>|</code>:</p>
@@ -202,14 +202,14 @@ per group. Use <code>auc_min</code>, <code>padj_max</code>,
 <code class="sourceCode R"><span><span class="va">top5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/top_markers.html">top_markers</a></span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">5</span>, auc_min <span class="op">=</span> <span class="fl">0.6</span>, padj_max <span class="op">=</span> <span class="fl">1e-3</span><span class="op">)</span></span>
 <span><span class="va">top5</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="op">-</span><span class="va">rank</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*\\|"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 10</span></span>
 <span><span class="co">#&gt;    rank `1`    `2`      `3`   `4`   `5`    `6`      `7`      `8`     `9`   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 MT-CYB CD8A     GZMK  GAPDH IL7R   ACTG1    TYROBP   TNFRSF4 JCHAIN</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 STMN1  SH3BGRL3 CD27  GZMA  RPS12  CCL5     FCER1G   SRGN    IGHA1 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 DUT    S100A4   CST7  CD7   S100A4 TMSB4X   TRDC     ITGB2   IGKC  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4 MT-CO1 CD2      ITGB2 TPI1  LTB    CD52     TNFRSF18 NFKBIA  IGLC2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5 MT-CO3 CD3D     GZMH  GZMB  RPS14  SH3BGRL3 GSTP1    CTLA4   IGLC3</span></span></code></pre></div>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1     1 MT-CYB CD8A     GZMK  GAPDH IL7R   ACTG1    TYROBP   TNFRSF4 JCHAIN</span></span>
+<span><span class="co">#&gt; 2     2 STMN1  SH3BGRL3 CD27  GZMA  RPS12  CCL5     FCER1G   SRGN    IGHA1 </span></span>
+<span><span class="co">#&gt; 3     3 DUT    S100A4   CST7  CD7   S100A4 TMSB4X   TRDC     ITGB2   IGKC  </span></span>
+<span><span class="co">#&gt; 4     4 MT-CO1 CD2      ITGB2 TPI1  LTB    CD52     TNFRSF18 NFKBIA  IGLC2 </span></span>
+<span><span class="co">#&gt; 5     5 MT-CO3 CD3D     GZMH  GZMB  RPS14  SH3BGRL3 GSTP1    CTLA4   IGLC3</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="restricting-to-a-subset-of-groups">Restricting to a subset of groups<a class="anchor" aria-label="anchor" href="#restricting-to-a-subset-of-groups"></a>
@@ -219,19 +219,19 @@ against each other:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/wilcoxauc.html">wilcoxauc</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">counts</span>, <span class="va">d</span><span class="op">$</span><span class="va">obs</span><span class="op">$</span><span class="va">cluster</span>, groups_use <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1"</span>, <span class="st">"2"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/top_markers.html">top_markers</a></span><span class="op">(</span><span class="va">res_12</span>, n <span class="op">=</span> <span class="fl">10</span>, auc_min <span class="op">=</span> <span class="fl">0.6</span>, padj_max <span class="op">=</span> <span class="fl">1e-3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 3</span></span></span>
+<span><span class="co">#&gt; # A tibble: 10 × 3</span></span>
 <span><span class="co">#&gt;     rank `1`                     `2`                     </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>     1 ENSG00000198727|MT-CYB  ENSG00000153563|CD8A    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>     2 ENSG00000198938|MT-CO3  ENSG00000116824|CD2     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>     3 ENSG00000198886|MT-ND4  ENSG00000196154|S100A4  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>     4 ENSG00000198712|MT-CO2  ENSG00000111796|KLRB1   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>     5 ENSG00000198804|MT-CO1  ENSG00000197956|S100A6  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>     6 ENSG00000117632|STMN1   ENSG00000142669|SH3BGRL3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>     7 ENSG00000212907|MT-ND4L ENSG00000137078|SIT1    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>     8 ENSG00000198888|MT-ND1  ENSG00000166710|B2M     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     9 ENSG00000128951|DUT     ENSG00000213658|LAT     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    10 ENSG00000164104|HMGB2   ENSG00000197540|GZMM</span></span></code></pre></div>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;                   &lt;chr&gt;                   </span></span>
+<span><span class="co">#&gt;  1     1 ENSG00000198727|MT-CYB  ENSG00000153563|CD8A    </span></span>
+<span><span class="co">#&gt;  2     2 ENSG00000198938|MT-CO3  ENSG00000116824|CD2     </span></span>
+<span><span class="co">#&gt;  3     3 ENSG00000198886|MT-ND4  ENSG00000196154|S100A4  </span></span>
+<span><span class="co">#&gt;  4     4 ENSG00000198712|MT-CO2  ENSG00000111796|KLRB1   </span></span>
+<span><span class="co">#&gt;  5     5 ENSG00000198804|MT-CO1  ENSG00000197956|S100A6  </span></span>
+<span><span class="co">#&gt;  6     6 ENSG00000117632|STMN1   ENSG00000142669|SH3BGRL3</span></span>
+<span><span class="co">#&gt;  7     7 ENSG00000212907|MT-ND4L ENSG00000137078|SIT1    </span></span>
+<span><span class="co">#&gt;  8     8 ENSG00000198888|MT-ND1  ENSG00000166710|B2M     </span></span>
+<span><span class="co">#&gt;  9     9 ENSG00000128951|DUT     ENSG00000213658|LAT     </span></span>
+<span><span class="co">#&gt; 10    10 ENSG00000164104|HMGB2   ENSG00000197540|GZMM</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="seurat-and-singlecellexperiment">Seurat and SingleCellExperiment<a class="anchor" aria-label="anchor" href="#seurat-and-singlecellexperiment"></a>
@@ -280,25 +280,18 @@ columns are cells).</p>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dplyr_1.2.1         Matrix_1.7-4        presto_1.0.0       </span></span>
-<span><span class="co">#&gt; [4] data.table_1.18.2.1 Rcpp_1.1.1         </span></span>
+<span><span class="co">#&gt; [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.0.0  knitr_1.51    ggplot2_4.0.2</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] jsonlite_2.0.0      compiler_4.5.2      tidyselect_1.2.1   </span></span>
-<span><span class="co">#&gt;  [4] rhdf5filters_1.22.0 tidyr_1.3.2         jquerylib_0.1.4    </span></span>
-<span><span class="co">#&gt;  [7] systemfonts_1.3.1   textshaping_1.0.4   yaml_2.3.12        </span></span>
-<span><span class="co">#&gt; [10] fastmap_1.2.0       lattice_0.22-7      R6_2.6.1           </span></span>
-<span><span class="co">#&gt; [13] generics_0.1.4      knitr_1.51          htmlwidgets_1.6.4  </span></span>
-<span><span class="co">#&gt; [16] tibble_3.3.1        desc_1.4.3          bslib_0.10.0       </span></span>
-<span><span class="co">#&gt; [19] pillar_1.11.1       rlang_1.1.7         utf8_1.2.6         </span></span>
-<span><span class="co">#&gt; [22] cachem_1.1.0        xfun_0.56           fs_1.6.6           </span></span>
-<span><span class="co">#&gt; [25] sass_0.4.10         otel_0.2.0          cli_3.6.5          </span></span>
-<span><span class="co">#&gt; [28] pkgdown_2.2.0       withr_3.0.2         magrittr_2.0.5     </span></span>
-<span><span class="co">#&gt; [31] Rhdf5lib_1.32.0     digest_0.6.39       grid_4.5.2         </span></span>
-<span><span class="co">#&gt; [34] rhdf5_2.54.1        lifecycle_1.0.5     vctrs_0.7.2        </span></span>
-<span><span class="co">#&gt; [37] evaluate_1.0.5      glue_1.8.0          ragg_1.5.0         </span></span>
-<span><span class="co">#&gt; [40] rmarkdown_2.30      purrr_1.2.1         tools_4.5.2        </span></span>
-<span><span class="co">#&gt; [43] pkgconfig_2.0.3     htmltools_0.5.9</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] vctrs_0.7.2         cli_3.6.5           rlang_1.1.7         xfun_0.56          </span></span>
+<span><span class="co">#&gt;  [5] otel_0.2.0          purrr_1.2.1         generics_0.1.4      S7_0.2.1           </span></span>
+<span><span class="co">#&gt;  [9] data.table_1.18.2.1 glue_1.8.0          scales_1.4.0        grid_4.5.2         </span></span>
+<span><span class="co">#&gt; [13] evaluate_1.0.5      tibble_3.3.1        Rhdf5lib_1.32.0     lifecycle_1.0.5    </span></span>
+<span><span class="co">#&gt; [17] compiler_4.5.2      RColorBrewer_1.1-3  rhdf5filters_1.22.0 Rcpp_1.1.1         </span></span>
+<span><span class="co">#&gt; [21] pkgconfig_2.0.3     tidyr_1.3.2         rhdf5_2.54.1        lattice_0.22-7     </span></span>
+<span><span class="co">#&gt; [25] farver_2.1.2        R6_2.6.1            utf8_1.2.6          dichromat_2.0-0.1  </span></span>
+<span><span class="co">#&gt; [29] tidyselect_1.2.1    pillar_1.11.1       magrittr_2.0.5      tools_4.5.2        </span></span>
+<span><span class="co">#&gt; [33] withr_3.0.2         gtable_0.3.6</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

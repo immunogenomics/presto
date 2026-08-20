@@ -93,7 +93,10 @@ alongside the test statistics.</p>
 <li><p>a sparse <code>dgCMatrix</code> of the same shape,</p></li>
 <li><p>a <code>Seurat</code> (v3+) object,</p></li>
 <li><p>a <code>SingleCellExperiment</code> object.</p></li>
-</ul></dd>
+</ul><p><code>X</code> must not contain <code>NA</code> values. Unlike <code><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">stats::wilcox.test()</a></code>,
+which drops missing values per observation, <code>wilcoxauc()</code> errors on
+<code>NA</code> input rather than returning silently incorrect results; remove
+or impute missing values first.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

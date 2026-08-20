@@ -46,20 +46,20 @@ labels:
 
 res <- wilcoxauc(d$counts, d$obs$cluster)
 head(res)
-#>                       feature group  avgExpr     logFC statistic   auc     pval
-#> 1 ENSG00000243485|MIR1302-2HG     1 0.000000  0.000000  71066590 0.500 1.000000
-#> 2  ENSG00000238009|AL627309.1     1 0.000239 -0.000233  71050031 0.500 0.379630
-#> 3  ENSG00000241599|AL627309.4     1 0.000000  0.000000  71066590 0.500 1.000000
-#> 4  ENSG00000235146|AC114498.1     1 0.000000  0.000000  71066590 0.500 1.000000
-#> 5  ENSG00000237491|AL669831.5     1 0.053938  0.011016  71757724 0.505 0.000418
-#> 6      ENSG00000177757|FAM87B     1 0.000000  0.000000  71066590 0.500 1.000000
-#>      padj pct_in pct_out
-#> 1 1.00000 0.0000  0.0000
-#> 2 0.67361 0.0239  0.0472
-#> 3 1.00000 0.0000  0.0000
-#> 4 1.00000 0.0000  0.0000
-#> 5 0.00187 5.1074  4.1389
-#> 6 1.00000 0.0000  0.0000
+#>                       feature group  avgExpr     logFC statistic   auc     pval    padj pct_in
+#> 1 ENSG00000243485|MIR1302-2HG     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000
+#> 2  ENSG00000238009|AL627309.1     1 0.000239 -0.000233  71050031 0.500 0.379630 0.67361 0.0239
+#> 3  ENSG00000241599|AL627309.4     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000
+#> 4  ENSG00000235146|AC114498.1     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000
+#> 5  ENSG00000237491|AL669831.5     1 0.053938  0.011016  71757724 0.505 0.000418 0.00187 5.1074
+#> 6      ENSG00000177757|FAM87B     1 0.000000  0.000000  71066590 0.500 1.000000 1.00000 0.0000
+#>   pct_out
+#> 1  0.0000
+#> 2  0.0472
+#> 3  0.0000
+#> 4  0.0000
+#> 5  4.1389
+#> 6  0.0000
 ```
 
 Each row reports one (gene, group) test. Rows are returned for every
@@ -91,13 +91,13 @@ extracts the most distinguishing features per group. Use `auc_min`,
 
 top_markers(res, n = 5, auc_min = 0.6, padj_max = 1e-3)
 #> # A tibble: 5 × 10
-#>    rank `1`                    `2`     `3`   `4`   `5`   `6`   `7`   `8`   `9`  
-#>   <int> <chr>                  <chr>   <chr> <chr> <chr> <chr> <chr> <chr> <chr>
-#> 1     1 ENSG00000198727|MT-CYB ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
-#> 2     2 ENSG00000117632|STMN1  ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
-#> 3     3 ENSG00000128951|DUT    ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
-#> 4     4 ENSG00000198804|MT-CO1 ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
-#> 5     5 ENSG00000198938|MT-CO3 ENSG00… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
+#>    rank `1`                    `2`                      `3`      `4`   `5`   `6`   `7`   `8`   `9`  
+#>   <int> <chr>                  <chr>                    <chr>    <chr> <chr> <chr> <chr> <chr> <chr>
+#> 1     1 ENSG00000198727|MT-CYB ENSG00000153563|CD8A     ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
+#> 2     2 ENSG00000117632|STMN1  ENSG00000142669|SH3BGRL3 ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
+#> 3     3 ENSG00000128951|DUT    ENSG00000196154|S100A4   ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
+#> 4     4 ENSG00000198804|MT-CO1 ENSG00000116824|CD2      ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
+#> 5     5 ENSG00000198938|MT-CO3 ENSG00000167286|CD3D     ENSG000… ENSG… ENSG… ENSG… ENSG… ENSG… ENSG…
 ```
 
 The gene identifiers are the verbatim row names from the input matrix
@@ -191,23 +191,16 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] dplyr_1.2.1         Matrix_1.7-4        presto_1.0.0       
-#> [4] data.table_1.18.2.1 Rcpp_1.1.1         
+#> [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.0.0  knitr_1.51    ggplot2_4.0.2
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] jsonlite_2.0.0      compiler_4.5.2      tidyselect_1.2.1   
-#>  [4] rhdf5filters_1.22.0 tidyr_1.3.2         jquerylib_0.1.4    
-#>  [7] systemfonts_1.3.1   textshaping_1.0.4   yaml_2.3.12        
-#> [10] fastmap_1.2.0       lattice_0.22-7      R6_2.6.1           
-#> [13] generics_0.1.4      knitr_1.51          htmlwidgets_1.6.4  
-#> [16] tibble_3.3.1        desc_1.4.3          bslib_0.10.0       
-#> [19] pillar_1.11.1       rlang_1.1.7         utf8_1.2.6         
-#> [22] cachem_1.1.0        xfun_0.56           fs_1.6.6           
-#> [25] sass_0.4.10         otel_0.2.0          cli_3.6.5          
-#> [28] pkgdown_2.2.0       withr_3.0.2         magrittr_2.0.5     
-#> [31] Rhdf5lib_1.32.0     digest_0.6.39       grid_4.5.2         
-#> [34] rhdf5_2.54.1        lifecycle_1.0.5     vctrs_0.7.2        
-#> [37] evaluate_1.0.5      glue_1.8.0          ragg_1.5.0         
-#> [40] rmarkdown_2.30      purrr_1.2.1         tools_4.5.2        
-#> [43] pkgconfig_2.0.3     htmltools_0.5.9
+#>  [1] vctrs_0.7.2         cli_3.6.5           rlang_1.1.7         xfun_0.56          
+#>  [5] otel_0.2.0          purrr_1.2.1         generics_0.1.4      S7_0.2.1           
+#>  [9] data.table_1.18.2.1 glue_1.8.0          scales_1.4.0        grid_4.5.2         
+#> [13] evaluate_1.0.5      tibble_3.3.1        Rhdf5lib_1.32.0     lifecycle_1.0.5    
+#> [17] compiler_4.5.2      RColorBrewer_1.1-3  rhdf5filters_1.22.0 Rcpp_1.1.1         
+#> [21] pkgconfig_2.0.3     tidyr_1.3.2         rhdf5_2.54.1        lattice_0.22-7     
+#> [25] farver_2.1.2        R6_2.6.1            utf8_1.2.6          dichromat_2.0-0.1  
+#> [29] tidyselect_1.2.1    pillar_1.11.1       magrittr_2.0.5      tools_4.5.2        
+#> [33] withr_3.0.2         gtable_0.3.6
 ```

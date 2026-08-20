@@ -129,20 +129,13 @@ res <- pseudobulk_deseq2(
     mode = "one_vs_all"
 )
 head(res)
-#>   group                  feature baseMean log2FoldChange lfcSE stat   pvalue
-#> 1     1      ENSG00000128951|DUT    42.72           1.35 0.108 12.5 6.67e-36
-#> 2     1     ENSG00000105486|LIG1     4.18           1.69 0.138 12.2 2.49e-34
-#> 3     1 ENSG00000134291|TMEM106C    13.14           1.67 0.138 12.1 7.54e-34
-#> 4     1    ENSG00000188486|H2AFX    10.49           1.86 0.155 12.0 2.92e-33
-#> 5     1     ENSG00000120802|TMPO    14.95           1.34 0.113 11.9 1.13e-32
-#> 6     1     ENSG00000163535|SGO2     2.85           2.17 0.186 11.7 1.50e-31
-#>       padj
-#> 1 6.69e-32
-#> 2 1.25e-30
-#> 3 2.52e-30
-#> 4 7.33e-30
-#> 5 2.27e-29
-#> 6 2.50e-28
+#>   group                  feature baseMean log2FoldChange lfcSE stat   pvalue     padj
+#> 1     1      ENSG00000128951|DUT    42.72           1.35 0.108 12.5 6.67e-36 6.69e-32
+#> 2     1     ENSG00000105486|LIG1     4.18           1.69 0.138 12.2 2.49e-34 1.25e-30
+#> 3     1 ENSG00000134291|TMEM106C    13.14           1.67 0.138 12.1 7.54e-34 2.52e-30
+#> 4     1    ENSG00000188486|H2AFX    10.49           1.86 0.155 12.0 2.92e-33 7.33e-30
+#> 5     1     ENSG00000120802|TMPO    14.95           1.34 0.113 11.9 1.13e-32 2.27e-29
+#> 6     1     ENSG00000163535|SGO2     2.85           2.17 0.186 11.7 1.50e-31 2.50e-28
 ```
 
 Result columns come straight from
@@ -175,10 +168,10 @@ top5 %>%
 #>    rank `1`      `2`    `3`    `4`     `5`     `6`    `7`       `8`     
 #>   <int> <chr>    <chr>  <chr>  <chr>   <chr>   <chr>  <chr>     <chr>   
 #> 1     1 DUT      CCL4L2 KLRG1  SDF2L1  IL7R    LGALS1 LINC00996 ICA1    
-#> 2     2 LIG1     CCL4   CST7   HSPA5   NT5E    NA     CD247     NFKBID  
-#> 3     3 TMEM106C CCL3L1 DTHD1  TNFRSF9 FLT3LG  NA     MCTP2     MIR155HG
-#> 4     4 H2AFX    NA     CD81   TSPAN17 ANXA1   NA     IL2RB     SOD1    
-#> 5     5 TMPO     NA     SH2D1A HYOU1   MID1IP1 NA     PTPN12    ICOS
+#> 2     2 LIG1     CCL4   CST7   HSPA5   NT5E    <NA>   CD247     NFKBID  
+#> 3     3 TMEM106C CCL3L1 DTHD1  TNFRSF9 FLT3LG  <NA>   MCTP2     MIR155HG
+#> 4     4 H2AFX    <NA>   CD81   TSPAN17 ANXA1   <NA>   IL2RB     SOD1    
+#> 5     5 TMPO     <NA>   SH2D1A HYOU1   MID1IP1 <NA>   PTPN12    ICOS
 ```
 
 The signal is biologically reasonable: cluster 1 is dominated by S-phase
@@ -211,20 +204,13 @@ res_p <- pseudobulk_deseq2(
     mode = "pairwise"
 )
 head(res_p)
-#>   group1 group2               feature baseMean log2FoldChange lfcSE stat
-#> 1      1      3 ENSG00000117632|STMN1    142.2           3.55 0.264 13.5
-#> 2      1      3  ENSG00000176890|TYMS     48.3           5.06 0.382 13.2
-#> 3      1      2 ENSG00000117632|STMN1    201.2           3.78 0.289 13.1
-#> 4      1      2  ENSG00000166508|MCM7     30.7           2.60 0.206 12.6
-#> 5      1      2   ENSG00000128951|DUT    142.1           1.65 0.131 12.5
-#> 6      1      2 ENSG00000276043|UHRF1     12.7           4.96 0.400 12.4
-#>     pvalue     padj
-#> 1 3.03e-41 7.42e-38
-#> 2 5.09e-40 8.31e-37
-#> 3 5.56e-39 5.52e-35
-#> 4 2.03e-36 1.01e-32
-#> 5 4.28e-36 1.42e-32
-#> 6 2.82e-35 7.01e-32
+#>   group1 group2               feature baseMean log2FoldChange lfcSE stat   pvalue     padj
+#> 1      1      3 ENSG00000117632|STMN1    142.2           3.55 0.264 13.5 3.03e-41 7.42e-38
+#> 2      1      3  ENSG00000176890|TYMS     48.3           5.06 0.382 13.2 5.09e-40 8.31e-37
+#> 3      1      2 ENSG00000117632|STMN1    201.2           3.78 0.289 13.1 5.56e-39 5.52e-35
+#> 4      1      2  ENSG00000166508|MCM7     30.7           2.60 0.206 12.6 2.03e-36 1.01e-32
+#> 5      1      2   ENSG00000128951|DUT    142.1           1.65 0.131 12.5 4.28e-36 1.42e-32
+#> 6      1      2 ENSG00000276043|UHRF1     12.7           4.96 0.400 12.4 2.82e-35 7.01e-32
 ```
 
 [`summarize_dge_pairs()`](https://immunogenomics.github.io/presto/reference/summarize_dge_pairs.md)
@@ -237,7 +223,6 @@ effect, useful for high-confidence markers) or `"max"` for the best.
 summarize_dge_pairs(res_p, "min") %>%
     head(10) %>%
     dplyr::mutate(feature = sub(".*\\|", "", feature))
-#> [1] "min"
 #>      group  feature baseMean log2FoldChange lfcSE  stat   pvalue     padj
 #>     <char>   <char>    <num>          <num> <num> <num>    <num>    <num>
 #>  1:      1    STMN1   201.22           3.78 0.289  13.1 5.56e-39 5.52e-35
@@ -273,20 +258,13 @@ res_w <- pseudobulk_deseq2(
     mode = "within"
 )
 head(res_w)
-#>   group                   feature baseMean log2FoldChange lfcSE stat   pvalue
-#> 1     1      ENSG00000158517|NCF1    73.62           1.45 0.194 7.50 6.58e-14
-#> 2     1      ENSG00000171867|PRNP    30.67           1.80 0.242 7.45 9.11e-14
-#> 3     1     ENSG00000162496|DHRS3     8.52           2.62 0.386 6.77 1.29e-11
-#> 4     1      ENSG00000185101|ANO9    10.32           1.76 0.261 6.75 1.52e-11
-#> 5     1     ENSG00000265972|TXNIP   202.85           1.34 0.199 6.74 1.60e-11
-#> 6     1 ENSG00000268804|LINC02132     9.84           2.78 0.414 6.72 1.78e-11
-#>       padj
-#> 1 3.38e-11
-#> 2 4.45e-11
-#> 3 4.51e-09
-#> 4 4.63e-09
-#> 5 4.74e-09
-#> 6 4.99e-09
+#>   group                   feature baseMean log2FoldChange lfcSE stat   pvalue     padj
+#> 1     1      ENSG00000158517|NCF1    73.62           1.45 0.194 7.50 6.58e-14 3.38e-11
+#> 2     1      ENSG00000171867|PRNP    30.67           1.80 0.242 7.45 9.11e-14 4.45e-11
+#> 3     1     ENSG00000162496|DHRS3     8.52           2.62 0.386 6.77 1.29e-11 4.51e-09
+#> 4     1      ENSG00000185101|ANO9    10.32           1.76 0.261 6.75 1.52e-11 4.63e-09
+#> 5     1     ENSG00000265972|TXNIP   202.85           1.34 0.199 6.74 1.60e-11 4.74e-09
+#> 6     1 ENSG00000268804|LINC02132     9.84           2.78 0.414 6.72 1.78e-11 4.99e-09
 ```
 
 Top genes upregulated in cases per cluster:
@@ -299,10 +277,10 @@ top_markers_dds(res_w, n = 5, padj_max = 1e-4, lfc_min = 1) %>%
 #>    rank `1`   `2`    `3`   `4`   `5`    `6`    `7`     `8`   
 #>   <int> <chr> <chr>  <chr> <chr> <chr>  <chr>  <chr>   <chr> 
 #> 1     1 NCF1  SPINK2 LAIR1 DHRS7 SPINK2 GNPTAB LDLRAD4 RPS12 
-#> 2     2 PRNP  SORBS3 NA    CA10  NA     DHRS7  NA      RPL30 
-#> 3     3 DHRS3 KIFC3  NA    NCF1  NA     TXNIP  NA      EEF1B2
-#> 4     4 ANO9  GNPTAB NA    KIFC3 NA     FCER1G NA      MT-ND3
-#> 5     5 TXNIP CALHM6 NA    MYBL1 NA     TGFBR1 NA      NA
+#> 2     2 PRNP  SORBS3 <NA>  CA10  <NA>   DHRS7  <NA>    RPL30 
+#> 3     3 DHRS3 KIFC3  <NA>  NCF1  <NA>   TXNIP  <NA>    EEF1B2
+#> 4     4 ANO9  GNPTAB <NA>  KIFC3 <NA>   FCER1G <NA>    MT-ND3
+#> 5     5 TXNIP CALHM6 <NA>  MYBL1 <NA>   TGFBR1 <NA>    <NA>
 ```
 
 Cluster-1 cases up-regulate `NCF1`, `PRNP`, `TXNIP` —
@@ -347,44 +325,25 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] dplyr_1.2.1         Matrix_1.7-4        presto_1.0.0       
-#> [4] data.table_1.18.2.1 Rcpp_1.1.1         
+#> [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.0.0  knitr_1.51    ggplot2_4.0.2
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] SummarizedExperiment_1.40.0 gtable_0.3.6               
-#>  [3] xfun_0.56                   bslib_0.10.0               
-#>  [5] ggplot2_4.0.2               htmlwidgets_1.6.4          
-#>  [7] rhdf5_2.54.1                Biobase_2.70.0             
-#>  [9] lattice_0.22-7              rhdf5filters_1.22.0        
-#> [11] vctrs_0.7.2                 tools_4.5.2                
-#> [13] generics_0.1.4              stats4_4.5.2               
-#> [15] parallel_4.5.2              tibble_3.3.1               
-#> [17] pkgconfig_2.0.3             RColorBrewer_1.1-3         
-#> [19] S7_0.2.1                    desc_1.4.3                 
-#> [21] S4Vectors_0.48.0            lifecycle_1.0.5            
-#> [23] compiler_4.5.2              farver_2.1.2               
-#> [25] textshaping_1.0.4           DESeq2_1.50.2              
-#> [27] Seqinfo_1.0.0               codetools_0.2-20           
-#> [29] htmltools_0.5.9             sass_0.4.10                
-#> [31] yaml_2.3.12                 pillar_1.11.1              
-#> [33] pkgdown_2.2.0               jquerylib_0.1.4            
-#> [35] tidyr_1.3.2                 BiocParallel_1.44.0        
-#> [37] cachem_1.1.0                DelayedArray_0.36.0        
-#> [39] abind_1.4-8                 tidyselect_1.2.1           
-#> [41] locfit_1.5-9.12             digest_0.6.39              
-#> [43] purrr_1.2.1                 fastmap_1.2.0              
-#> [45] grid_4.5.2                  cli_3.6.5                  
-#> [47] SparseArray_1.10.2          magrittr_2.0.5             
-#> [49] S4Arrays_1.10.0             utf8_1.2.6                 
-#> [51] dichromat_2.0-0.1           withr_3.0.2                
-#> [53] scales_1.4.0                rmarkdown_2.30             
-#> [55] XVector_0.50.0              matrixStats_1.5.0          
-#> [57] otel_0.2.0                  ragg_1.5.0                 
-#> [59] evaluate_1.0.5              knitr_1.51                 
-#> [61] GenomicRanges_1.62.1        IRanges_2.44.0             
-#> [63] rlang_1.1.7                 glue_1.8.0                 
-#> [65] BiocGenerics_0.56.0         jsonlite_2.0.0             
-#> [67] R6_2.6.1                    Rhdf5lib_1.32.0            
-#> [69] MatrixGenerics_1.22.0       systemfonts_1.3.1          
-#> [71] fs_1.6.6
+#>  [1] utf8_1.2.6                  generics_0.1.4              tidyr_1.3.2                
+#>  [4] SparseArray_1.10.2          DESeq2_1.50.2               lattice_0.22-7             
+#>  [7] magrittr_2.0.5              evaluate_1.0.5              grid_4.5.2                 
+#> [10] RColorBrewer_1.1-3          purrr_1.2.1                 scales_1.4.0               
+#> [13] codetools_0.2-20            abind_1.4-8                 cli_3.6.5                  
+#> [16] rlang_1.1.7                 XVector_0.50.0              Biobase_2.70.0             
+#> [19] DelayedArray_0.36.0         withr_3.0.2                 otel_0.2.0                 
+#> [22] S4Arrays_1.10.0             tools_4.5.2                 parallel_4.5.2             
+#> [25] BiocParallel_1.44.0         Rhdf5lib_1.32.0             locfit_1.5-9.12            
+#> [28] SummarizedExperiment_1.40.0 BiocGenerics_0.56.0         vctrs_0.7.2                
+#> [31] R6_2.6.1                    matrixStats_1.5.0           stats4_4.5.2               
+#> [34] lifecycle_1.0.5             rhdf5_2.54.1                Seqinfo_1.0.0              
+#> [37] S4Vectors_0.48.0            IRanges_2.44.0              pkgconfig_2.0.3            
+#> [40] pillar_1.11.1               gtable_0.3.6                data.table_1.18.2.1        
+#> [43] glue_1.8.0                  Rcpp_1.1.1                  xfun_0.56                  
+#> [46] tibble_3.3.1                GenomicRanges_1.62.1        tidyselect_1.2.1           
+#> [49] MatrixGenerics_1.22.0       dichromat_2.0-0.1           rhdf5filters_1.22.0        
+#> [52] farver_2.1.2                compiler_4.5.2              S7_0.2.1
 ```

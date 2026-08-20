@@ -185,20 +185,13 @@ variables used in the formula.</p>
 <span>    mode <span class="op">=</span> <span class="st">"one_vs_all"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   group                  feature baseMean log2FoldChange lfcSE stat   pvalue</span></span>
-<span><span class="co">#&gt; 1     1      ENSG00000128951|DUT    42.72           1.35 0.108 12.5 6.67e-36</span></span>
-<span><span class="co">#&gt; 2     1     ENSG00000105486|LIG1     4.18           1.69 0.138 12.2 2.49e-34</span></span>
-<span><span class="co">#&gt; 3     1 ENSG00000134291|TMEM106C    13.14           1.67 0.138 12.1 7.54e-34</span></span>
-<span><span class="co">#&gt; 4     1    ENSG00000188486|H2AFX    10.49           1.86 0.155 12.0 2.92e-33</span></span>
-<span><span class="co">#&gt; 5     1     ENSG00000120802|TMPO    14.95           1.34 0.113 11.9 1.13e-32</span></span>
-<span><span class="co">#&gt; 6     1     ENSG00000163535|SGO2     2.85           2.17 0.186 11.7 1.50e-31</span></span>
-<span><span class="co">#&gt;       padj</span></span>
-<span><span class="co">#&gt; 1 6.69e-32</span></span>
-<span><span class="co">#&gt; 2 1.25e-30</span></span>
-<span><span class="co">#&gt; 3 2.52e-30</span></span>
-<span><span class="co">#&gt; 4 7.33e-30</span></span>
-<span><span class="co">#&gt; 5 2.27e-29</span></span>
-<span><span class="co">#&gt; 6 2.50e-28</span></span></code></pre></div>
+<span><span class="co">#&gt;   group                  feature baseMean log2FoldChange lfcSE stat   pvalue     padj</span></span>
+<span><span class="co">#&gt; 1     1      ENSG00000128951|DUT    42.72           1.35 0.108 12.5 6.67e-36 6.69e-32</span></span>
+<span><span class="co">#&gt; 2     1     ENSG00000105486|LIG1     4.18           1.69 0.138 12.2 2.49e-34 1.25e-30</span></span>
+<span><span class="co">#&gt; 3     1 ENSG00000134291|TMEM106C    13.14           1.67 0.138 12.1 7.54e-34 2.52e-30</span></span>
+<span><span class="co">#&gt; 4     1    ENSG00000188486|H2AFX    10.49           1.86 0.155 12.0 2.92e-33 7.33e-30</span></span>
+<span><span class="co">#&gt; 5     1     ENSG00000120802|TMPO    14.95           1.34 0.113 11.9 1.13e-32 2.27e-29</span></span>
+<span><span class="co">#&gt; 6     1     ENSG00000163535|SGO2     2.85           2.17 0.186 11.7 1.50e-31 2.50e-28</span></span></code></pre></div>
 <p>Result columns come straight from <code><a href="https://rdrr.io/pkg/DESeq2/man/results.html" class="external-link">DESeq2::results()</a></code>,
 prepended with the group identifier:</p>
 <table class="table">
@@ -253,14 +246,14 @@ group:</p>
 <code class="sourceCode R"><span><span class="va">top5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/top_markers_dds.html">top_markers_dds</a></span><span class="op">(</span><span class="va">res</span>, n <span class="op">=</span> <span class="fl">5</span>, padj_max <span class="op">=</span> <span class="fl">1e-4</span>, lfc_min <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">top5</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="op">-</span><span class="va">rank</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*\\|"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 9</span></span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 9</span></span>
 <span><span class="co">#&gt;    rank `1`      `2`    `3`    `4`     `5`     `6`    `7`       `8`     </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 DUT      CCL4L2 KLRG1  SDF2L1  IL7R    LGALS1 LINC00996 ICA1    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 LIG1     CCL4   CST7   HSPA5   NT5E    <span style="color: #BB0000;">NA</span>     CD247     NFKBID  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 TMEM106C CCL3L1 DTHD1  TNFRSF9 FLT3LG  <span style="color: #BB0000;">NA</span>     MCTP2     MIR155HG</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4 H2AFX    <span style="color: #BB0000;">NA</span>     CD81   TSPAN17 ANXA1   <span style="color: #BB0000;">NA</span>     IL2RB     SOD1    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5 TMPO     <span style="color: #BB0000;">NA</span>     SH2D1A HYOU1   MID1IP1 <span style="color: #BB0000;">NA</span>     PTPN12    ICOS</span></span></code></pre></div>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;   </span></span>
+<span><span class="co">#&gt; 1     1 DUT      CCL4L2 KLRG1  SDF2L1  IL7R    LGALS1 LINC00996 ICA1    </span></span>
+<span><span class="co">#&gt; 2     2 LIG1     CCL4   CST7   HSPA5   NT5E    &lt;NA&gt;   CD247     NFKBID  </span></span>
+<span><span class="co">#&gt; 3     3 TMEM106C CCL3L1 DTHD1  TNFRSF9 FLT3LG  &lt;NA&gt;   MCTP2     MIR155HG</span></span>
+<span><span class="co">#&gt; 4     4 H2AFX    &lt;NA&gt;   CD81   TSPAN17 ANXA1   &lt;NA&gt;   IL2RB     SOD1    </span></span>
+<span><span class="co">#&gt; 5     5 TMPO     &lt;NA&gt;   SH2D1A HYOU1   MID1IP1 &lt;NA&gt;   PTPN12    ICOS</span></span></code></pre></div>
 <p>The signal is biologically reasonable: cluster 1 is dominated by
 S-phase / DNA-replication genes (<code>DUT</code>, <code>LIG1</code>,
 <code>H2AFX</code>, <code>TMPO</code>), cluster 2 by effector chemokines
@@ -291,20 +284,13 @@ care about first. Here we contrast clusters 1, 2, and 3:</p>
 <span>    mode <span class="op">=</span> <span class="st">"pairwise"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res_p</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   group1 group2               feature baseMean log2FoldChange lfcSE stat</span></span>
-<span><span class="co">#&gt; 1      1      3 ENSG00000117632|STMN1    142.2           3.55 0.264 13.5</span></span>
-<span><span class="co">#&gt; 2      1      3  ENSG00000176890|TYMS     48.3           5.06 0.382 13.2</span></span>
-<span><span class="co">#&gt; 3      1      2 ENSG00000117632|STMN1    201.2           3.78 0.289 13.1</span></span>
-<span><span class="co">#&gt; 4      1      2  ENSG00000166508|MCM7     30.7           2.60 0.206 12.6</span></span>
-<span><span class="co">#&gt; 5      1      2   ENSG00000128951|DUT    142.1           1.65 0.131 12.5</span></span>
-<span><span class="co">#&gt; 6      1      2 ENSG00000276043|UHRF1     12.7           4.96 0.400 12.4</span></span>
-<span><span class="co">#&gt;     pvalue     padj</span></span>
-<span><span class="co">#&gt; 1 3.03e-41 7.42e-38</span></span>
-<span><span class="co">#&gt; 2 5.09e-40 8.31e-37</span></span>
-<span><span class="co">#&gt; 3 5.56e-39 5.52e-35</span></span>
-<span><span class="co">#&gt; 4 2.03e-36 1.01e-32</span></span>
-<span><span class="co">#&gt; 5 4.28e-36 1.42e-32</span></span>
-<span><span class="co">#&gt; 6 2.82e-35 7.01e-32</span></span></code></pre></div>
+<span><span class="co">#&gt;   group1 group2               feature baseMean log2FoldChange lfcSE stat   pvalue     padj</span></span>
+<span><span class="co">#&gt; 1      1      3 ENSG00000117632|STMN1    142.2           3.55 0.264 13.5 3.03e-41 7.42e-38</span></span>
+<span><span class="co">#&gt; 2      1      3  ENSG00000176890|TYMS     48.3           5.06 0.382 13.2 5.09e-40 8.31e-37</span></span>
+<span><span class="co">#&gt; 3      1      2 ENSG00000117632|STMN1    201.2           3.78 0.289 13.1 5.56e-39 5.52e-35</span></span>
+<span><span class="co">#&gt; 4      1      2  ENSG00000166508|MCM7     30.7           2.60 0.206 12.6 2.03e-36 1.01e-32</span></span>
+<span><span class="co">#&gt; 5      1      2   ENSG00000128951|DUT    142.1           1.65 0.131 12.5 4.28e-36 1.42e-32</span></span>
+<span><span class="co">#&gt; 6      1      2 ENSG00000276043|UHRF1     12.7           4.96 0.400 12.4 2.82e-35 7.01e-32</span></span></code></pre></div>
 <p><code><a href="../reference/summarize_dge_pairs.html">summarize_dge_pairs()</a></code> collapses the directional pairs to
 one row per (group, gene). Pass <code>"min"</code> to keep each gene’s
 worst comparison (the <em>most conservative</em> effect, useful for
@@ -313,7 +299,6 @@ high-confidence markers) or <code>"max"</code> for the best.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/summarize_dge_pairs.html">summarize_dge_pairs</a></span><span class="op">(</span><span class="va">res_p</span>, <span class="st">"min"</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>feature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*\\|"</span>, <span class="st">""</span>, <span class="va">feature</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "min"</span></span>
 <span><span class="co">#&gt;      group  feature baseMean log2FoldChange lfcSE  stat   pvalue     padj</span></span>
 <span><span class="co">#&gt;     &lt;char&gt;   &lt;char&gt;    &lt;num&gt;          &lt;num&gt; &lt;num&gt; &lt;num&gt;    &lt;num&gt;    &lt;num&gt;</span></span>
 <span><span class="co">#&gt;  1:      1    STMN1   201.22           3.78 0.289  13.1 5.56e-39 5.52e-35</span></span>
@@ -348,32 +333,25 @@ fits the inner formula (here <code>~case</code>).</p>
 <span>    mode <span class="op">=</span> <span class="st">"within"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res_w</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   group                   feature baseMean log2FoldChange lfcSE stat   pvalue</span></span>
-<span><span class="co">#&gt; 1     1      ENSG00000158517|NCF1    73.62           1.45 0.194 7.50 6.58e-14</span></span>
-<span><span class="co">#&gt; 2     1      ENSG00000171867|PRNP    30.67           1.80 0.242 7.45 9.11e-14</span></span>
-<span><span class="co">#&gt; 3     1     ENSG00000162496|DHRS3     8.52           2.62 0.386 6.77 1.29e-11</span></span>
-<span><span class="co">#&gt; 4     1      ENSG00000185101|ANO9    10.32           1.76 0.261 6.75 1.52e-11</span></span>
-<span><span class="co">#&gt; 5     1     ENSG00000265972|TXNIP   202.85           1.34 0.199 6.74 1.60e-11</span></span>
-<span><span class="co">#&gt; 6     1 ENSG00000268804|LINC02132     9.84           2.78 0.414 6.72 1.78e-11</span></span>
-<span><span class="co">#&gt;       padj</span></span>
-<span><span class="co">#&gt; 1 3.38e-11</span></span>
-<span><span class="co">#&gt; 2 4.45e-11</span></span>
-<span><span class="co">#&gt; 3 4.51e-09</span></span>
-<span><span class="co">#&gt; 4 4.63e-09</span></span>
-<span><span class="co">#&gt; 5 4.74e-09</span></span>
-<span><span class="co">#&gt; 6 4.99e-09</span></span></code></pre></div>
+<span><span class="co">#&gt;   group                   feature baseMean log2FoldChange lfcSE stat   pvalue     padj</span></span>
+<span><span class="co">#&gt; 1     1      ENSG00000158517|NCF1    73.62           1.45 0.194 7.50 6.58e-14 3.38e-11</span></span>
+<span><span class="co">#&gt; 2     1      ENSG00000171867|PRNP    30.67           1.80 0.242 7.45 9.11e-14 4.45e-11</span></span>
+<span><span class="co">#&gt; 3     1     ENSG00000162496|DHRS3     8.52           2.62 0.386 6.77 1.29e-11 4.51e-09</span></span>
+<span><span class="co">#&gt; 4     1      ENSG00000185101|ANO9    10.32           1.76 0.261 6.75 1.52e-11 4.63e-09</span></span>
+<span><span class="co">#&gt; 5     1     ENSG00000265972|TXNIP   202.85           1.34 0.199 6.74 1.60e-11 4.74e-09</span></span>
+<span><span class="co">#&gt; 6     1 ENSG00000268804|LINC02132     9.84           2.78 0.414 6.72 1.78e-11 4.99e-09</span></span></code></pre></div>
 <p>Top genes upregulated in cases per cluster:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/top_markers_dds.html">top_markers_dds</a></span><span class="op">(</span><span class="va">res_w</span>, n <span class="op">=</span> <span class="fl">5</span>, padj_max <span class="op">=</span> <span class="fl">1e-4</span>, lfc_min <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="op">-</span><span class="va">rank</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">".*\\|"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 9</span></span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 9</span></span>
 <span><span class="co">#&gt;    rank `1`   `2`    `3`   `4`   `5`    `6`    `7`     `8`   </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1 NCF1  SPINK2 LAIR1 DHRS7 SPINK2 GNPTAB LDLRAD4 RPS12 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 PRNP  SORBS3 <span style="color: #BB0000;">NA</span>    CA10  <span style="color: #BB0000;">NA</span>     DHRS7  <span style="color: #BB0000;">NA</span>      RPL30 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 DHRS3 KIFC3  <span style="color: #BB0000;">NA</span>    NCF1  <span style="color: #BB0000;">NA</span>     TXNIP  <span style="color: #BB0000;">NA</span>      EEF1B2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4 ANO9  GNPTAB <span style="color: #BB0000;">NA</span>    KIFC3 <span style="color: #BB0000;">NA</span>     FCER1G <span style="color: #BB0000;">NA</span>      MT-ND3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5 TXNIP CALHM6 <span style="color: #BB0000;">NA</span>    MYBL1 <span style="color: #BB0000;">NA</span>     TGFBR1 <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1     1 NCF1  SPINK2 LAIR1 DHRS7 SPINK2 GNPTAB LDLRAD4 RPS12 </span></span>
+<span><span class="co">#&gt; 2     2 PRNP  SORBS3 &lt;NA&gt;  CA10  &lt;NA&gt;   DHRS7  &lt;NA&gt;    RPL30 </span></span>
+<span><span class="co">#&gt; 3     3 DHRS3 KIFC3  &lt;NA&gt;  NCF1  &lt;NA&gt;   TXNIP  &lt;NA&gt;    EEF1B2</span></span>
+<span><span class="co">#&gt; 4     4 ANO9  GNPTAB &lt;NA&gt;  KIFC3 &lt;NA&gt;   FCER1G &lt;NA&gt;    MT-ND3</span></span>
+<span><span class="co">#&gt; 5     5 TXNIP CALHM6 &lt;NA&gt;  MYBL1 &lt;NA&gt;   TGFBR1 &lt;NA&gt;    &lt;NA&gt;</span></span></code></pre></div>
 <p>Cluster-1 cases up-regulate <code>NCF1</code>, <code>PRNP</code>,
 <code>TXNIP</code> — interferon-response and oxidative-stress genes
 consistent with inflamed tissue.</p>
@@ -425,46 +403,27 @@ levels are integer-encoded and treated as an ordinal trend.</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] dplyr_1.2.1         Matrix_1.7-4        presto_1.0.0       </span></span>
-<span><span class="co">#&gt; [4] data.table_1.18.2.1 Rcpp_1.1.1         </span></span>
+<span><span class="co">#&gt; [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.0.0  knitr_1.51    ggplot2_4.0.2</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] SummarizedExperiment_1.40.0 gtable_0.3.6               </span></span>
-<span><span class="co">#&gt;  [3] xfun_0.56                   bslib_0.10.0               </span></span>
-<span><span class="co">#&gt;  [5] ggplot2_4.0.2               htmlwidgets_1.6.4          </span></span>
-<span><span class="co">#&gt;  [7] rhdf5_2.54.1                Biobase_2.70.0             </span></span>
-<span><span class="co">#&gt;  [9] lattice_0.22-7              rhdf5filters_1.22.0        </span></span>
-<span><span class="co">#&gt; [11] vctrs_0.7.2                 tools_4.5.2                </span></span>
-<span><span class="co">#&gt; [13] generics_0.1.4              stats4_4.5.2               </span></span>
-<span><span class="co">#&gt; [15] parallel_4.5.2              tibble_3.3.1               </span></span>
-<span><span class="co">#&gt; [17] pkgconfig_2.0.3             RColorBrewer_1.1-3         </span></span>
-<span><span class="co">#&gt; [19] S7_0.2.1                    desc_1.4.3                 </span></span>
-<span><span class="co">#&gt; [21] S4Vectors_0.48.0            lifecycle_1.0.5            </span></span>
-<span><span class="co">#&gt; [23] compiler_4.5.2              farver_2.1.2               </span></span>
-<span><span class="co">#&gt; [25] textshaping_1.0.4           DESeq2_1.50.2              </span></span>
-<span><span class="co">#&gt; [27] Seqinfo_1.0.0               codetools_0.2-20           </span></span>
-<span><span class="co">#&gt; [29] htmltools_0.5.9             sass_0.4.10                </span></span>
-<span><span class="co">#&gt; [31] yaml_2.3.12                 pillar_1.11.1              </span></span>
-<span><span class="co">#&gt; [33] pkgdown_2.2.0               jquerylib_0.1.4            </span></span>
-<span><span class="co">#&gt; [35] tidyr_1.3.2                 BiocParallel_1.44.0        </span></span>
-<span><span class="co">#&gt; [37] cachem_1.1.0                DelayedArray_0.36.0        </span></span>
-<span><span class="co">#&gt; [39] abind_1.4-8                 tidyselect_1.2.1           </span></span>
-<span><span class="co">#&gt; [41] locfit_1.5-9.12             digest_0.6.39              </span></span>
-<span><span class="co">#&gt; [43] purrr_1.2.1                 fastmap_1.2.0              </span></span>
-<span><span class="co">#&gt; [45] grid_4.5.2                  cli_3.6.5                  </span></span>
-<span><span class="co">#&gt; [47] SparseArray_1.10.2          magrittr_2.0.5             </span></span>
-<span><span class="co">#&gt; [49] S4Arrays_1.10.0             utf8_1.2.6                 </span></span>
-<span><span class="co">#&gt; [51] dichromat_2.0-0.1           withr_3.0.2                </span></span>
-<span><span class="co">#&gt; [53] scales_1.4.0                rmarkdown_2.30             </span></span>
-<span><span class="co">#&gt; [55] XVector_0.50.0              matrixStats_1.5.0          </span></span>
-<span><span class="co">#&gt; [57] otel_0.2.0                  ragg_1.5.0                 </span></span>
-<span><span class="co">#&gt; [59] evaluate_1.0.5              knitr_1.51                 </span></span>
-<span><span class="co">#&gt; [61] GenomicRanges_1.62.1        IRanges_2.44.0             </span></span>
-<span><span class="co">#&gt; [63] rlang_1.1.7                 glue_1.8.0                 </span></span>
-<span><span class="co">#&gt; [65] BiocGenerics_0.56.0         jsonlite_2.0.0             </span></span>
-<span><span class="co">#&gt; [67] R6_2.6.1                    Rhdf5lib_1.32.0            </span></span>
-<span><span class="co">#&gt; [69] MatrixGenerics_1.22.0       systemfonts_1.3.1          </span></span>
-<span><span class="co">#&gt; [71] fs_1.6.6</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] utf8_1.2.6                  generics_0.1.4              tidyr_1.3.2                </span></span>
+<span><span class="co">#&gt;  [4] SparseArray_1.10.2          DESeq2_1.50.2               lattice_0.22-7             </span></span>
+<span><span class="co">#&gt;  [7] magrittr_2.0.5              evaluate_1.0.5              grid_4.5.2                 </span></span>
+<span><span class="co">#&gt; [10] RColorBrewer_1.1-3          purrr_1.2.1                 scales_1.4.0               </span></span>
+<span><span class="co">#&gt; [13] codetools_0.2-20            abind_1.4-8                 cli_3.6.5                  </span></span>
+<span><span class="co">#&gt; [16] rlang_1.1.7                 XVector_0.50.0              Biobase_2.70.0             </span></span>
+<span><span class="co">#&gt; [19] DelayedArray_0.36.0         withr_3.0.2                 otel_0.2.0                 </span></span>
+<span><span class="co">#&gt; [22] S4Arrays_1.10.0             tools_4.5.2                 parallel_4.5.2             </span></span>
+<span><span class="co">#&gt; [25] BiocParallel_1.44.0         Rhdf5lib_1.32.0             locfit_1.5-9.12            </span></span>
+<span><span class="co">#&gt; [28] SummarizedExperiment_1.40.0 BiocGenerics_0.56.0         vctrs_0.7.2                </span></span>
+<span><span class="co">#&gt; [31] R6_2.6.1                    matrixStats_1.5.0           stats4_4.5.2               </span></span>
+<span><span class="co">#&gt; [34] lifecycle_1.0.5             rhdf5_2.54.1                Seqinfo_1.0.0              </span></span>
+<span><span class="co">#&gt; [37] S4Vectors_0.48.0            IRanges_2.44.0              pkgconfig_2.0.3            </span></span>
+<span><span class="co">#&gt; [40] pillar_1.11.1               gtable_0.3.6                data.table_1.18.2.1        </span></span>
+<span><span class="co">#&gt; [43] glue_1.8.0                  Rcpp_1.1.1                  xfun_0.56                  </span></span>
+<span><span class="co">#&gt; [46] tibble_3.3.1                GenomicRanges_1.62.1        tidyselect_1.2.1           </span></span>
+<span><span class="co">#&gt; [49] MatrixGenerics_1.22.0       dichromat_2.0-0.1           rhdf5filters_1.22.0        </span></span>
+<span><span class="co">#&gt; [52] farver_2.1.2                compiler_4.5.2              S7_0.2.1</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

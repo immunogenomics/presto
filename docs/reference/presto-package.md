@@ -1,8 +1,8 @@
 # presto: Fast differential expression
 
 Scalable implementation of the Wilcoxon rank sum test and auROC
-statistic. Interfaces to dense and sparse matrices, as well as genomics
-analysis frameworks Seurat and SingleCellExperiment.
+statistic. Interfaces to dense and sparse matrices, as well as the
+genomics analysis frameworks 'Seurat' and 'SingleCellExperiment'.
 
 ## Author
 
