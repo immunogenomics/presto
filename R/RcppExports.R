@@ -45,3 +45,11 @@ cpp_nnzeroGroups_dgc_T <- function(p, i, ncol, nrow, groups, ngroups) {
     .Call('_presto_cpp_nnzeroGroups_dgc_T', PACKAGE = 'presto', p, i, ncol, nrow, groups, ngroups)
 }
 
+cpp_sumGroups_nnz_dense_T <- function(X, groups, ngroups) {
+    .Call('_presto_cpp_sumGroups_nnz_dense_T', PACKAGE = 'presto', X, groups, ngroups)
+}
+
+cpp_wilcox_stats_dgc <- function(x, p, i, nfeature, ncell, groups, ngroups) {
+    .Call('_presto_cpp_wilcox_stats_dgc', PACKAGE = 'presto', x, p, i, nfeature, ncell, groups, ngroups)
+}
+

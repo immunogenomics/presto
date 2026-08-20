@@ -58,3 +58,47 @@ test_that('wilcoxauc errors on NA values in X instead of silent wrong results', 
     expect_true(all(!is.na(res_ok)))
 })
 
+test_that('sparse wilcoxauc with many zeros matches stats::wilcox.test', {
+    ## Exercises the sparse rank/zero/tie handling in cpp_wilcox_stats_dgc.
+    set.seed(9)
+    m <- matrix(rpois(40 * 300, 1), 40, dimnames = list(paste0("s", 1:40), NULL))
+    m[sample(length(m), length(m) * 0.6)] <- 0    # ~60% zeros -> many ties
+    yy <- rep(c("A", "B", "C"), length.out = 300)
+    N <- ncol(m)
+
+    base <- split(seq_len(N), yy) %>% lapply(function(idx) {
+        res <- Reduce(rbind, apply(m, 1, function(g) {
+            wilcox.test(g[idx], g[setdiff(seq_len(N), idx)], exact = FALSE,
+                        correct = TRUE) %>% broom::tidy()
+        })) %>% data.frame()
+        res$feature <- row.names(m)
+        res
+    })
+    base <- Reduce(rbind, lapply(names(base), function(gr) {
+        base[[gr]] %>% dplyr::mutate(group = gr)
+    })) %>% dplyr::select(feature, group, statistic, p.value)
+
+    res <- wilcoxauc(as(m, "dgCMatrix"), yy, verbose = FALSE) %>%
+        dplyr::select(feature, group, statistic, p.value = pval)
+    j <- dplyr::inner_join(base, res, by = c("feature", "group"),
+                           suffix = c("_base", "_presto"))
+    expect_lt(max(abs(j$p.value_base - j$p.value_presto)), 1e-3)
+    expect_lt(max(abs(j$statistic_base - j$statistic_presto)), 1e-3)
+})
+
+test_that('dense and sparse wilcoxauc paths give identical results', {
+    ## Guards the two refactored code paths (dense vs dgCMatrix) against drift.
+    set.seed(11)
+    m <- matrix(rpois(80 * 400, 1.2), 80, dimnames = list(paste0("g", 1:80), NULL))
+    m[sample(length(m), length(m) * 0.4)] <- 0
+    yy <- sample(letters[1:5], 400, replace = TRUE)
+
+    rd <- wilcoxauc(m, yy, verbose = FALSE)
+    rs <- wilcoxauc(as(m, "dgCMatrix"), yy, verbose = FALSE)
+    numcols <- c("avgExpr", "logFC", "statistic", "auc",
+                 "pval", "padj", "pct_in", "pct_out")
+    for (cn in numcols) {
+        expect_lt(max(abs(rd[[cn]] - rs[[cn]])), 1e-8)
+    }
+})
+

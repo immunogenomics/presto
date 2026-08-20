@@ -204,32 +204,50 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE, ...) {
         )
     }
 
-    ## Compute primary statistics
-    group.size <- as.numeric(table(y))
-    n1n2 <- group.size * (ncol(X) - group.size)
+    ## Compute primary statistics. Group sizes are computed once here (via
+    ## tabulate) and reused throughout instead of re-running table(y) at every
+    ## use site.
+    ngroups <- nlevels(y)
+    group.size <- as.numeric(tabulate(y, ngroups))
+    n_obs <- length(y)
+    grp0 <- as.integer(y) - 1L
+    n1n2 <- group.size * (n_obs - group.size)
+
     if (is(X, "dgCMatrix")) {
-        rank_res <- rank_matrix(Matrix::t(X))
+        ## A single kernel folds the former five passes (Matrix::t, ranking,
+        ## sumGroups on the ranked matrix, and sumGroups / nnzeroGroups on the
+        ## original) into one transpose plus one per-feature ranking, returning
+        ## the rank sums, raw sums, non-zero counts, and ties together.
+        rr <- cpp_wilcox_stats_dgc(
+            X@x, X@p, X@i, nrow(X), ncol(X), grp0, ngroups
+        )
+        group_sums <- rr$sums
+        group_nnz <- rr$nnz
+        ustat <- compute_ustat_sparse(rr$grs, group_nnz, group.size, n_obs)
+        ties <- rr$ties
     } else {
+        aux <- cpp_sumGroups_nnz_dense_T(X, grp0, ngroups)
+        group_sums <- aux$sums
+        group_nnz <- aux$nnz
         rank_res <- rank_matrix(X)
+        grs <- sumGroups(rank_res$X_ranked, y)
+        ustat <- grs - group.size * (group.size + 1) / 2
+        ties <- rank_res$ties
     }
 
-    ustat <- compute_ustat(rank_res$X_ranked, y, n1n2, group.size)
     auc <- t(ustat / n1n2)
-    pvals <- compute_pval(ustat, rank_res$ties, ncol(X), n1n2)
+    pvals <- compute_pval(ustat, ties, n_obs, n1n2)
     fdr <- apply(pvals, 2, function(x) p.adjust(x, "BH"))
 
     ### Auxiliary Statistics (AvgExpr, PctIn, LFC, etc)
-    group_sums <- sumGroups(X, y, 1)
-    group_nnz <- nnzeroGroups(X, y, 1)
-    group_pct <- sweep(group_nnz, 1, as.numeric(table(y)), "/") %>% t()
+    group_pct <- sweep(group_nnz, 1, group.size, "/") %>% t()
     group_pct_out <- -group_nnz %>%
-        sweep(2, colSums(group_nnz) , "+") %>% 
-        sweep(1, as.numeric(length(y) - table(y)), "/") %>% t()
-    group_means <- sweep(group_sums, 1, as.numeric(table(y)), "/") %>% t()
+        sweep(2, colSums(group_nnz), "+") %>%
+        sweep(1, n_obs - group.size, "/") %>% t()
+    group_means <- sweep(group_sums, 1, group.size, "/") %>% t()
     cs <- colSums(group_sums)
-    gs <- as.numeric(table(y))
-    lfc <- Reduce(cbind, lapply(seq_len(length(levels(y))), function(g) {
-        group_means[, g] - ((cs - group_sums[g, ]) / (length(y) - gs[g]))
+    lfc <- Reduce(cbind, lapply(seq_len(ngroups), function(g) {
+        group_means[, g] - ((cs - group_sums[g, ]) / (n_obs - group.size[g]))
     }))
 
     res_list <- list(auc = auc,

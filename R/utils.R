@@ -33,18 +33,14 @@ tidy_results <- function(wide_res, features, groups) {
 }
 
 
-compute_ustat <- function(Xr, cols, n1n2, group.size) {
-    grs <- sumGroups(Xr, cols)
-
-    if (is(Xr, "dgCMatrix")) {
-        gnz <- (group.size - nnzeroGroups(Xr, cols))
-        zero.ranks <- (nrow(Xr) - diff(Xr@p) + 1) / 2
-        ustat <- t((t(gnz) * zero.ranks)) + grs - group.size *
-            (group.size + 1 ) / 2
-    } else {
-        ustat <- grs - group.size * (group.size + 1 ) / 2
-    }
-    return(ustat)
+compute_ustat_sparse <- function(grs, group_nnz, group.size, n_obs) {
+    ## grs: groups x features rank sums of the stored (shifted) values.
+    ## group_nnz: groups x features count of non-zero observations.
+    ## Zeros in a feature share the average rank (n_zero + 1) / 2; add their
+    ## contribution, then convert the rank sum to the Mann-Whitney U statistic.
+    gnz <- group.size - group_nnz
+    zero.ranks <- (n_obs - colSums(group_nnz) + 1) / 2
+    t(t(gnz) * zero.ranks) + grs - group.size * (group.size + 1) / 2
 }
 
 

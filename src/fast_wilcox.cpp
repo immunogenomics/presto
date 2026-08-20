@@ -220,7 +220,126 @@ arma::mat cpp_nnzeroGroups_dgc_T(const arma::vec& p, const arma::vec& i,
             // group_map gives the group num of that row
             res(groups[c], i[j])++;
         }
-    }    
+    }
     return res;
+}
+
+
+// Fused group-wise sum and non-zero count over a dense matrix in one pass.
+// X is features x observations; observations are columns (MARGIN = 1).
+// [[Rcpp::export]]
+Rcpp::List cpp_sumGroups_nnz_dense_T(const arma::mat& X,
+                                     const arma::uvec& groups,
+                                     unsigned ngroups) {
+    arma::mat sums = arma::zeros<arma::mat>(ngroups, X.n_rows);
+    arma::mat nnz = arma::zeros<arma::mat>(ngroups, X.n_rows);
+    for (unsigned c = 0; c < X.n_cols; c++) {
+        unsigned g = groups[c];
+        for (unsigned r = 0; r < X.n_rows; r++) {
+            double v = X(r, c);
+            sums(g, r) += v;
+            if (v != 0) nnz(g, r)++;
+        }
+    }
+    return Rcpp::List::create(Rcpp::Named("sums") = sums,
+                              Rcpp::Named("nnz") = nnz);
+}
+
+
+// Compute every per-group sparse statistic wilcoxauc() needs in a single
+// traversal of a dgCMatrix. X is features (nfeature) x observations (ncell) in
+// CSC layout (p over observations, i = feature index, x = value). This folds
+// what were five separate passes -- the R-level Matrix::t(), the per-feature
+// ranking, sumGroups() over the ranked matrix, and sumGroups()/nnzeroGroups()
+// over the original -- into one transpose plus one per-feature ranking.
+//
+// Ranking matches cpp_rank_matrix_dgc()/cpp_in_place_rank_mean() exactly:
+// the stored (non-zero) values are averaged-rank ranked amongst themselves,
+// then shifted up by the number of implicit zeros in the feature. The
+// returned `ties` mirror that code precisely, including its quirk of not
+// recording the final tie group, followed by the zero-run pushed as a tie.
+// Returns `grs` (rank sums), `sums` (raw sums), `nnz` (non-zero counts) --
+// each ngroups x nfeature -- and `ties` (list per feature).
+// [[Rcpp::export]]
+Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p,
+                                const arma::uvec& i, int nfeature, int ncell,
+                                const arma::uvec& groups, int ngroups) {
+    long nstored = x.n_elem;
+
+    arma::mat sums = arma::zeros<arma::mat>(ngroups, nfeature);
+    arma::mat nnz = arma::zeros<arma::mat>(ngroups, nfeature);
+
+    // 1. Counting-sort transpose. The same pass accumulates the raw group
+    //    sums and non-zero counts (used for the U statistic, pct_in/pct_out,
+    //    avgExpr and logFC), so the matrix is only traversed once.
+    std::vector<int> fp(nfeature + 1, 0);
+    for (long k = 0; k < nstored; k++) fp[i[k] + 1]++;
+    for (int f = 0; f < nfeature; f++) fp[f + 1] += fp[f];
+
+    std::vector<unsigned> tgroup(nstored);   // group of each stored entry
+    std::vector<double> tval(nstored);       // value of each stored entry
+    std::vector<int> cursor(fp.begin(), fp.begin() + nfeature);
+    for (int c = 0; c < ncell; c++) {
+        unsigned g = groups[c];
+        for (int k = (int) p[c]; k < (int) p[c + 1]; k++) {
+            int f = i[k];
+            double v = x[k];
+            sums(g, f) += v;
+            nnz(g, f)++;
+            int pos = cursor[f]++;
+            tgroup[pos] = g;
+            tval[pos] = v;
+        }
+    }
+
+    // 2 & 3. Rank each feature and accumulate group rank sums.
+    arma::mat grs = arma::zeros<arma::mat>(ngroups, nfeature);
+    Rcpp::List ties(nfeature);
+
+    std::vector<std::pair<double, int> > v_sort;
+    for (int f = 0; f < nfeature; f++) {
+        int b = fp[f];
+        int m = fp[f + 1] - b;             // stored non-zeros in this feature
+        std::list<float> feat_ties;
+        if (m == 0) {
+            // All-zero feature: cpp_rank_matrix_dgc 'continue's over these,
+            // leaving empty ties and a zero rank-sum column.
+            ties[f] = feat_ties;
+            continue;
+        }
+        int n_zero = ncell - m;
+
+        v_sort.resize(m);
+        for (int t = 0; t < m; t++) v_sort[t] = std::make_pair(tval[b + t], t);
+        std::sort(v_sort.begin(), v_sort.end());
+
+        double rank_sum = 0;
+        int n = 1, t;
+        for (t = 1; t < m; t++) {
+            if (v_sort[t].first != v_sort[t - 1].first) {
+                double rank = (rank_sum / n) + 1 + n_zero;
+                for (int j = 0; j < n; j++)
+                    grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
+                rank_sum = t;
+                if (n > 1) feat_ties.push_back(n);
+                n = 1;
+            } else {
+                rank_sum += t;
+                n++;
+            }
+        }
+        // Final tie group: assign ranks but (matching the original) do NOT
+        // record it in `ties`.
+        double rank = (rank_sum / n) + 1 + n_zero;
+        for (int j = 0; j < n; j++)
+            grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
+        feat_ties.push_back(n_zero);
+        ties[f] = feat_ties;
+    }
+
+    return Rcpp::List::create(Rcpp::Named("grs") = grs,
+                              Rcpp::Named("sums") = sums,
+                              Rcpp::Named("nnz") = nnz,
+                              Rcpp::Named("ties") = ties);
 }
 
