@@ -530,7 +530,12 @@ pseudobulk_deseq2 <- function(
     mode = c("one_vs_all", "pairwise", "within")[1]
 ) {
     requireNamespace("DESeq2")
-    warning("meta_data should only contain pseudobulk identifying variables")
+    if (verbose) {
+        message(
+            "Note: meta_data should contain only the ",
+            "pseudobulk identifying variables used in dge_formula"
+        )
+    }
 
     ## filter low expressed genes
     genes_keep <- which(
@@ -658,7 +663,6 @@ top_markers_dds <- function(
 #' @export
 #'
 summarize_dge_pairs <- function(dge_res, mode=c("min", "max")[1]) {
-    print(mode)
     dge_res <- data.table(dge_res)
     switch(
         mode,

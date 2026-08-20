@@ -1,8 +1,10 @@
 ^docs$
-^cran-comments.md$
+^cran-comments\.md$
 ^CRAN-RELEASE$
 ^LICENSE$
-^.github$
+^\.github$
 ^_pkgdown\.yml$
 ^pkgdown$
 ^\.claude$
+^vignettes/.*\.orig$
+^vignettes/precompute\.R$

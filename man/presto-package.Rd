@@ -6,7 +6,7 @@
 \alias{presto-package}
 \title{presto: Fast differential expression}
 \description{
-Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as genomics analysis frameworks Seurat and SingleCellExperiment.
+Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as the genomics analysis frameworks 'Seurat' and 'SingleCellExperiment'.
 }
 \author{
 \strong{Maintainer}: Kamil Slowikowski \email{kslowikowski@gmail.com} (\href{https://orcid.org/0000-0002-2843-6370}{ORCID}) [contributor]

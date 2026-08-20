@@ -1,18 +1,35 @@
+## Submission
+
+This is the first submission of presto to CRAN.
+
 ## Test environments
-* local OS X install, R 3.5.3
-* https://builder.r-hub.io Fedora Linux, R-devel, clang, gfortran
+
+* local macOS, R 4.5.2
+* GitHub Actions: macOS (release), Windows (release),
+  Ubuntu (devel, release, oldrel-1)
 * win-builder (devel and release)
 
-
 ## R CMD check results
-0 ERRORs, 0 WARNING, 0 NOTES
 
-## rhub build results
-0 ERRORs, 0 WARNING, 1 NOTE
+0 ERRORs, 0 WARNINGs.
 
-Possibly mis-spelled words in DESCRIPTION:
-  auROC (14:72)
-  genomics (14:141)
-  Scalable (14:14)
-  SingleCellExperiment (14:181)
-  
+There is 1 NOTE flagging possibly mis-spelled words in the DESCRIPTION.
+These are spelled correctly:
+
+  * auROC        - area under the ROC curve
+  * Scalable
+  * Wilcoxon
+  * Seurat, SingleCellExperiment - software names (single-quoted)
+
+## Downstream dependencies
+
+There are currently no reverse dependencies on CRAN.
+
+## Notes for reviewers
+
+* The suggested packages DESeq2, rhdf5, SingleCellExperiment,
+  SummarizedExperiment, and BiocStyle are from Bioconductor. All uses are
+  guarded with requireNamespace() and are optional.
+* The vignettes are pre-computed (see vignettes/precompute.R): they use a
+  ~121 MB dataset downloaded from GEO, so the shipped .Rmd files are static
+  and build offline without network access.

@@ -1,5 +1,5 @@
 Package: presto
-Title: Fast Functions for Differential Expression using Wilcox and AUC
+Title: Fast Functions for Differential Expression Using Wilcoxon and AUC
 Version: 1.0.0
 Authors@R: c(
     person("Ilya", "Korsunsky", email = "ilya.korsunsky@gmail.com", 
@@ -15,22 +15,25 @@ Authors@R: c(
     person("Austin", "Hartman",
         role = c("ctb"), comment = c(ORCID = "0000-0001-7278-1852"))
     )
-Description: Scalable implementation of the Wilcoxon rank sum test and auROC statistic. Interfaces to dense and sparse matrices, as well as genomics analysis frameworks Seurat and SingleCellExperiment. 
+Description: Scalable implementation of the Wilcoxon rank sum test and
+    auROC statistic. Interfaces to dense and sparse matrices, as well as
+    the genomics analysis frameworks 'Seurat' and 'SingleCellExperiment'.
 License: GPL-3
 LazyData: true
 Encoding: UTF-8
-Depends: R (>= 3.5.0), Rcpp, data.table
+Depends: R (>= 3.5.0)
 LinkingTo: Rcpp, RcppArmadillo
-biocViews:
-Imports: 
-    dplyr, 
+Imports:
+    Rcpp,
+    data.table,
+    dplyr,
     methods,
-    tidyr, 
+    tidyr,
     purrr,
     tibble,
     Matrix,
     rlang,
-    stats, 
+    stats,
     utils
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
