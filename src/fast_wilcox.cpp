@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <thread>
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -260,10 +261,17 @@ Rcpp::List cpp_sumGroups_nnz_dense_T(const arma::mat& X,
 // recording the final tie group, followed by the zero-run pushed as a tie.
 // Returns `grs` (rank sums), `sums` (raw sums), `nnz` (non-zero counts) --
 // each ngroups x nfeature -- and `ties` (list per feature).
+//
+// The per-feature ranking loop is embarrassingly parallel (each feature writes
+// its own disjoint column of `grs` and its own `ties` slot), so it is split
+// across `nthreads` std::threads with no locks. `nthreads = 1` runs serially.
+// No R/Rcpp API is touched inside the threads: ties are accumulated into plain
+// C++ vectors and converted to the R list afterwards.
 // [[Rcpp::export]]
 Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p,
                                 const arma::uvec& i, int nfeature, int ncell,
-                                const arma::uvec& groups, int ngroups) {
+                                const arma::uvec& groups, int ngroups,
+                                int nthreads = 1) {
     long nstored = x.n_elem;
 
     arma::mat sums = arma::zeros<arma::mat>(ngroups, nfeature);
@@ -292,50 +300,70 @@ Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p,
         }
     }
 
-    // 2 & 3. Rank each feature and accumulate group rank sums.
+    // 2 & 3. Rank each feature and accumulate group rank sums. Ties are
+    // collected per feature into plain C++ vectors (no R API in threads); the
+    // R list is assembled after all threads join.
     arma::mat grs = arma::zeros<arma::mat>(ngroups, nfeature);
-    Rcpp::List ties(nfeature);
+    std::vector<std::vector<double> > ties_vec(nfeature);
 
-    std::vector<std::pair<double, int> > v_sort;
-    for (int f = 0; f < nfeature; f++) {
-        int b = fp[f];
-        int m = fp[f + 1] - b;             // stored non-zeros in this feature
-        std::list<float> feat_ties;
-        if (m == 0) {
-            // All-zero feature: cpp_rank_matrix_dgc 'continue's over these,
-            // leaving empty ties and a zero rank-sum column.
-            ties[f] = feat_ties;
-            continue;
-        }
-        int n_zero = ncell - m;
+    // Rank features [f_begin, f_end); writes only to disjoint columns of grs
+    // and to its own ties_vec slots, so no synchronisation is needed.
+    auto rank_features = [&](int f_begin, int f_end) {
+        std::vector<std::pair<double, int> > v_sort;
+        for (int f = f_begin; f < f_end; f++) {
+            int b = fp[f];
+            int m = fp[f + 1] - b;         // stored non-zeros in this feature
+            std::vector<double>& feat_ties = ties_vec[f];
+            if (m == 0) continue;          // all-zero feature: empty ties
+            int n_zero = ncell - m;
 
-        v_sort.resize(m);
-        for (int t = 0; t < m; t++) v_sort[t] = std::make_pair(tval[b + t], t);
-        std::sort(v_sort.begin(), v_sort.end());
+            v_sort.resize(m);
+            for (int t = 0; t < m; t++)
+                v_sort[t] = std::make_pair(tval[b + t], t);
+            std::sort(v_sort.begin(), v_sort.end());
 
-        double rank_sum = 0;
-        int n = 1, t;
-        for (t = 1; t < m; t++) {
-            if (v_sort[t].first != v_sort[t - 1].first) {
-                double rank = (rank_sum / n) + 1 + n_zero;
-                for (int j = 0; j < n; j++)
-                    grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
-                rank_sum = t;
-                if (n > 1) feat_ties.push_back(n);
-                n = 1;
-            } else {
-                rank_sum += t;
-                n++;
+            double rank_sum = 0;
+            int n = 1, t;
+            for (t = 1; t < m; t++) {
+                if (v_sort[t].first != v_sort[t - 1].first) {
+                    double rank = (rank_sum / n) + 1 + n_zero;
+                    for (int j = 0; j < n; j++)
+                        grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
+                    rank_sum = t;
+                    if (n > 1) feat_ties.push_back(n);
+                    n = 1;
+                } else {
+                    rank_sum += t;
+                    n++;
+                }
             }
+            // Final tie group: assign ranks but (matching the original) do NOT
+            // record it in `ties`.
+            double rank = (rank_sum / n) + 1 + n_zero;
+            for (int j = 0; j < n; j++)
+                grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
+            feat_ties.push_back(n_zero);
         }
-        // Final tie group: assign ranks but (matching the original) do NOT
-        // record it in `ties`.
-        double rank = (rank_sum / n) + 1 + n_zero;
-        for (int j = 0; j < n; j++)
-            grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
-        feat_ties.push_back(n_zero);
-        ties[f] = feat_ties;
+    };
+
+    int nthr = nthreads < 1 ? 1 : nthreads;
+    if (nthr > nfeature) nthr = nfeature > 0 ? nfeature : 1;
+    if (nthr == 1) {
+        rank_features(0, nfeature);
+    } else {
+        std::vector<std::thread> pool;
+        int chunk = (nfeature + nthr - 1) / nthr;
+        for (int t = 0; t < nthr; t++) {
+            int a = t * chunk;
+            int e = std::min(nfeature, a + chunk);
+            if (a >= e) break;
+            pool.emplace_back(rank_features, a, e);
+        }
+        for (std::thread& th : pool) th.join();
     }
+
+    Rcpp::List ties(nfeature);
+    for (int f = 0; f < nfeature; f++) ties[f] = ties_vec[f];
 
     return Rcpp::List::create(Rcpp::Named("grs") = grs,
                               Rcpp::Named("sums") = sums,

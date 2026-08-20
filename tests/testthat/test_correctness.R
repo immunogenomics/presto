@@ -102,3 +102,16 @@ test_that('dense and sparse wilcoxauc paths give identical results', {
     }
 })
 
+test_that('nthreads > 1 gives identical results to serial', {
+    ## Multithreaded ranking must be a pure speedup, never a numeric change.
+    set.seed(21)
+    m <- matrix(rpois(60 * 500, 1), 60, dimnames = list(paste0("g", 1:60), NULL))
+    m[sample(length(m), length(m) * 0.5)] <- 0
+    X <- as(m, "dgCMatrix")
+    yy <- sample(letters[1:4], 500, replace = TRUE)
+
+    serial <- wilcoxauc(X, yy, verbose = FALSE, nthreads = 1)
+    expect_equal(wilcoxauc(X, yy, verbose = FALSE, nthreads = 2), serial)
+    expect_equal(wilcoxauc(X, yy, verbose = FALSE, nthreads = 4), serial)
+})
+

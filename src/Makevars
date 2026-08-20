@@ -1,0 +1,2 @@
+PKG_CXXFLAGS = -pthread
+PKG_LIBS = -pthread

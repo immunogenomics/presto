@@ -23,7 +23,7 @@ wilcoxauc(X, ...)
 
 \method{wilcoxauc}{SingleCellExperiment}(X, group_by = NULL, assay = NULL, groups_use = NULL, ...)
 
-\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE, ...)
+\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE, nthreads = 1, ...)
 }
 \arguments{
 \item{X}{Input data. One of:
@@ -62,6 +62,14 @@ with length equal to \code{ncol(X)}. Ignored for \code{Seurat} /
 
 \item{verbose}{Logical. Print warnings and informational messages.
 Default \code{TRUE}.}
+
+\item{nthreads}{Number of threads for the per-feature ranking of sparse
+(\code{dgCMatrix}) input. Default \code{1} (serial). Values above \code{1} split the
+ranking across threads; the result is identical regardless of the
+thread count. Only sparse input is parallelized -- dense matrix and
+\code{data.frame} input are always processed serially. When running under
+\verb{R CMD check} or on CRAN, keep this at the default so no more than two
+cores are used.}
 }
 \value{
 table with the following columns:

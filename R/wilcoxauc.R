@@ -43,6 +43,13 @@
 #'   pull from (e.g. `"RNA"`). Default `"RNA"`.
 #' @param verbose Logical. Print warnings and informational messages.
 #'   Default `TRUE`.
+#' @param nthreads Number of threads for the per-feature ranking of sparse
+#'   (`dgCMatrix`) input. Default `1` (serial). Values above `1` split the
+#'   ranking across threads; the result is identical regardless of the
+#'   thread count. Only sparse input is parallelized -- dense matrix and
+#'   `data.frame` input are always processed serially. When running under
+#'   `R CMD check` or on CRAN, keep this at the default so no more than two
+#'   cores are used.
 #' @param ... Passed to the input-specific method.
 #'
 #' @examples
@@ -124,7 +131,7 @@ wilcoxauc.Seurat <- function(
     } else {
         y <- Seurat::FetchData(X, group_by) %>% unlist %>% as.character()
     }
-    wilcoxauc(X_matrix, y, groups_use)
+    wilcoxauc(X_matrix, y, groups_use, ...)
 }
 
 #' @rdname wilcoxauc
@@ -155,12 +162,13 @@ wilcoxauc.SingleCellExperiment <- function(
     }
 
     X_matrix <- SummarizedExperiment::assay(X, assay)
-    wilcoxauc(X_matrix, y, groups_use)
+    wilcoxauc(X_matrix, y, groups_use, ...)
 }
 
 #' @rdname wilcoxauc
 #' @export
-wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE, ...) {
+wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE,
+                              nthreads = 1, ...) {
     ## Check and possibly correct input values
     if (is(X, "dgeMatrix")) X <- as.matrix(X)
     if (is(X, "data.frame")) X <- as.matrix(X)
@@ -219,7 +227,8 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE, ...) {
         ## original) into one transpose plus one per-feature ranking, returning
         ## the rank sums, raw sums, non-zero counts, and ties together.
         rr <- cpp_wilcox_stats_dgc(
-            X@x, X@p, X@i, nrow(X), ncol(X), grp0, ngroups
+            X@x, X@p, X@i, nrow(X), ncol(X), grp0, ngroups,
+            nthreads = max(1L, as.integer(nthreads))
         )
         group_sums <- rr$sums
         group_nnz <- rr$nnz
