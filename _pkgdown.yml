@@ -55,10 +55,10 @@ reference:
   - title: Demo data
     desc: >
       Example datasets used by the vignettes. The first is a real
-      25,000-cell dataset downloaded on demand; the others are tiny
-      shipped Seurat / SingleCellExperiment objects used by the
+      25,000-cell dataset downloaded on demand; the others generate tiny
+      Seurat / SingleCellExperiment objects on the fly for the
       `wilcoxauc()` dispatch tests and examples.
     contents:
       - load_ircolitis_cd8
-      - object_seurat
-      - object_sce
+      - toy_seurat
+      - toy_sce

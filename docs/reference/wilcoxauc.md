@@ -205,57 +205,41 @@ head(wilcoxauc(exprs_sparse, y))
 ## on a Seurat object (>= v3)
 if (requireNamespace("Seurat", quietly = TRUE) &&
     packageVersion("Seurat") >= "3.0") {
-    data(object_seurat)
-    object_seurat <- Seurat::UpdateSeuratObject(object_seurat)
+    object_seurat <- toy_seurat()
     head(wilcoxauc(object_seurat, 'cell_type'))
 }
-#> Validating object structure
-#> Updating object slots
-#> Ensuring keys are in the proper structure
-#> Updating matrix keys for DimReduc ‘pca’
-#> Ensuring keys are in the proper structure
-#> Ensuring feature names don't have underscores or pipes
-#> Updating slots in RNA
-#> Updating slots in pca
-#> Setting assay used for NormalizeData.RNA to RNA
-#> Setting assay used for FindVariableFeatures.RNA to RNA
-#> Setting assay used for ScaleData.RNA to RNA
-#> Setting assay used for RunPCA.RNA to RNA
-#> Validating object structure for Assay ‘RNA’
-#> Validating object structure for DimReduc ‘pca’
-#> Object representation is consistent with the most current Seurat version
-#>   feature  group  avgExpr        logFC statistic       auc      pval      padj
-#> 1      G1 jurkat 5.957396  0.040642962     11343 0.5043351 0.8972436 0.9989377
-#> 2      G2 jurkat 5.945143 -0.027840659     11209 0.4983771 0.9617722 0.9989377
-#> 3      G3 jurkat 5.919214 -0.058395057     10306 0.4582277 0.2112380 0.9913131
-#> 4      G4 jurkat 5.931007 -0.059677089     10859 0.4828153 0.6073122 0.9989377
-#> 5      G5 jurkat 5.957468 -0.020184665     11244 0.4999333 0.9989377 0.9989377
-#> 6      G6 jurkat 5.919087 -0.007454977     11038 0.4907741 0.7828582 0.9989377
-#>   pct_in pct_out
-#> 1    100     100
-#> 2    100     100
-#> 3    100     100
-#> 4    100     100
-#> 5    100     100
-#> 6    100     100
+#>   feature  group  avgExpr     logFC statistic       auc         pval
+#> 1      G1 jurkat 6.827790  1.657491   20418.5 0.9074889 2.870368e-34
+#> 2      G2 jurkat 6.816695  1.517735   19311.5 0.8582889 7.178349e-27
+#> 3      G3 jurkat 6.781403  1.482781   20330.5 0.9035778 1.213350e-33
+#> 4      G4 jurkat 5.388072 -1.357031    3071.0 0.1364889 1.306183e-27
+#> 5      G5 jurkat 5.150948 -1.581087    2800.0 0.1244444 2.298078e-29
+#> 6      G6 jurkat 5.282571 -1.406932    3370.0 0.1497778 9.540231e-26
+#>           padj    pct_in  pct_out
+#> 1 5.740736e-33 100.00000 86.00000
+#> 2 2.871340e-26 100.00000 86.66667
+#> 3 1.213350e-32  98.66667 88.66667
+#> 4 6.530914e-27  88.66667 98.66667
+#> 5 1.532052e-28  85.33333 99.33333
+#> 6 3.180077e-25  88.00000 98.66667
 
 ## on a SingleCellExperiment object
 if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-    data(object_sce)
+    object_sce <- toy_sce()
     head(wilcoxauc(object_sce, 'cell_type'))
 }
-#>   feature  group  avgExpr        logFC statistic       auc      pval      padj
-#> 1      G1 jurkat 5.957396  0.040642962     11343 0.5043351 0.8972436 0.9989377
-#> 2      G2 jurkat 5.945143 -0.027840659     11209 0.4983771 0.9617722 0.9989377
-#> 3      G3 jurkat 5.919214 -0.058395057     10306 0.4582277 0.2112380 0.9913131
-#> 4      G4 jurkat 5.931007 -0.059677089     10859 0.4828153 0.6073122 0.9989377
-#> 5      G5 jurkat 5.957468 -0.020184665     11244 0.4999333 0.9989377 0.9989377
-#> 6      G6 jurkat 5.919087 -0.007454977     11038 0.4907741 0.7828582 0.9989377
-#>   pct_in pct_out
-#> 1    100     100
-#> 2    100     100
-#> 3    100     100
-#> 4    100     100
-#> 5    100     100
-#> 6    100     100
+#>   feature  group   avgExpr      logFC statistic       auc         pval
+#> 1      G1 jurkat 1.7244684  0.7575272   20420.5 0.9075778 2.778842e-34
+#> 2      G2 jurkat 1.7182759  0.6798860   19310.5 0.8582444 7.284606e-27
+#> 3      G3 jurkat 1.7384917  0.7613587   20330.0 0.9035556 1.223619e-33
+#> 4      G4 jurkat 1.0381649 -0.6710793    3070.5 0.1364667 1.296878e-27
+#> 5      G5 jurkat 0.9718625 -0.7058267    2798.5 0.1243778 2.246744e-29
+#> 6      G6 jurkat 0.9863318 -0.6863914    3369.5 0.1497556 9.473597e-26
+#>           padj    pct_in  pct_out
+#> 1 5.557684e-33 100.00000 86.00000
+#> 2 2.913842e-26 100.00000 86.66667
+#> 3 1.223619e-32  98.66667 88.66667
+#> 4 6.484390e-27  88.66667 98.66667
+#> 5 1.497830e-28  85.33333 99.33333
+#> 6 3.157866e-25  88.00000 98.66667
 ```

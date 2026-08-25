@@ -125,14 +125,13 @@ head(wilcoxauc(exprs_sparse, y))
 ## on a Seurat object (>= v3)
 if (requireNamespace("Seurat", quietly = TRUE) &&
     packageVersion("Seurat") >= "3.0") {
-    data(object_seurat)
-    object_seurat <- Seurat::UpdateSeuratObject(object_seurat)
+    object_seurat <- toy_seurat()
     head(wilcoxauc(object_seurat, 'cell_type'))
 }
 
 ## on a SingleCellExperiment object
 if (requireNamespace("SingleCellExperiment", quietly = TRUE)) {
-    data(object_sce)
+    object_sce <- toy_sce()
     head(wilcoxauc(object_sce, 'cell_type'))
 }
 

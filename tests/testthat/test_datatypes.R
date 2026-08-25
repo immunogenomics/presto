@@ -49,9 +49,7 @@ check_seurat <- function() {
 
 test_that("Seurat V3 interface works", {
     check_seurat()
-    data(object_seurat)
-    library(Seurat)
-    object_seurat <- UpdateSeuratObject(object_seurat)
+    object_seurat <- toy_seurat()
     res <- wilcoxauc(object_seurat, "cell_type")
     expect_equal(dim(res), c(40, 10))
     expect_true(all(!is.na(res)))
@@ -63,10 +61,26 @@ test_that('SingleCellExperiment interface works', {
         skip('SingleCellExperiment not available')
     }
 
-    library(SingleCellExperiment)
-    data(object_sce)
-
+    object_sce <- toy_sce()
     res <- wilcoxauc(object_sce, 'cell_type')
     expect_equal(dim(res), c(40, 10))
     expect_true(all(!is.na(res)))
+})
+
+
+test_that('toy generators are deterministic and preserve RNG state', {
+    if (!requireNamespace('SingleCellExperiment', quietly = TRUE)) {
+        skip('SingleCellExperiment not available')
+    }
+
+    set.seed(123)
+    before <- .Random.seed
+    a <- toy_sce()
+    expect_identical(.Random.seed, before)
+
+    b <- toy_sce()
+    expect_identical(
+        SummarizedExperiment::assay(a, 'counts'),
+        SummarizedExperiment::assay(b, 'counts')
+    )
 })

@@ -11,8 +11,6 @@
 <url><loc>https://immunogenomics.github.io/presto/reference/index.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/nnzeroGroups.html</loc></url>
-<url><loc>https://immunogenomics.github.io/presto/reference/object_sce.html</loc></url>
-<url><loc>https://immunogenomics.github.io/presto/reference/object_seurat.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/pipe.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/presto-package.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.html</loc></url>
@@ -24,6 +22,8 @@
 <url><loc>https://immunogenomics.github.io/presto/reference/summarize_dge_pairs.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/top_markers.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/top_markers_dds.html</loc></url>
+<url><loc>https://immunogenomics.github.io/presto/reference/toy_sce.html</loc></url>
+<url><loc>https://immunogenomics.github.io/presto/reference/toy_seurat.html</loc></url>
 <url><loc>https://immunogenomics.github.io/presto/reference/wilcoxauc.html</loc></url>
 </urlset>
 

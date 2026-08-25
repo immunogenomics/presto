@@ -45,14 +45,14 @@ Group-wise reductions used internally by
 ## Demo data
 
 Example datasets used by the vignettes. The first is a real 25,000-cell
-dataset downloaded on demand; the others are tiny shipped Seurat /
-SingleCellExperiment objects used by the
+dataset downloaded on demand; the others generate tiny Seurat /
+SingleCellExperiment objects on the fly for the
 [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
 dispatch tests and examples.
 
 - [`load_ircolitis_cd8()`](https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.md)
   : Download and load the ircolitis tissue CD8 demo dataset
-- [`object_seurat`](https://immunogenomics.github.io/presto/reference/object_seurat.md)
-  : Seurat V3 object with fake data
-- [`object_sce`](https://immunogenomics.github.io/presto/reference/object_sce.md)
-  : SingleCellExperiment object with fake data
+- [`toy_seurat()`](https://immunogenomics.github.io/presto/reference/toy_seurat.md)
+  : Toy Seurat object for examples and tests
+- [`toy_sce()`](https://immunogenomics.github.io/presto/reference/toy_sce.md)
+  : Toy SingleCellExperiment object for examples and tests

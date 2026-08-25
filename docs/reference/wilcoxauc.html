@@ -241,59 +241,43 @@ for an end-to-end example on a real dataset.</p>
 <span class="r-in"><span><span class="co">## on a Seurat object (&gt;= v3)</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"Seurat"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html" class="external-link">packageVersion</a></span><span class="op">(</span><span class="st">"Seurat"</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"3.0"</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">object_seurat</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="va">object_seurat</span> <span class="op">&lt;-</span> <span class="fu">Seurat</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/UpdateSeuratObject.html" class="external-link">UpdateSeuratObject</a></span><span class="op">(</span><span class="va">object_seurat</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">object_seurat</span> <span class="op">&lt;-</span> <span class="fu"><a href="toy_seurat.html">toy_seurat</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">object_seurat</span>, <span class="st">'cell_type'</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Validating object structure</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating object slots</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring keys are in the proper structure</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating matrix keys for DimReduc ‘pca’</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring keys are in the proper structure</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Ensuring feature names don't have underscores or pipes</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating slots in RNA</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Updating slots in pca</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for NormalizeData.RNA to RNA</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for FindVariableFeatures.RNA to RNA</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for ScaleData.RNA to RNA</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Setting assay used for RunPCA.RNA to RNA</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Validating object structure for Assay ‘RNA’</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Validating object structure for DimReduc ‘pca’</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Object representation is consistent with the most current Seurat version</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   feature  group  avgExpr        logFC statistic       auc      pval      padj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1 jurkat 5.957396  0.040642962     11343 0.5043351 0.8972436 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2 jurkat 5.945143 -0.027840659     11209 0.4983771 0.9617722 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3 jurkat 5.919214 -0.058395057     10306 0.4582277 0.2112380 0.9913131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4 jurkat 5.931007 -0.059677089     10859 0.4828153 0.6073122 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5 jurkat 5.957468 -0.020184665     11244 0.4999333 0.9989377 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6 jurkat 5.919087 -0.007454977     11038 0.4907741 0.7828582 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_in pct_out</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature  group  avgExpr     logFC statistic       auc         pval</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1 jurkat 6.827790  1.657491   20418.5 0.9074889 2.870368e-34</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2 jurkat 6.816695  1.517735   19311.5 0.8582889 7.178349e-27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3 jurkat 6.781403  1.482781   20330.5 0.9035778 1.213350e-33</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4 jurkat 5.388072 -1.357031    3071.0 0.1364889 1.306183e-27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5 jurkat 5.150948 -1.581087    2800.0 0.1244444 2.298078e-29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6 jurkat 5.282571 -1.406932    3370.0 0.1497778 9.540231e-26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           padj    pct_in  pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 5.740736e-33 100.00000 86.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2.871340e-26 100.00000 86.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 1.213350e-32  98.66667 88.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 6.530914e-27  88.66667 98.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 1.532052e-28  85.33333 99.33333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 3.180077e-25  88.00000 98.66667</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## on a SingleCellExperiment object</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"SingleCellExperiment"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">object_sce</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">object_sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="toy_sce.html">toy_sce</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">object_sce</span>, <span class="st">'cell_type'</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   feature  group  avgExpr        logFC statistic       auc      pval      padj</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1 jurkat 5.957396  0.040642962     11343 0.5043351 0.8972436 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2 jurkat 5.945143 -0.027840659     11209 0.4983771 0.9617722 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3 jurkat 5.919214 -0.058395057     10306 0.4582277 0.2112380 0.9913131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4 jurkat 5.931007 -0.059677089     10859 0.4828153 0.6073122 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5 jurkat 5.957468 -0.020184665     11244 0.4999333 0.9989377 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6 jurkat 5.919087 -0.007454977     11038 0.4907741 0.7828582 0.9989377</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   pct_in pct_out</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    100     100</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    100     100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   feature  group   avgExpr      logFC statistic       auc         pval</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1 jurkat 1.7244684  0.7575272   20420.5 0.9075778 2.778842e-34</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2 jurkat 1.7182759  0.6798860   19310.5 0.8582444 7.284606e-27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3 jurkat 1.7384917  0.7613587   20330.0 0.9035556 1.223619e-33</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4 jurkat 1.0381649 -0.6710793    3070.5 0.1364667 1.296878e-27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5 jurkat 0.9718625 -0.7058267    2798.5 0.1243778 2.246744e-29</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6 jurkat 0.9863318 -0.6863914    3369.5 0.1497556 9.473597e-26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           padj    pct_in  pct_out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 5.557684e-33 100.00000 86.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2.913842e-26 100.00000 86.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 1.223619e-32  98.66667 88.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 6.484390e-27  88.66667 98.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 1.497830e-28  85.33333 99.33333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 3.157866e-25  88.00000 98.66667</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
