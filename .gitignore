@@ -6,3 +6,4 @@ src/*.so
 src/*.o
 .ipynb_checkpoints
 **/.ipynb_checkpoints
+/presto_*.tar.gz
