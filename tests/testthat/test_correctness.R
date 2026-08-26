@@ -193,8 +193,16 @@ test_that('transposed input gives identical results (#18)', {
     invisible(wilcoxauc(mt, yy, verbose = FALSE, transposed = TRUE))
     expect_identical(mt, mt_orig)
 
-    ## dimension check errors on the wrong orientation
-    expect_error(wilcoxauc(m, yy, transposed = TRUE), "observations")
+    ## the dimension error diagnoses the likely orientation and says
+    ## exactly what to change, in both directions
+    expect_error(
+        wilcoxauc(m, yy, transposed = TRUE),
+        "drop transposed = TRUE"
+    )
+    expect_error(
+        wilcoxauc(t(m), yy),
+        "call wilcoxauc\\(X, y, transposed = TRUE\\)"
+    )
 })
 
 test_that('nthreads > 1 gives identical results to serial', {

@@ -84,13 +84,16 @@ thread count. Only sparse input is parallelized -- dense matrix and
 \verb{R CMD check} or on CRAN, keep this at the default so no more than two
 cores are used.}
 
-\item{transposed}{Set to \code{TRUE} if \code{X} is observations x features
-(samples in rows) instead of the default features x observations.
-The test then runs directly on that layout without materializing a
-transposed copy, which saves time and memory on large matrices.
-Only applies to matrix-like input (the \code{Seurat} /
-\code{SingleCellExperiment} dispatchers always extract features x
-observations). Default \code{FALSE}.}
+\item{transposed}{Set to \code{TRUE} when your observations (cells,
+samples) are in the \strong{rows} of \code{X} and the features in the
+columns -- i.e. \code{X} is the transpose of the default
+features-by-observations layout. The test then runs directly on
+that layout without materializing a transposed copy, which saves
+time and memory on large matrices. Same convention as the
+\code{transposed} argument of scater's \code{calculatePCA()} and
+\code{calculateUMAP()}. Only applies to matrix-like input (the \code{Seurat}
+/ \code{SingleCellExperiment} dispatchers always extract
+features-by-observations). Default \code{FALSE}.}
 }
 \value{
 table with the following columns:

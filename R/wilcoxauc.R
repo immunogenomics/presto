@@ -55,13 +55,16 @@
 #'   `data.frame` input are always processed serially. When running under
 #'   `R CMD check` or on CRAN, keep this at the default so no more than two
 #'   cores are used.
-#' @param transposed Set to `TRUE` if `X` is observations x features
-#'   (samples in rows) instead of the default features x observations.
-#'   The test then runs directly on that layout without materializing a
-#'   transposed copy, which saves time and memory on large matrices.
-#'   Only applies to matrix-like input (the `Seurat` /
-#'   `SingleCellExperiment` dispatchers always extract features x
-#'   observations). Default `FALSE`.
+#' @param transposed Set to `TRUE` when your observations (cells,
+#'   samples) are in the **rows** of `X` and the features in the
+#'   columns -- i.e. `X` is the transpose of the default
+#'   features-by-observations layout. The test then runs directly on
+#'   that layout without materializing a transposed copy, which saves
+#'   time and memory on large matrices. Same convention as the
+#'   `transposed` argument of scater's `calculatePCA()` and
+#'   `calculateUMAP()`. Only applies to matrix-like input (the `Seurat`
+#'   / `SingleCellExperiment` dispatchers always extract
+#'   features-by-observations). Default `FALSE`.
 #' @param ... Passed to the input-specific method.
 #'
 #' @examples
@@ -209,10 +212,29 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE,
     }
     n_obs_dim <- if (transposed) nrow(X) else ncol(X)
     if (n_obs_dim != length(y)) {
+        ## If the other dimension matches length(y), the matrix is most
+        ## likely in the other orientation: say exactly what to change.
+        other_dim <- if (transposed) ncol(X) else nrow(X)
+        hint <- ""
+        if (other_dim == length(y)) {
+            hint <- if (transposed) {
+                paste0(
+                    "\nX has length(y) columns: if it is the default ",
+                    "features x observations layout, drop transposed = TRUE."
+                )
+            } else {
+                paste0(
+                    "\nX has length(y) rows: if your matrix is ",
+                    "observations x features (samples in rows), call ",
+                    "wilcoxauc(X, y, transposed = TRUE)."
+                )
+            }
+        }
         stop(
             "The number of observations in X (",
-            if (transposed) "rows" else "columns",
-            ") does not match the length of y"
+            if (transposed) "rows" else "columns", " = ", n_obs_dim,
+            ") does not match length(y) (", length(y), ").", hint,
+            call. = FALSE
         )
     }
     if (!is.null(groups_use)) {
