@@ -19,6 +19,11 @@
 #' \itemize{
 #'   \item a numeric feature-by-observation matrix or `data.frame`,
 #'   \item a sparse `dgCMatrix` of the same shape,
+#'   \item a disk-backed `DelayedMatrix` (e.g. HDF5-backed, from the
+#'     DelayedArray / HDF5Array packages), which is processed in feature
+#'     blocks so the whole matrix never has to be loaded in memory,
+#'   \item any other matrix-like class with an `as(., "dgCMatrix")`
+#'     coercion method (e.g. BPCells), which is converted up front,
 #'   \item a `Seurat` (v3+) object,
 #'   \item a `SingleCellExperiment` object.
 #' }
@@ -50,6 +55,13 @@
 #'   `data.frame` input are always processed serially. When running under
 #'   `R CMD check` or on CRAN, keep this at the default so no more than two
 #'   cores are used.
+#' @param transposed Set to `TRUE` if `X` is observations x features
+#'   (samples in rows) instead of the default features x observations.
+#'   The test then runs directly on that layout without materializing a
+#'   transposed copy, which saves time and memory on large matrices.
+#'   Only applies to matrix-like input (the `Seurat` /
+#'   `SingleCellExperiment` dispatchers always extract features x
+#'   observations). Default `FALSE`.
 #' @param ... Passed to the input-specific method.
 #'
 #' @examples
@@ -172,25 +184,48 @@ wilcoxauc.SingleCellExperiment <- function(
 #' @rdname wilcoxauc
 #' @export
 wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE,
-                              nthreads = 1, ...) {
+                              nthreads = 1, transposed = FALSE, ...) {
     ## Check and possibly correct input values
     if (is(X, "dgeMatrix")) X <- as.matrix(X)
     if (is(X, "data.frame")) X <- as.matrix(X)
     if (is(X, "dgTMatrix")) X <- as(X, "dgCMatrix")
     if (is(X, "TsparseMatrix")) X <- as(X, "dgCMatrix")
-    if (ncol(X) != length(y)) stop("number of columns of X does not
-                                match length of y")
+    ## Other matrix-like classes (e.g. BPCells): try a sparse coercion so
+    ## that anything with an as(., "dgCMatrix") method just works (#26).
+    if (!is.matrix(X) && !is(X, "dgCMatrix") &&
+        !inherits(X, "DelayedMatrix")) {
+        X_class <- class(X)[1]
+        X <- tryCatch(
+            as(X, "dgCMatrix"),
+            error = function(e) {
+                stop(
+                    "wilcoxauc() does not know how to handle input of ",
+                    "class '", X_class, "'. Convert it to a matrix or ",
+                    "dgCMatrix first.",
+                    call. = FALSE
+                )
+            }
+        )
+    }
+    n_obs_dim <- if (transposed) nrow(X) else ncol(X)
+    if (n_obs_dim != length(y)) {
+        stop(
+            "The number of observations in X (",
+            if (transposed) "rows" else "columns",
+            ") does not match the length of y"
+        )
+    }
     if (!is.null(groups_use)) {
         idx_use <- which(y %in% intersect(groups_use, y))
         y <- y[idx_use]
-        X <- X[, idx_use]
+        X <- if (transposed) X[idx_use, ] else X[, idx_use]
     }
 
     y <- factor(y)
     idx_use <- which(!is.na(y))
     if (length(idx_use) < length(y)) {
         y <- y[idx_use]
-        X <- X[, idx_use]
+        X <- if (transposed) X[idx_use, ] else X[, idx_use]
         if (verbose)
             message("Removing NA values from labels")
     }
@@ -200,20 +235,26 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE,
         stop("Must have at least 2 groups defined.")
     }
 
-    if (is.null(row.names(X))) {
-        row.names(X) <- paste0("Feature", seq_len(nrow(X)))
+    ## Feature names live on rows normally, on columns for transposed input.
+    if (transposed) {
+        if (is.null(colnames(X))) {
+            colnames(X) <- paste0("Feature", seq_len(ncol(X)))
+        }
+        features <- colnames(X)
+    } else {
+        if (is.null(rownames(X))) {
+            rownames(X) <- paste0("Feature", seq_len(nrow(X)))
+        }
+        features <- rownames(X)
     }
 
     ## Missing values in X would silently corrupt the ranks (the ranking
     ## code sorts values and cannot drop NAs the way stats::wilcox.test
     ## does), so fail loudly instead of returning wrong numbers. See #25.
-    if (anyNA(X)) {
-        stop(
-            "X contains NA values. Unlike stats::wilcox.test(), which drops ",
-            "missing values per observation, wilcoxauc() cannot handle NAs ",
-            "and would return silently incorrect results. Remove or impute ",
-            "the NA values before calling wilcoxauc()."
-        )
+    ## DelayedMatrix input is checked per realized block instead, to avoid
+    ## an extra full pass over the on-disk data.
+    if (!inherits(X, "DelayedMatrix") && anyNA(X)) {
+        stop_wilcox_na()
     }
 
     ## Compute primary statistics. Group sizes are computed once here (via
@@ -225,28 +266,22 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE,
     grp0 <- as.integer(y) - 1L
     n1n2 <- group.size * (n_obs - group.size)
 
-    if (is(X, "dgCMatrix")) {
-        ## A single kernel folds the former five passes (Matrix::t, ranking,
-        ## sumGroups on the ranked matrix, and sumGroups / nnzeroGroups on the
-        ## original) into one transpose plus one per-feature ranking, returning
-        ## the rank sums, raw sums, non-zero counts, and ties together.
-        rr <- cpp_wilcox_stats_dgc(
-            X@x, X@p, X@i, nrow(X), ncol(X), grp0, ngroups,
-            nthreads = max(1L, as.integer(nthreads))
+    if (inherits(X, "DelayedMatrix")) {
+        ## Disk-backed input (e.g. HDF5): realize and process feature
+        ## blocks so the whole matrix never has to fit in memory (#26).
+        st <- wilcox_stats_delayed(
+            X, y, grp0, ngroups, group.size, n_obs,
+            nthreads, transposed, verbose
         )
-        group_sums <- rr$sums
-        group_nnz <- rr$nnz
-        ustat <- compute_ustat_sparse(rr$grs, group_nnz, group.size, n_obs)
-        ties <- rr$ties
     } else {
-        aux <- cpp_sumGroups_nnz_dense_T(X, grp0, ngroups)
-        group_sums <- aux$sums
-        group_nnz <- aux$nnz
-        rank_res <- rank_matrix(X)
-        grs <- sumGroups(rank_res$X_ranked, y)
-        ustat <- grs - group.size * (group.size + 1) / 2
-        ties <- rank_res$ties
+        st <- wilcox_stats_matrix(
+            X, y, grp0, ngroups, group.size, n_obs, nthreads, transposed
+        )
     }
+    ustat <- st$ustat
+    group_sums <- st$group_sums
+    group_nnz <- st$group_nnz
+    ties <- st$ties
 
     auc <- t(ustat / n1n2)
     pvals <- compute_pval(ustat, ties, n_obs, n1n2)
@@ -271,7 +306,7 @@ wilcoxauc.default <- function(X, y, groups_use = NULL, verbose = TRUE,
                 avgExpr = group_means,
                 statistic = t(ustat),
                 logFC = lfc)
-    return(tidy_results(res_list, row.names(X), levels(y)))
+    return(tidy_results(res_list, features, levels(y)))
 }
 
 
@@ -330,6 +365,9 @@ top_markers <- function(res, n = 10, auc_min = 0, pval_max = 1, padj_max = 1,
         dplyr::top_n(n = n, wt = .data$auc) %>%
         dplyr::mutate(rank = rank(-.data$auc, ties.method = "random")) %>%
         dplyr::ungroup() %>%
-        dplyr::select(.data$feature, .data$group, .data$rank) %>%
-        tidyr::spread(.data$group, .data$feature, fill = NA)
+        dplyr::select("feature", "group", "rank") %>%
+        dplyr::arrange(.data$rank) %>%
+        tidyr::pivot_wider(
+            names_from = "group", values_from = "feature", names_sort = TRUE
+        )
 }

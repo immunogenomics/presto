@@ -23,13 +23,26 @@ wilcoxauc(X, ...)
 
 \method{wilcoxauc}{SingleCellExperiment}(X, group_by = NULL, assay = NULL, groups_use = NULL, ...)
 
-\method{wilcoxauc}{default}(X, y, groups_use = NULL, verbose = TRUE, nthreads = 1, ...)
+\method{wilcoxauc}{default}(
+  X,
+  y,
+  groups_use = NULL,
+  verbose = TRUE,
+  nthreads = 1,
+  transposed = FALSE,
+  ...
+)
 }
 \arguments{
 \item{X}{Input data. One of:
 \itemize{
 \item a numeric feature-by-observation matrix or \code{data.frame},
 \item a sparse \code{dgCMatrix} of the same shape,
+\item a disk-backed \code{DelayedMatrix} (e.g. HDF5-backed, from the
+DelayedArray / HDF5Array packages), which is processed in feature
+blocks so the whole matrix never has to be loaded in memory,
+\item any other matrix-like class with an \code{as(., "dgCMatrix")}
+coercion method (e.g. BPCells), which is converted up front,
 \item a \code{Seurat} (v3+) object,
 \item a \code{SingleCellExperiment} object.
 }
@@ -70,6 +83,14 @@ thread count. Only sparse input is parallelized -- dense matrix and
 \code{data.frame} input are always processed serially. When running under
 \verb{R CMD check} or on CRAN, keep this at the default so no more than two
 cores are used.}
+
+\item{transposed}{Set to \code{TRUE} if \code{X} is observations x features
+(samples in rows) instead of the default features x observations.
+The test then runs directly on that layout without materializing a
+transposed copy, which saves time and memory on large matrices.
+Only applies to matrix-like input (the \code{Seurat} /
+\code{SingleCellExperiment} dispatchers always extract features x
+observations). Default \code{FALSE}.}
 }
 \value{
 table with the following columns:

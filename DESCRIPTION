@@ -43,6 +43,7 @@ Suggests:
     Seurat,
     SingleCellExperiment,
     SummarizedExperiment,
+    DelayedArray,
     broom,
     BiocStyle,
     DESeq2,

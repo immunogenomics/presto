@@ -30,7 +30,15 @@ wilcoxauc(
 wilcoxauc(X, group_by = NULL, assay = NULL, groups_use = NULL, ...)
 
 # Default S3 method
-wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, nthreads = 1, ...)
+wilcoxauc(
+  X,
+  y,
+  groups_use = NULL,
+  verbose = TRUE,
+  nthreads = 1,
+  transposed = FALSE,
+  ...
+)
 ```
 
 ## Arguments
@@ -42,6 +50,13 @@ wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, nthreads = 1, ...)
   - a numeric feature-by-observation matrix or `data.frame`,
 
   - a sparse `dgCMatrix` of the same shape,
+
+  - a disk-backed `DelayedMatrix` (e.g. HDF5-backed, from the
+    DelayedArray / HDF5Array packages), which is processed in feature
+    blocks so the whole matrix never has to be loaded in memory,
+
+  - any other matrix-like class with an `as(., "dgCMatrix")` coercion
+    method (e.g. BPCells), which is converted up front,
 
   - a `Seurat` (v3+) object,
 
@@ -98,6 +113,15 @@ wilcoxauc(X, y, groups_use = NULL, verbose = TRUE, nthreads = 1, ...)
   sparse input is parallelized – dense matrix and `data.frame` input are
   always processed serially. When running under `R CMD check` or on
   CRAN, keep this at the default so no more than two cores are used.
+
+- transposed:
+
+  Set to `TRUE` if `X` is observations x features (samples in rows)
+  instead of the default features x observations. The test then runs
+  directly on that layout without materializing a transposed copy, which
+  saves time and memory on large matrices. Only applies to matrix-like
+  input (the `Seurat` / `SingleCellExperiment` dispatchers always
+  extract features x observations). Default `FALSE`.
 
 ## Value
 

@@ -162,6 +162,41 @@ test_that('constant features report p = 1, not NaN', {
     }
 })
 
+test_that('transposed input gives identical results (#18)', {
+    set.seed(17)
+    m <- matrix(as.numeric(rpois(30 * 200, 1.5)), 30,
+                dimnames = list(paste0("g", 1:30), paste0("c", 1:200)))
+    m[sample(length(m), length(m) * 0.4)] <- 0
+    yy <- sample(letters[1:3], 200, replace = TRUE)
+    ref <- wilcoxauc(m, yy, verbose = FALSE)
+
+    ## dense and sparse observations-x-features input
+    expect_equal(wilcoxauc(t(m), yy, verbose = FALSE, transposed = TRUE), ref)
+    expect_equal(
+        wilcoxauc(Matrix::t(as(m, "dgCMatrix")), yy,
+                  verbose = FALSE, transposed = TRUE),
+        ref
+    )
+
+    ## groups_use subsetting respects the transposed layout
+    ref_sub <- wilcoxauc(m, yy, groups_use = c("a", "b"), verbose = FALSE)
+    expect_equal(
+        wilcoxauc(Matrix::t(as(m, "dgCMatrix")), yy,
+                  groups_use = c("a", "b"),
+                  verbose = FALSE, transposed = TRUE),
+        ref_sub
+    )
+
+    ## transposed input is not modified in place
+    mt <- t(m)
+    mt_orig <- mt + 0
+    invisible(wilcoxauc(mt, yy, verbose = FALSE, transposed = TRUE))
+    expect_identical(mt, mt_orig)
+
+    ## dimension check errors on the wrong orientation
+    expect_error(wilcoxauc(m, yy, transposed = TRUE), "observations")
+})
+
 test_that('nthreads > 1 gives identical results to serial', {
     ## Multithreaded ranking must be a pure speedup, never a numeric change.
     set.seed(21)

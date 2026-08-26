@@ -84,3 +84,44 @@ test_that('toy generators are deterministic and preserve RNG state', {
         SummarizedExperiment::assay(b, 'counts')
     )
 })
+
+
+test_that('DelayedMatrix input is processed block-wise (#26)', {
+    if (!requireNamespace('DelayedArray', quietly = TRUE)) {
+        skip('DelayedArray not available')
+    }
+
+    set.seed(23)
+    m <- matrix(as.numeric(rpois(50 * 120, 1.5)), 50,
+                dimnames = list(paste0("g", 1:50), NULL))
+    m[sample(length(m), length(m) * 0.5)] <- 0
+    yy <- rep(c("A", "B", "C"), 40)
+    ref <- wilcoxauc(m, yy, verbose = FALSE)
+
+    Xd <- DelayedArray::DelayedArray(m)                     # dense seed
+    Xs <- DelayedArray::DelayedArray(as(m, "dgCMatrix"))    # sparse seed
+    expect_equal(wilcoxauc(Xd, yy, verbose = FALSE), ref)
+    expect_equal(wilcoxauc(Xs, yy, verbose = FALSE), ref)
+
+    ## force multiple small blocks and confirm they stitch together exactly
+    old <- options(presto.block.elements = 500)
+    on.exit(options(old))
+    expect_equal(wilcoxauc(Xd, yy, verbose = FALSE), ref)
+    expect_equal(wilcoxauc(Xs, yy, verbose = FALSE), ref)
+
+    ## NA values are caught inside a realized block
+    m_na <- m
+    m_na[7, 11] <- NA
+    expect_error(
+        wilcoxauc(DelayedArray::DelayedArray(m_na), yy, verbose = FALSE),
+        "NA"
+    )
+})
+
+
+test_that('unknown matrix classes get a helpful error', {
+    expect_error(
+        wilcoxauc(list(a = 1), rep("A", 3)),
+        "does not know how to handle"
+    )
+})

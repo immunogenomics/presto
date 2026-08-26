@@ -8,6 +8,15 @@ installed from GitHub.
 ### New features
 
 - [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
+  accepts disk-backed `DelayedMatrix` input (e.g. HDF5-backed assays
+  from HDF5Array), processed in feature blocks so the whole matrix never
+  has to be loaded in memory (#26). Other matrix-like classes with an
+  `as(., "dgCMatrix")` method (e.g. BPCells) are coerced automatically.
+- [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
+  gains a `transposed` argument for observations x features input
+  (samples in rows), which runs directly on that layout without
+  materializing a transposed copy (#18).
+- [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
   gains an `nthreads` argument: the per-feature ranking of sparse
   (`dgCMatrix`) input can run multithreaded. Results are identical at
   any thread count; roughly 2.6x faster with 4 threads on a 3,000 x
@@ -68,6 +77,15 @@ installed from GitHub.
   no longer prints debug output, and
   [`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md)
   no longer warns unconditionally.
+- Replaced deprecated `.data$` tidyselect usage and superseded
+  [`tidyr::spread()`](https://tidyr.tidyverse.org/reference/spread.html)
+  with
+  [`tidyr::pivot_wider()`](https://tidyr.tidyverse.org/reference/pivot_wider.html)
+  in
+  [`top_markers()`](https://immunogenomics.github.io/presto/reference/top_markers.md)
+  and
+  [`top_markers_dds()`](https://immunogenomics.github.io/presto/reference/top_markers_dds.md)
+  (#20).
 
 ### Performance
 

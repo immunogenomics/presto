@@ -174,11 +174,14 @@ std::vector<std::list<float> > cpp_rank_matrix_dgc(
 
 
 // [[Rcpp::export]]
-Rcpp::List cpp_rank_matrix_dense(const arma::mat& X_in) {
+Rcpp::List cpp_rank_matrix_dense(const arma::mat& X_in,
+                                 bool transposed = false) {
     // Rank the transposed input per column. Work on an owned copy: this
     // function used to take a non-const reference that aliased R's memory
-    // and overwrote the caller's matrix with ranks (#7).
-    arma::mat X = X_in.t();
+    // and overwrote the caller's matrix with ranks (#7). With
+    // `transposed = true` the input is already observations x features,
+    // so no transpose is needed (#18).
+    arma::mat X = transposed ? arma::mat(X_in) : arma::mat(X_in.t());
     // sizes of tied groups
     vector<list<float> > ties(X.n_cols);
 
@@ -266,6 +269,11 @@ Rcpp::List cpp_sumGroups_nnz_dense_T(const arma::mat& X,
 // ranking, sumGroups() over the ranked matrix, and sumGroups()/nnzeroGroups()
 // over the original -- into one transpose plus one per-feature ranking.
 //
+// With `transposed = true`, X is observations (ncell) x features (nfeature)
+// in CSC layout (p over features, i = observation index): each column is
+// already one feature's values, so the counting-sort transpose is skipped
+// entirely (#18).
+//
 // Ranking matches cpp_rank_matrix_dgc()/cpp_in_place_rank_mean(): the
 // stored (non-zero) values are averaged-rank ranked amongst themselves,
 // then shifted up by the number of implicit zeros in the feature. `ties`
@@ -284,32 +292,50 @@ Rcpp::List cpp_sumGroups_nnz_dense_T(const arma::mat& X,
 Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p,
                                 const arma::uvec& i, int nfeature, int ncell,
                                 const arma::uvec& groups, int ngroups,
-                                int nthreads = 1) {
+                                int nthreads = 1, bool transposed = false) {
     long nstored = x.n_elem;
 
     arma::mat sums = arma::zeros<arma::mat>(ngroups, nfeature);
     arma::mat nnz = arma::zeros<arma::mat>(ngroups, nfeature);
 
-    // 1. Counting-sort transpose. The same pass accumulates the raw group
-    //    sums and non-zero counts (used for the U statistic, pct_in/pct_out,
-    //    avgExpr and logFC), so the matrix is only traversed once.
     std::vector<int> fp(nfeature + 1, 0);
-    for (long k = 0; k < nstored; k++) fp[i[k] + 1]++;
-    for (int f = 0; f < nfeature; f++) fp[f + 1] += fp[f];
-
     std::vector<unsigned> tgroup(nstored);   // group of each stored entry
     std::vector<double> tval(nstored);       // value of each stored entry
-    std::vector<int> cursor(fp.begin(), fp.begin() + nfeature);
-    for (int c = 0; c < ncell; c++) {
-        unsigned g = groups[c];
-        for (int k = (int) p[c]; k < (int) p[c + 1]; k++) {
-            int f = i[k];
-            double v = x[k];
-            sums(g, f) += v;
-            nnz(g, f)++;
-            int pos = cursor[f]++;
-            tgroup[pos] = g;
-            tval[pos] = v;
+
+    if (transposed) {
+        // 1a. Columns already are features: copy the layout directly and
+        //     accumulate the raw group sums and non-zero counts in one pass.
+        for (int f = 0; f <= nfeature; f++) fp[f] = (int) p[f];
+        for (int f = 0; f < nfeature; f++) {
+            for (int k = fp[f]; k < fp[f + 1]; k++) {
+                unsigned g = groups[i[k]];
+                double v = x[k];
+                sums(g, f) += v;
+                nnz(g, f)++;
+                tgroup[k] = g;
+                tval[k] = v;
+            }
+        }
+    } else {
+        // 1b. Counting-sort transpose. The same pass accumulates the raw
+        //     group sums and non-zero counts (used for the U statistic,
+        //     pct_in/pct_out, avgExpr and logFC), so the matrix is only
+        //     traversed once.
+        for (long k = 0; k < nstored; k++) fp[i[k] + 1]++;
+        for (int f = 0; f < nfeature; f++) fp[f + 1] += fp[f];
+
+        std::vector<int> cursor(fp.begin(), fp.begin() + nfeature);
+        for (int c = 0; c < ncell; c++) {
+            unsigned g = groups[c];
+            for (int k = (int) p[c]; k < (int) p[c + 1]; k++) {
+                int f = i[k];
+                double v = x[k];
+                sums(g, f) += v;
+                nnz(g, f)++;
+                int pos = cursor[f]++;
+                tgroup[pos] = g;
+                tval[pos] = v;
+            }
         }
     }
 

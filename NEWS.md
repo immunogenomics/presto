@@ -5,6 +5,14 @@ from GitHub.
 
 ## New features
 
+* `wilcoxauc()` accepts disk-backed `DelayedMatrix` input (e.g.
+  HDF5-backed assays from HDF5Array), processed in feature blocks so the
+  whole matrix never has to be loaded in memory (#26). Other matrix-like
+  classes with an `as(., "dgCMatrix")` method (e.g. BPCells) are coerced
+  automatically.
+* `wilcoxauc()` gains a `transposed` argument for observations x
+  features input (samples in rows), which runs directly on that layout
+  without materializing a transposed copy (#18).
 * `wilcoxauc()` gains an `nthreads` argument: the per-feature ranking of
   sparse (`dgCMatrix`) input can run multithreaded. Results are identical
   at any thread count; roughly 2.6x faster with 4 threads on a
@@ -48,6 +56,9 @@ from GitHub.
 * `pseudobulk_pairwise()` no longer fails on single-column `meta_data`.
 * `summarize_dge_pairs()` no longer prints debug output, and
   `pseudobulk_deseq2()` no longer warns unconditionally.
+* Replaced deprecated `.data$` tidyselect usage and superseded
+  `tidyr::spread()` with `tidyr::pivot_wider()` in `top_markers()` and
+  `top_markers_dds()` (#20).
 
 ## Performance
 

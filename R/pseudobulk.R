@@ -633,9 +633,11 @@ top_markers_dds <- function(
         dplyr::top_n(n = n, wt = stat) %>%
         dplyr::mutate(rank = rank(-stat, ties.method = "random")) %>%
         dplyr::ungroup() %>%
-        dplyr::select(feature, group, rank) %>%
-        tidyr::spread(group, feature, fill = NA) %>%
-        identity()
+        dplyr::select("feature", "group", "rank") %>%
+        dplyr::arrange(rank) %>%
+        tidyr::pivot_wider(
+            names_from = "group", values_from = "feature", names_sort = TRUE
+        )
 }
 
 #' Summarize directional pairwise DGE results

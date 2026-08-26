@@ -81,7 +81,15 @@ alongside the test statistics.</p>
 <span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">X</span>, group_by <span class="op">=</span> <span class="cn">NULL</span>, assay <span class="op">=</span> <span class="cn">NULL</span>, groups_use <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Default S3 method</span></span>
-<span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">X</span>, <span class="va">y</span>, groups_use <span class="op">=</span> <span class="cn">NULL</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, nthreads <span class="op">=</span> <span class="fl">1</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">wilcoxauc</span><span class="op">(</span></span>
+<span>  <span class="va">X</span>,</span>
+<span>  <span class="va">y</span>,</span>
+<span>  groups_use <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  nthreads <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  transposed <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -91,6 +99,11 @@ alongside the test statistics.</p>
 <dl><dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>Input data. One of:</p><ul><li><p>a numeric feature-by-observation matrix or <code>data.frame</code>,</p></li>
 <li><p>a sparse <code>dgCMatrix</code> of the same shape,</p></li>
+<li><p>a disk-backed <code>DelayedMatrix</code> (e.g. HDF5-backed, from the
+DelayedArray / HDF5Array packages), which is processed in feature
+blocks so the whole matrix never has to be loaded in memory,</p></li>
+<li><p>any other matrix-like class with an <code>as(., "dgCMatrix")</code>
+coercion method (e.g. BPCells), which is converted up front,</p></li>
 <li><p>a <code>Seurat</code> (v3+) object,</p></li>
 <li><p>a <code>SingleCellExperiment</code> object.</p></li>
 </ul><p><code>X</code> must not contain <code>NA</code> values. Unlike <code><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">stats::wilcox.test()</a></code>,
@@ -146,6 +159,16 @@ thread count. Only sparse input is parallelized – dense matrix and
 <code>data.frame</code> input are always processed serially. When running under
 <code>R CMD check</code> or on CRAN, keep this at the default so no more than two
 cores are used.</p></dd>
+
+
+<dt id="arg-transposed">transposed<a class="anchor" aria-label="anchor" href="#arg-transposed"></a></dt>
+<dd><p>Set to <code>TRUE</code> if <code>X</code> is observations x features
+(samples in rows) instead of the default features x observations.
+The test then runs directly on that layout without materializing a
+transposed copy, which saves time and memory on large matrices.
+Only applies to matrix-like input (the <code>Seurat</code> /
+<code>SingleCellExperiment</code> dispatchers always extract features x
+observations). Default <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

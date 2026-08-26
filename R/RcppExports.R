@@ -37,8 +37,8 @@ cpp_rank_matrix_dgc <- function(x, p, nrow, ncol) {
     .Call('_presto_cpp_rank_matrix_dgc', PACKAGE = 'presto', x, p, nrow, ncol)
 }
 
-cpp_rank_matrix_dense <- function(X_in) {
-    .Call('_presto_cpp_rank_matrix_dense', PACKAGE = 'presto', X_in)
+cpp_rank_matrix_dense <- function(X_in, transposed = FALSE) {
+    .Call('_presto_cpp_rank_matrix_dense', PACKAGE = 'presto', X_in, transposed)
 }
 
 cpp_nnzeroGroups_dgc_T <- function(p, i, ncol, nrow, groups, ngroups) {
@@ -49,7 +49,7 @@ cpp_sumGroups_nnz_dense_T <- function(X, groups, ngroups) {
     .Call('_presto_cpp_sumGroups_nnz_dense_T', PACKAGE = 'presto', X, groups, ngroups)
 }
 
-cpp_wilcox_stats_dgc <- function(x, p, i, nfeature, ncell, groups, ngroups, nthreads = 1L) {
-    .Call('_presto_cpp_wilcox_stats_dgc', PACKAGE = 'presto', x, p, i, nfeature, ncell, groups, ngroups, nthreads)
+cpp_wilcox_stats_dgc <- function(x, p, i, nfeature, ncell, groups, ngroups, nthreads = 1L, transposed = FALSE) {
+    .Call('_presto_cpp_wilcox_stats_dgc', PACKAGE = 'presto', x, p, i, nfeature, ncell, groups, ngroups, nthreads, transposed)
 }
 

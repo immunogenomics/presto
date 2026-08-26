@@ -139,13 +139,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_rank_matrix_dense
-Rcpp::List cpp_rank_matrix_dense(const arma::mat& X_in);
-RcppExport SEXP _presto_cpp_rank_matrix_dense(SEXP X_inSEXP) {
+Rcpp::List cpp_rank_matrix_dense(const arma::mat& X_in, bool transposed);
+RcppExport SEXP _presto_cpp_rank_matrix_dense(SEXP X_inSEXP, SEXP transposedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type X_in(X_inSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_rank_matrix_dense(X_in));
+    Rcpp::traits::input_parameter< bool >::type transposed(transposedSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_rank_matrix_dense(X_in, transposed));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -179,8 +180,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_wilcox_stats_dgc
-Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p, const arma::uvec& i, int nfeature, int ncell, const arma::uvec& groups, int ngroups, int nthreads);
-RcppExport SEXP _presto_cpp_wilcox_stats_dgc(SEXP xSEXP, SEXP pSEXP, SEXP iSEXP, SEXP nfeatureSEXP, SEXP ncellSEXP, SEXP groupsSEXP, SEXP ngroupsSEXP, SEXP nthreadsSEXP) {
+Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p, const arma::uvec& i, int nfeature, int ncell, const arma::uvec& groups, int ngroups, int nthreads, bool transposed);
+RcppExport SEXP _presto_cpp_wilcox_stats_dgc(SEXP xSEXP, SEXP pSEXP, SEXP iSEXP, SEXP nfeatureSEXP, SEXP ncellSEXP, SEXP groupsSEXP, SEXP ngroupsSEXP, SEXP nthreadsSEXP, SEXP transposedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -192,7 +193,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::uvec& >::type groups(groupsSEXP);
     Rcpp::traits::input_parameter< int >::type ngroups(ngroupsSEXP);
     Rcpp::traits::input_parameter< int >::type nthreads(nthreadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_wilcox_stats_dgc(x, p, i, nfeature, ncell, groups, ngroups, nthreads));
+    Rcpp::traits::input_parameter< bool >::type transposed(transposedSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_wilcox_stats_dgc(x, p, i, nfeature, ncell, groups, ngroups, nthreads, transposed));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -207,10 +209,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_presto_cpp_nnzeroGroups_dgc", (DL_FUNC) &_presto_cpp_nnzeroGroups_dgc, 5},
     {"_presto_cpp_in_place_rank_mean", (DL_FUNC) &_presto_cpp_in_place_rank_mean, 3},
     {"_presto_cpp_rank_matrix_dgc", (DL_FUNC) &_presto_cpp_rank_matrix_dgc, 4},
-    {"_presto_cpp_rank_matrix_dense", (DL_FUNC) &_presto_cpp_rank_matrix_dense, 1},
+    {"_presto_cpp_rank_matrix_dense", (DL_FUNC) &_presto_cpp_rank_matrix_dense, 2},
     {"_presto_cpp_nnzeroGroups_dgc_T", (DL_FUNC) &_presto_cpp_nnzeroGroups_dgc_T, 6},
     {"_presto_cpp_sumGroups_nnz_dense_T", (DL_FUNC) &_presto_cpp_sumGroups_nnz_dense_T, 3},
-    {"_presto_cpp_wilcox_stats_dgc", (DL_FUNC) &_presto_cpp_wilcox_stats_dgc, 8},
+    {"_presto_cpp_wilcox_stats_dgc", (DL_FUNC) &_presto_cpp_wilcox_stats_dgc, 9},
     {NULL, NULL, 0}
 };
 
