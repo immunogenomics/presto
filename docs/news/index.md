@@ -42,6 +42,21 @@ installed from GitHub.
 
 ### Bug fixes
 
+- The Wilcoxon variance correction now includes every tie group: the
+  final tie group per feature and the implicit-zero group of all-zero
+  features used to be dropped, inflating p-values on heavily tied data
+  (#29). P-values now agree with
+  [`stats::wilcox.test()`](https://rdrr.io/r/stats/wilcox.test.html) to
+  machine precision; on typical count data the change is tiny (\< 1e-4),
+  but it is meaningful for binary or heavily tied features. Constant
+  features report `pval = 1` instead of an arbitrary value.
+- [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
+  and
+  [`rank_matrix()`](https://immunogenomics.github.io/presto/reference/rank_matrix.md)
+  no longer modify their input in place: dense input used to be silently
+  overwritten with ranks via an aliased memory buffer (#7). Dense
+  `avgExpr` and `logFC` are computed from the original values (also
+  \#7).
 - The Seurat dispatcher of
   [`wilcoxauc()`](https://immunogenomics.github.io/presto/reference/wilcoxauc.md)
   uses the `layer` argument required by Seurat 5 (#44).

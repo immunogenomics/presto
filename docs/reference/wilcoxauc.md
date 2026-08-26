@@ -109,7 +109,11 @@ table with the following columns:
 
 - **avgExpr** - mean value of feature in group.
 
-- **logFC** - log fold change between observations in group vs out.
+- **logFC** - difference of mean feature values between observations in
+  the group vs out of the group. When the input is log-transformed
+  expression (e.g. Seurat's `"data"` layer or `logcounts`), this
+  difference of means is a log fold change. On raw (untransformed)
+  values it is a plain difference of means, not a fold change.
 
 - **statistic** - Wilcoxon rank sum U statistic.
 
@@ -153,11 +157,11 @@ y <- rep(c("A", "B", "C"), each = 50)
 ## on a dense matrix
 head(wilcoxauc(exprs, y))
 #>   feature group avgExpr logFC statistic    auc       pval      padj pct_in
-#> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643843 0.5100600     86
+#> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643797 0.5100593     86
 #> 2      G2     A    1.58 -0.56    1896.0 0.3792 0.01372592 0.1715740     84
-#> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78264917 0.8933112     84
+#> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78263792 0.8933109     84
 #> 4      G4     A    1.96 -0.21    2384.0 0.4768 0.63616986 0.8835693     90
-#> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419217 0.5052190     82
+#> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419173 0.5052190     82
 #> 6      G6     A    2.26  0.24    2775.0 0.5550 0.26271390 0.5052190     90
 #>   pct_out
 #> 1      89
@@ -170,12 +174,12 @@ head(wilcoxauc(exprs, y))
 ## restrict the comparison to a subset of groups
 head(wilcoxauc(exprs, y, c('A', 'B')))
 #>   feature group avgExpr logFC statistic    auc       pval      padj pct_in
-#> 1      G1     A    2.10  0.02      1284 0.5136 0.81297858 0.9680542     86
+#> 1      G1     A    2.10  0.02      1284 0.5136 0.81297801 0.9680542     86
 #> 2      G2     A    1.58 -0.52       950 0.3800 0.03365247 0.4716572     84
-#> 3      G3     A    1.86 -0.02      1197 0.4788 0.70871296 0.9325171     84
+#> 3      G3     A    1.86 -0.02      1197 0.4788 0.70869519 0.9324937     84
 #> 4      G4     A    1.96 -0.28      1158 0.4632 0.51725570 0.8474382     90
-#> 5      G5     A    2.00 -0.02      1236 0.4944 0.92392119 0.9802096     82
-#> 6      G6     A    2.26  0.36      1437 0.5748 0.18871553 0.6739840     90
+#> 5      G5     A    2.00 -0.02      1236 0.4944 0.92392119 0.9802095     82
+#> 6      G6     A    2.26  0.36      1437 0.5748 0.18870167 0.6739345     90
 #>   pct_out
 #> 1      90
 #> 2      86
@@ -188,11 +192,11 @@ head(wilcoxauc(exprs, y, c('A', 'B')))
 exprs_sparse <- as(exprs, 'dgCMatrix')
 head(wilcoxauc(exprs_sparse, y))
 #>   feature group avgExpr logFC statistic    auc       pval      padj pct_in
-#> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643843 0.5100600     86
+#> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643797 0.5100593     86
 #> 2      G2     A    1.58 -0.56    1896.0 0.3792 0.01372592 0.1715740     84
-#> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78264917 0.8933112     84
+#> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78263792 0.8933109     84
 #> 4      G4     A    1.96 -0.21    2384.0 0.4768 0.63616986 0.8835693     90
-#> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419217 0.5052190     82
+#> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419173 0.5052190     82
 #> 6      G6     A    2.26  0.24    2775.0 0.5550 0.26271390 0.5052190     90
 #>   pct_out
 #> 1      89

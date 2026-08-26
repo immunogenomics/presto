@@ -58,7 +58,10 @@
 </ul></div>
 <div class="section level3">
 <h3 id="bug-fixes-1-1-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-0"></a></h3>
-<ul><li>The Seurat dispatcher of <code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> uses the <code>layer</code> argument required by Seurat 5 (#44).</li>
+<ul><li>The Wilcoxon variance correction now includes every tie group: the final tie group per feature and the implicit-zero group of all-zero features used to be dropped, inflating p-values on heavily tied data (#29). P-values now agree with <code><a href="https://rdrr.io/r/stats/wilcox.test.html" class="external-link">stats::wilcox.test()</a></code> to machine precision; on typical count data the change is tiny (&lt; 1e-4), but it is meaningful for binary or heavily tied features. Constant features report <code>pval = 1</code> instead of an arbitrary value.</li>
+<li>
+<code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> and <code><a href="../reference/rank_matrix.html">rank_matrix()</a></code> no longer modify their input in place: dense input used to be silently overwritten with ranks via an aliased memory buffer (#7). Dense <code>avgExpr</code> and <code>logFC</code> are computed from the original values (also #7).</li>
+<li>The Seurat dispatcher of <code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> uses the <code>layer</code> argument required by Seurat 5 (#44).</li>
 <li>
 <code><a href="../reference/pseudobulk_within.html">pseudobulk_within()</a></code> handles character and multi-level contrast variables.</li>
 <li>

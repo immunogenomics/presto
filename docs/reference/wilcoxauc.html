@@ -153,7 +153,12 @@ cores are used.</p></dd>
     <p>table with the following columns:</p><ul><li><p><strong>feature</strong> - feature name (e.g. gene name).</p></li>
 <li><p><strong>group</strong> - group name.</p></li>
 <li><p><strong>avgExpr</strong> - mean value of feature in group.</p></li>
-<li><p><strong>logFC</strong> - log fold change between observations in group vs out.</p></li>
+<li><p><strong>logFC</strong> - difference of mean feature values between
+observations in the group vs out of the group. When the input is
+log-transformed expression (e.g. Seurat's <code>"data"</code> layer or
+<code>logcounts</code>), this difference of means is a log fold change. On raw
+(untransformed) values it is a plain difference of means, not a fold
+change.</p></li>
 <li><p><strong>statistic</strong> - Wilcoxon rank sum U statistic.</p></li>
 <li><p><strong>auc</strong> - area under the receiver operator curve.</p></li>
 <li><p><strong>pval</strong> - nominal p value.</p></li>
@@ -189,11 +194,11 @@ for an end-to-end example on a real dataset.</p>
 <span class="r-in"><span><span class="co">## on a dense matrix</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   feature group avgExpr logFC statistic    auc       pval      padj pct_in</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643843 0.5100600     86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643797 0.5100593     86</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2     A    1.58 -0.56    1896.0 0.3792 0.01372592 0.1715740     84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78264917 0.8933112     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78263792 0.8933109     84</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4     A    1.96 -0.21    2384.0 0.4768 0.63616986 0.8835693     90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419217 0.5052190     82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419173 0.5052190     82</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.24    2775.0 0.5550 0.26271390 0.5052190     90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   pct_out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      89</span>
@@ -206,12 +211,12 @@ for an end-to-end example on a real dataset.</p>
 <span class="r-in"><span><span class="co">## restrict the comparison to a subset of groups</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs</span>, <span class="va">y</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'A'</span>, <span class="st">'B'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   feature group avgExpr logFC statistic    auc       pval      padj pct_in</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.02      1284 0.5136 0.81297858 0.9680542     86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.02      1284 0.5136 0.81297801 0.9680542     86</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2     A    1.58 -0.52       950 0.3800 0.03365247 0.4716572     84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86 -0.02      1197 0.4788 0.70871296 0.9325171     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86 -0.02      1197 0.4788 0.70869519 0.9324937     84</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4     A    1.96 -0.28      1158 0.4632 0.51725570 0.8474382     90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.02      1236 0.4944 0.92392119 0.9802096     82</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.36      1437 0.5748 0.18871553 0.6739840     90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.02      1236 0.4944 0.92392119 0.9802095     82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.36      1437 0.5748 0.18870167 0.6739345     90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   pct_out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2      86</span>
@@ -224,11 +229,11 @@ for an end-to-end example on a real dataset.</p>
 <span class="r-in"><span><span class="va">exprs_sparse</span> <span class="op">&lt;-</span> <span class="fu">as</span><span class="op">(</span><span class="va">exprs</span>, <span class="st">'dgCMatrix'</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">wilcoxauc</span><span class="op">(</span><span class="va">exprs_sparse</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   feature group avgExpr logFC statistic    auc       pval      padj pct_in</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643843 0.5100600     86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      G1     A    2.10  0.20    2740.0 0.5480 0.32643797 0.5100593     86</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2      G2     A    1.58 -0.56    1896.0 0.3792 0.01372592 0.1715740     84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78264917 0.8933112     84</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      G3     A    1.86  0.02    2432.5 0.4865 0.78263792 0.8933109     84</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4      G4     A    1.96 -0.21    2384.0 0.4768 0.63616986 0.8835693     90</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419217 0.5052190     82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      G5     A    2.00 -0.28    2214.0 0.4428 0.24419173 0.5052190     82</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6      G6     A    2.26  0.24    2775.0 0.5550 0.26271390 0.5052190     90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   pct_out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1      89</span>
