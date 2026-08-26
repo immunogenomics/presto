@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">presto</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,10 +38,45 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.0.0" id="presto-100">presto 1.0.0<a class="anchor" aria-label="anchor" href="#presto-100"></a></h2>
-<p>Initial submission.</p>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="presto-110">presto 1.1.0<a class="anchor" aria-label="anchor" href="#presto-110"></a></h2>
+<p>First CRAN release. Version 1.0.0 refers to the pre-CRAN package installed from GitHub.</p>
+<div class="section level3">
+<h3 id="new-features-1-1-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> gains an <code>nthreads</code> argument: the per-feature ranking of sparse (<code>dgCMatrix</code>) input can run multithreaded. Results are identical at any thread count; roughly 2.6x faster with 4 threads on a 3,000 x 80,000 matrix. The default (<code>nthreads = 1</code>) is unchanged.</li>
+<li>New <code><a href="../reference/toy_seurat.html">toy_seurat()</a></code> and <code><a href="../reference/toy_sce.html">toy_sce()</a></code> generate small example Seurat / SingleCellExperiment objects on the fly with the installed package versions, so they can never go stale.</li>
+<li>New <code><a href="../reference/load_ircolitis_cd8.html">load_ircolitis_cd8()</a></code> downloads and caches the 25,341-cell colon CD8 T-cell dataset (GSE206299, Thomas et al. 2024) used by the vignettes.</li>
+<li>Two vignettes: <em>Getting started with presto</em> and <em>Pseudobulk differential expression with DESeq2</em>, both run on the real ircolitis dataset.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="breaking-changes-1-1-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> now stops with an informative error when <code>X</code> contains <code>NA</code> values, instead of silently returning incorrect results (#25).</li>
+<li>The shipped <code>object_seurat</code> and <code>object_sce</code> datasets were removed; use <code><a href="../reference/toy_seurat.html">toy_seurat()</a></code> and <code><a href="../reference/toy_sce.html">toy_sce()</a></code> instead.</li>
+<li>
+<code>Rcpp</code> and <code>data.table</code> moved from <code>Depends</code> to <code>Imports</code>, so they are no longer attached to the search path when presto is loaded.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-1-1-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-0"></a></h3>
+<ul><li>The Seurat dispatcher of <code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> uses the <code>layer</code> argument required by Seurat 5 (#44).</li>
+<li>
+<code><a href="../reference/pseudobulk_within.html">pseudobulk_within()</a></code> handles character and multi-level contrast variables.</li>
+<li>
+<code><a href="../reference/pseudobulk_pairwise.html">pseudobulk_pairwise()</a></code> no longer fails on single-column <code>meta_data</code>.</li>
+<li>
+<code><a href="../reference/summarize_dge_pairs.html">summarize_dge_pairs()</a></code> no longer prints debug output, and <code><a href="../reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> no longer warns unconditionally.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="performance-1-1-0">Performance<a class="anchor" aria-label="anchor" href="#performance-1-1-0"></a></h3>
+<ul><li>The sparse-input statistics of <code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> (transpose, ranking, and all group-wise reductions) are fused into a single-pass C++ kernel, about 12% faster serially before any threading.</li>
+</ul></div>
 </div>
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="presto-100">presto 1.0.0<a class="anchor" aria-label="anchor" href="#presto-100"></a></h2>
+<ul><li>Original GitHub release.</li>
+</ul></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
