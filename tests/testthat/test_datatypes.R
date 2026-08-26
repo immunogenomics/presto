@@ -125,3 +125,31 @@ test_that('unknown matrix classes get a helpful error', {
         "does not know how to handle"
     )
 })
+
+
+test_that('SCE with a DelayedMatrix assay works end-to-end (#26)', {
+    if (!requireNamespace('SingleCellExperiment', quietly = TRUE) ||
+        !requireNamespace('DelayedArray', quietly = TRUE)) {
+        skip('SingleCellExperiment or DelayedArray not available')
+    }
+
+    set.seed(3)
+    m <- matrix(as.numeric(rpois(40 * 150, 1.2)), 40,
+                dimnames = list(paste0("g", 1:40), paste0("c", 1:150)))
+    m[sample(length(m), length(m) * 0.6)] <- 0
+    clusters <- rep(c("A", "B", "C"), 50)
+
+    sce <- SingleCellExperiment::SingleCellExperiment(
+        assays = list(
+            logcounts = DelayedArray::DelayedArray(as(m, "dgCMatrix"))
+        )
+    )
+    sce$clusters <- clusters
+
+    ## the exact call pattern reported in issue #26
+    res <- suppressMessages(
+        wilcoxauc(sce, assay = "logcounts", group_by = "clusters")
+    )
+    ref <- wilcoxauc(m, clusters, verbose = FALSE)
+    expect_equal(res, ref)
+})
