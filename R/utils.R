@@ -55,6 +55,11 @@ compute_pval <- function(ustat, ties, N, n1n2) {
     usigma <- sqrt(matrix(n1n2, ncol = 1) %*% matrix(rhs, nrow = 1))
     z <- t(z / usigma)
 
+    ## Fully tied features (e.g. all-zero) have zero rank variance, so z is
+    ## 0 / 0. Their U statistic is exactly n1n2 / 2 (no separation at all),
+    ## so report p = 1 rather than NaN.
+    z[!is.finite(z)] <- 0
+
     pvals <- matrix(2 * pnorm(-abs(as.numeric(z))), ncol = ncol(z))
     return(pvals)
 }
@@ -96,7 +101,10 @@ rank_matrix <- function(X) {
 #' @rdname rank_matrix
 #' @export
 rank_matrix.dgCMatrix <- function(X) {
-    Xr <- Matrix(X, sparse = TRUE)
+    Xr <- X
+    ## Force a deep copy of the values slot: the C++ ranker overwrites it
+    ## in place, and the caller's matrix must not be modified.
+    Xr@x <- X@x + 0
     ties <- cpp_rank_matrix_dgc(Xr@x, Xr@p, nrow(Xr), ncol(Xr))
     return(list(X_ranked = Xr, ties = ties))
 }

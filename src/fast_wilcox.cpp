@@ -142,9 +142,11 @@ std::list<float> cpp_in_place_rank_mean(arma::vec& v_temp, int idx_begin,
             n++;
         }
     }
-    // set the last element(s)
+    // set the last element(s), and record the final tie group, which
+    // used to be dropped from the variance correction (#29)
     for (unsigned j = 0; j < n; j++)
-        v_temp[v_sort[i - 1 - j].second + idx_begin] = (rank_sum / n) + 1;  
+        v_temp[v_sort[i - 1 - j].second + idx_begin] = (rank_sum / n) + 1;
+    if (n > 1) ties.push_back(n);
 
     return ties;
 }
@@ -156,8 +158,13 @@ std::vector<std::list<float> > cpp_rank_matrix_dgc(
     vector<list<float> > ties(ncol);
     int n_zero;
     for (int i = 0; i < ncol; i++) {
-        if (p[i+1] == p[i]) continue;
         n_zero = nrow - (p[i+1] - p[i]);
+        if (p[i+1] == p[i]) {
+            // all-zero column: the zeros are one big tie group, which used
+            // to be dropped from the variance correction (#29)
+            ties[i].push_back(n_zero);
+            continue;
+        }
         ties[i] = cpp_in_place_rank_mean(x, p[i], p[i + 1] - 1);
         ties[i].push_back(n_zero);
         x.rows(p[i], p[i + 1] - 1) += n_zero;
@@ -167,11 +174,14 @@ std::vector<std::list<float> > cpp_rank_matrix_dgc(
 
 
 // [[Rcpp::export]]
-Rcpp::List cpp_rank_matrix_dense(arma::mat& X) {
+Rcpp::List cpp_rank_matrix_dense(const arma::mat& X_in) {
+    // Rank the transposed input per column. Work on an owned copy: this
+    // function used to take a non-const reference that aliased R's memory
+    // and overwrote the caller's matrix with ranks (#7).
+    arma::mat X = X_in.t();
     // sizes of tied groups
-    arma::inplace_trans(X);
     vector<list<float> > ties(X.n_cols);
-    
+
     std::vector<pair<float, size_t> > v_sort(X.n_rows);
     for (unsigned c = 0; c < X.n_cols; c++) {
         for (size_t i = 0; i < X.n_rows; i++) {
@@ -186,22 +196,24 @@ Rcpp::List cpp_rank_matrix_dense(arma::mat& X) {
                 // if current val != prev val
                 // set prev val to something
                 for (unsigned j = 0; j < n; j++) {
-                    X.col(c)[v_sort[i - 1 - j].second] = (rank_sum / n) + 1;  
-                }            
+                    X.col(c)[v_sort[i - 1 - j].second] = (rank_sum / n) + 1;
+                }
                 // restart count ranks
                 rank_sum = i;
                 if (n > 1) ties[c].push_back(n);
                 n = 1;
             } else {
-                // if curr val is a tie, 
+                // if curr val is a tie,
                 // don't set anything yet, start computing mean rank
                 rank_sum += i;
                 n++;
             }
         }
-        // set the last element(s)
+        // set the last element(s), and record the final tie group, which
+        // used to be dropped from the variance correction (#29)
         for (unsigned j = 0; j < n; j++)
             X.col(c)[v_sort[i - 1 - j].second] = (rank_sum / n) + 1;
+        if (n > 1) ties[c].push_back(n);
     }
     return Rcpp::List::create(Named("X_ranked") = X, Named("ties") = ties);
 }
@@ -254,11 +266,12 @@ Rcpp::List cpp_sumGroups_nnz_dense_T(const arma::mat& X,
 // ranking, sumGroups() over the ranked matrix, and sumGroups()/nnzeroGroups()
 // over the original -- into one transpose plus one per-feature ranking.
 //
-// Ranking matches cpp_rank_matrix_dgc()/cpp_in_place_rank_mean() exactly:
-// the stored (non-zero) values are averaged-rank ranked amongst themselves,
-// then shifted up by the number of implicit zeros in the feature. The
-// returned `ties` mirror that code precisely, including its quirk of not
-// recording the final tie group, followed by the zero-run pushed as a tie.
+// Ranking matches cpp_rank_matrix_dgc()/cpp_in_place_rank_mean(): the
+// stored (non-zero) values are averaged-rank ranked amongst themselves,
+// then shifted up by the number of implicit zeros in the feature. `ties`
+// records every tie group per feature, including the final group among the
+// stored values and the implicit-zero run, so the Wilcoxon variance
+// correction is complete (#29).
 // Returns `grs` (rank sums), `sums` (raw sums), `nnz` (non-zero counts) --
 // each ngroups x nfeature -- and `ties` (list per feature).
 //
@@ -314,7 +327,11 @@ Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p,
             int b = fp[f];
             int m = fp[f + 1] - b;         // stored non-zeros in this feature
             std::vector<double>& feat_ties = ties_vec[f];
-            if (m == 0) continue;          // all-zero feature: empty ties
+            if (m == 0) {
+                // all-zero feature: the zeros are one big tie group (#29)
+                feat_ties.push_back(ncell);
+                continue;
+            }
             int n_zero = ncell - m;
 
             v_sort.resize(m);
@@ -337,11 +354,13 @@ Rcpp::List cpp_wilcox_stats_dgc(const arma::vec& x, const arma::vec& p,
                     n++;
                 }
             }
-            // Final tie group: assign ranks but (matching the original) do NOT
-            // record it in `ties`.
+            // Assign ranks for the final tie group and record it, then the
+            // implicit-zero run (#29: both used to be dropped from the
+            // variance correction).
             double rank = (rank_sum / n) + 1 + n_zero;
             for (int j = 0; j < n; j++)
                 grs(tgroup[b + v_sort[t - 1 - j].second], f) += rank;
+            if (n > 1) feat_ties.push_back(n);
             feat_ties.push_back(n_zero);
         }
     };

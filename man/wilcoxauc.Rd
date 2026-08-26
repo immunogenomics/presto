@@ -77,7 +77,12 @@ table with the following columns:
 \item \strong{feature} - feature name (e.g. gene name).
 \item \strong{group} - group name.
 \item \strong{avgExpr} - mean value of feature in group.
-\item \strong{logFC} - log fold change between observations in group vs out.
+\item \strong{logFC} - difference of mean feature values between
+observations in the group vs out of the group. When the input is
+log-transformed expression (e.g. Seurat's \code{"data"} layer or
+\code{logcounts}), this difference of means is a log fold change. On raw
+(untransformed) values it is a plain difference of means, not a fold
+change.
 \item \strong{statistic} - Wilcoxon rank sum U statistic.
 \item \strong{auc} - area under the receiver operator curve.
 \item \strong{pval} - nominal p value.

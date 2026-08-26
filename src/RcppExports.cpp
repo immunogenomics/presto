@@ -139,13 +139,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_rank_matrix_dense
-Rcpp::List cpp_rank_matrix_dense(arma::mat& X);
-RcppExport SEXP _presto_cpp_rank_matrix_dense(SEXP XSEXP) {
+Rcpp::List cpp_rank_matrix_dense(const arma::mat& X_in);
+RcppExport SEXP _presto_cpp_rank_matrix_dense(SEXP X_inSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_rank_matrix_dense(X));
+    Rcpp::traits::input_parameter< const arma::mat& >::type X_in(X_inSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_rank_matrix_dense(X_in));
     return rcpp_result_gen;
 END_RCPP
 }

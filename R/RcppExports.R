@@ -37,8 +37,8 @@ cpp_rank_matrix_dgc <- function(x, p, nrow, ncol) {
     .Call('_presto_cpp_rank_matrix_dgc', PACKAGE = 'presto', x, p, nrow, ncol)
 }
 
-cpp_rank_matrix_dense <- function(X) {
-    .Call('_presto_cpp_rank_matrix_dense', PACKAGE = 'presto', X)
+cpp_rank_matrix_dense <- function(X_in) {
+    .Call('_presto_cpp_rank_matrix_dense', PACKAGE = 'presto', X_in)
 }
 
 cpp_nnzeroGroups_dgc_T <- function(p, i, ncol, nrow, groups, ngroups) {

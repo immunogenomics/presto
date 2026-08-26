@@ -38,7 +38,7 @@ test_that('presto::wilcoxauc gives same results as stats::wilcox.test', {
         res_base_r, res_presto, 
         by = c('feature', 'group'), suffix = c('_base', '_presto')
     )
-    expect_lt(max(abs(res_joint$p.value_base - res_joint$p.value_presto)), 1e-3)
+    expect_lt(max(abs(res_joint$p.value_base - res_joint$p.value_presto)), 1e-8)
     expect_lt(max(abs(res_joint$statistic_base - res_joint$statistic_presto)), 1e-3)
 
 })
@@ -82,7 +82,7 @@ test_that('sparse wilcoxauc with many zeros matches stats::wilcox.test', {
         dplyr::select(feature, group, statistic, p.value = pval)
     j <- dplyr::inner_join(base, res, by = c("feature", "group"),
                            suffix = c("_base", "_presto"))
-    expect_lt(max(abs(j$p.value_base - j$p.value_presto)), 1e-3)
+    expect_lt(max(abs(j$p.value_base - j$p.value_presto)), 1e-8)
     expect_lt(max(abs(j$statistic_base - j$statistic_presto)), 1e-3)
 })
 
@@ -99,6 +99,66 @@ test_that('dense and sparse wilcoxauc paths give identical results', {
                  "pval", "padj", "pct_in", "pct_out")
     for (cn in numcols) {
         expect_lt(max(abs(rd[[cn]] - rs[[cn]])), 1e-8)
+    }
+})
+
+test_that('input matrices are never modified in place', {
+    ## Regression test for #7: the dense ranking kernel used to alias R
+    ## memory and overwrite the caller matrix with ranks.
+    set.seed(31)
+    ## double storage: this is the case where the C++ side can alias R memory
+    m <- matrix(as.numeric(rpois(10 * 60, 2)), 10,
+                dimnames = list(paste0("g", 1:10), NULL))
+    yy <- rep(c("A", "B"), 30)
+    m_orig <- m + 0
+    ms <- as(m, "dgCMatrix")
+    ms_orig <- as(m, "dgCMatrix")
+
+    invisible(wilcoxauc(m, yy, verbose = FALSE))
+    expect_identical(m, m_orig)
+    invisible(wilcoxauc(ms, yy, verbose = FALSE))
+    expect_identical(ms, ms_orig)
+    invisible(rank_matrix(m))
+    expect_identical(m, m_orig)
+    invisible(rank_matrix(ms))
+    expect_identical(ms, ms_orig)
+})
+
+test_that('tie correction matches wilcox.test on heavily tied data', {
+    ## Regression test for #29: the final tie group per feature (and the
+    ## zero group of all-zero features) used to be dropped from the
+    ## variance correction, inflating p-values on heavily tied data.
+    set.seed(5)
+    b <- matrix(rbinom(6 * 200, 1, 0.4), 6,
+                dimnames = list(paste0("f", 1:6), NULL))
+    yb <- rep(c("A", "B"), 100)
+
+    wt <- vapply(seq_len(nrow(b)), function(i) {
+        suppressWarnings(wilcox.test(
+            b[i, yb == "A"], b[i, yb == "B"],
+            exact = FALSE, correct = TRUE
+        )$p.value)
+    }, numeric(1))
+
+    for (Xin in list(b, as(b, "dgCMatrix"))) {
+        res <- wilcoxauc(Xin, yb, verbose = FALSE)
+        expect_lt(max(abs(res$pval[res$group == "A"] - wt)), 1e-10)
+    }
+})
+
+test_that('constant features report p = 1, not NaN', {
+    set.seed(8)
+    m <- matrix(rpois(5 * 80, 2), 5,
+                dimnames = list(paste0("g", 1:5), NULL))
+    m[2, ] <- 0        # all-zero feature
+    m[4, ] <- 3        # constant non-zero feature
+    yy <- rep(c("A", "B"), 40)
+
+    for (Xin in list(m, as(m, "dgCMatrix"))) {
+        res <- wilcoxauc(Xin, yy, verbose = FALSE)
+        expect_true(all(!is.na(res$pval)))
+        expect_equal(res$pval[res$feature %in% c("g2", "g4")], rep(1, 4))
+        expect_equal(res$auc[res$feature %in% c("g2", "g4")], rep(0.5, 4))
     }
 })
 
