@@ -116,12 +116,15 @@ wilcoxauc(
 
 - transposed:
 
-  Set to `TRUE` if `X` is observations x features (samples in rows)
-  instead of the default features x observations. The test then runs
-  directly on that layout without materializing a transposed copy, which
-  saves time and memory on large matrices. Only applies to matrix-like
-  input (the `Seurat` / `SingleCellExperiment` dispatchers always
-  extract features x observations). Default `FALSE`.
+  Set to `TRUE` when your observations (cells, samples) are in the
+  **rows** of `X` and the features in the columns – i.e. `X` is the
+  transpose of the default features-by-observations layout. The test
+  then runs directly on that layout without materializing a transposed
+  copy, which saves time and memory on large matrices. Same convention
+  as the `transposed` argument of scater's `calculatePCA()` and
+  `calculateUMAP()`. Only applies to matrix-like input (the `Seurat` /
+  `SingleCellExperiment` dispatchers always extract
+  features-by-observations). Default `FALSE`.
 
 ## Value
 

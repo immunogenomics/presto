@@ -162,13 +162,16 @@ cores are used.</p></dd>
 
 
 <dt id="arg-transposed">transposed<a class="anchor" aria-label="anchor" href="#arg-transposed"></a></dt>
-<dd><p>Set to <code>TRUE</code> if <code>X</code> is observations x features
-(samples in rows) instead of the default features x observations.
-The test then runs directly on that layout without materializing a
-transposed copy, which saves time and memory on large matrices.
-Only applies to matrix-like input (the <code>Seurat</code> /
-<code>SingleCellExperiment</code> dispatchers always extract features x
-observations). Default <code>FALSE</code>.</p></dd>
+<dd><p>Set to <code>TRUE</code> when your observations (cells,
+samples) are in the <strong>rows</strong> of <code>X</code> and the features in the
+columns – i.e. <code>X</code> is the transpose of the default
+features-by-observations layout. The test then runs directly on
+that layout without materializing a transposed copy, which saves
+time and memory on large matrices. Same convention as the
+<code>transposed</code> argument of scater's <code>calculatePCA()</code> and
+<code>calculateUMAP()</code>. Only applies to matrix-like input (the <code>Seurat</code>
+/ <code>SingleCellExperiment</code> dispatchers always extract
+features-by-observations). Default <code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
