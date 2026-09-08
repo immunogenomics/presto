@@ -77,6 +77,14 @@ installed from GitHub.
   no longer drops a single-column `meta_data` to a vector, which had
   broken the `collapse_background = TRUE` path of
   [`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md).
+- [`sumGroups()`](https://immunogenomics.github.io/presto/reference/sumGroups.md)
+  and
+  [`nnzeroGroups()`](https://immunogenomics.github.io/presto/reference/nnzeroGroups.md)
+  accept a character group vector `y` again. A character `y` previously
+  coerced to `NA` via
+  [`as.integer()`](https://rdrr.io/r/base/integer.html), producing an
+  out-of-bounds index that crashed on some platforms; the labels are now
+  factored first, and `NA` labels raise a clear error.
 - [`summarize_dge_pairs()`](https://immunogenomics.github.io/presto/reference/summarize_dge_pairs.md)
   no longer prints debug output, and
   [`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md)

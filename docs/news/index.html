@@ -73,6 +73,8 @@
 <li>
 <code><a href="../reference/collapse_counts.html">collapse_counts()</a></code> no longer drops a single-column <code>meta_data</code> to a vector, which had broken the <code>collapse_background = TRUE</code> path of <code><a href="../reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code>.</li>
 <li>
+<code><a href="../reference/sumGroups.html">sumGroups()</a></code> and <code><a href="../reference/nnzeroGroups.html">nnzeroGroups()</a></code> accept a character group vector <code>y</code> again. A character <code>y</code> previously coerced to <code>NA</code> via <code><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer()</a></code>, producing an out-of-bounds index that crashed on some platforms; the labels are now factored first, and <code>NA</code> labels raise a clear error.</li>
+<li>
 <code><a href="../reference/summarize_dge_pairs.html">summarize_dge_pairs()</a></code> no longer prints debug output, and <code><a href="../reference/pseudobulk_deseq2.html">pseudobulk_deseq2()</a></code> no longer warns unconditionally.</li>
 <li>Replaced deprecated <code>.data$</code> tidyselect usage and superseded <code><a href="https://tidyr.tidyverse.org/reference/spread.html" class="external-link">tidyr::spread()</a></code> with <code><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">tidyr::pivot_wider()</a></code> in <code><a href="../reference/top_markers.html">top_markers()</a></code> and <code><a href="../reference/top_markers_dds.html">top_markers_dds()</a></code> (#20).</li>
 </ul></div>

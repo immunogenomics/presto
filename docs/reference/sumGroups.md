@@ -55,7 +55,5 @@ exprs <- matrix(rpois(25 * 150, lambda = 2), nrow = 25,
                 dimnames = list(paste0("G", 1:25), NULL))
 y <- rep(c("A", "B", "C"), each = 50)
 sumGroups_res <- sumGroups(exprs, y, 1)
-#> Warning: NAs introduced by coercion
 sumGroups_res <- sumGroups(t(exprs), y, 2)
-#> Warning: NAs introduced by coercion
 ```

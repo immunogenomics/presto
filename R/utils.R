@@ -257,6 +257,22 @@ rank_matrix.matrix <- function(X) {
 #'
 #' @seealso [nnzeroGroups()], [wilcoxauc()]
 #'
+#' Convert a group label vector to 0-based integer codes for the C++
+#' reductions. Factoring first makes character, factor, and numeric `y`
+#' all work; without it a character `y` becomes NA under as.integer() and
+#' then an out-of-bounds index in C++ (see the sumGroups/nnzeroGroups
+#' examples, which pass a character vector). NA labels are rejected here
+#' rather than crashing the compiled code.
+#' @noRd
+group_codes <- function(y) {
+    y <- factor(y)
+    if (anyNA(y)) {
+        stop("y contains NA values; remove them before grouping.",
+             call. = FALSE)
+    }
+    list(codes = as.integer(y) - 1L, n = nlevels(y))
+}
+
 #' @export
 sumGroups <- function(X, y, MARGIN = 2) {
     if (MARGIN == 2 & nrow(X) != length(y)) {
@@ -276,22 +292,22 @@ sumGroups <- function(X, y, MARGIN = 2) {
 #' @rdname sumGroups
 #' @export
 sumGroups.dgCMatrix <- function(X, y, MARGIN = 2) {
+    g <- group_codes(y)
     if (MARGIN == 1) {
-        cpp_sumGroups_dgc_T(X@x, X@p, X@i, ncol(X), nrow(X), as.integer(y) - 1,
-                            length(unique(y)))
+        cpp_sumGroups_dgc_T(X@x, X@p, X@i, ncol(X), nrow(X), g$codes, g$n)
     } else {
-        cpp_sumGroups_dgc(X@x, X@p, X@i, ncol(X), as.integer(y) - 1,
-                        length(unique(y)))
+        cpp_sumGroups_dgc(X@x, X@p, X@i, ncol(X), g$codes, g$n)
     }
 }
 
 #' @rdname sumGroups
 #' @export
 sumGroups.matrix <- function(X, y, MARGIN = 2) {
+    g <- group_codes(y)
     if (MARGIN == 1) {
-        cpp_sumGroups_dense_T(X, as.integer(y) - 1, length(unique(y)))
+        cpp_sumGroups_dense_T(X, g$codes, g$n)
     } else {
-        cpp_sumGroups_dense(X, as.integer(y) - 1, length(unique(y)))
+        cpp_sumGroups_dense(X, g$codes, g$n)
     }
 }
 
@@ -340,21 +356,21 @@ nnzeroGroups <- function(X, y, MARGIN = 2) {
 #' @rdname nnzeroGroups
 #' @export
 nnzeroGroups.dgCMatrix <- function(X, y, MARGIN = 2) {
+    g <- group_codes(y)
     if (MARGIN == 1) {
-        cpp_nnzeroGroups_dgc_T(X@p, X@i, ncol(X), nrow(X), as.integer(y) - 1,
-                            length(unique(y)))
+        cpp_nnzeroGroups_dgc_T(X@p, X@i, ncol(X), nrow(X), g$codes, g$n)
     } else {
-        cpp_nnzeroGroups_dgc(X@p, X@i, ncol(X), as.integer(y) - 1,
-                            length(unique(y)))
+        cpp_nnzeroGroups_dgc(X@p, X@i, ncol(X), g$codes, g$n)
     }
 }
 
 #' @rdname nnzeroGroups
 #' @export
 nnzeroGroups.matrix <- function(X, y, MARGIN = 2) {
+    g <- group_codes(y)
     if (MARGIN == 1) {
-        cpp_nnzeroGroups_dense_T(X, as.integer(y) - 1, length(unique(y)))
+        cpp_nnzeroGroups_dense_T(X, g$codes, g$n)
     } else {
-        cpp_nnzeroGroups_dense(X, as.integer(y) - 1, length(unique(y)))
+        cpp_nnzeroGroups_dense(X, g$codes, g$n)
     }
 }

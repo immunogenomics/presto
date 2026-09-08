@@ -127,6 +127,33 @@ test_that('unknown matrix classes get a helpful error', {
 })
 
 
+test_that('sumGroups / nnzeroGroups accept a character y without crashing', {
+    ## Regression test: a character y used to coerce to NA via as.integer(),
+    ## producing an out-of-bounds index in C++ (fatal on Debian). Now the
+    ## group labels are factored first.
+    set.seed(42)
+    m <- matrix(rpois(25 * 150, 2), 25,
+                dimnames = list(paste0("G", 1:25), NULL))
+    y_chr <- rep(c("A", "B", "C"), each = 50)
+    y_fac <- factor(y_chr)
+
+    for (X in list(m, as(m, "dgCMatrix"))) {
+        expect_warning(sg <- sumGroups(X, y_chr, 1), NA)      # no warning
+        expect_warning(nz <- nnzeroGroups(X, y_chr, 1), NA)
+        expect_equal(dim(sg), c(3L, nrow(m)))
+        expect_equal(dim(nz), c(3L, nrow(m)))
+        ## character and factor labels give the same answer
+        expect_equal(sg, sumGroups(X, y_fac, 1))
+        expect_equal(nz, nnzeroGroups(X, y_fac, 1))
+    }
+
+    ## NA labels are rejected in R rather than crashing the compiled code
+    y_na <- y_chr
+    y_na[1] <- NA
+    expect_error(sumGroups(m, y_na, 1), "NA")
+})
+
+
 test_that('SCE with a DelayedMatrix assay works end-to-end (#26)', {
     if (!requireNamespace('SingleCellExperiment', quietly = TRUE) ||
         !requireNamespace('DelayedArray', quietly = TRUE)) {
