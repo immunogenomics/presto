@@ -7,7 +7,7 @@
 #' @importFrom methods as is
 #' @importFrom Matrix Matrix
 #' @importFrom stats p.adjust pnorm rpois wilcox.test
-#' @importFrom utils head
+#' @importFrom utils head tail
 #' @importFrom Rcpp evalCpp sourceCpp loadModule
 #' @importFrom rlang .data
 "_PACKAGE"

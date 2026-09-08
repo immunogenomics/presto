@@ -1,7 +1,10 @@
+# Register the bare symbols used inside data.table `[...]` expressions, which
+# static analysis (R CMD check) cannot see are column names rather than
+# undefined globals. dplyr non-standard evaluation elsewhere in this file uses
+# the rlang `.data` pronoun instead, so those names do not need registering.
 globalVariables(
     names = c(
-        ":=", "sample_id", "N", ".N", "tail", "group", "feature", "stat",
-        "group1", "group2", ".SD", "log2FoldChange", "pvalue", "padj"
+        ":=", ".N", ".SD", "sample_id", "N", "stat", "group1", "feature"
     ),
     package = "presto",
     add = TRUE
@@ -228,7 +231,7 @@ pseudobulk_pairwise <- function(
                 dge_res <- DESeq2::results(dds, name = contrast_name) %>%
                         data.frame() %>%
                         tibble::rownames_to_column("feature") %>%
-                        dplyr::arrange(-stat) %>%
+                        dplyr::arrange(-.data$stat) %>%
                         dplyr::mutate(
                             group1 = foreground_id,
                             group2 = background_id
@@ -240,8 +243,8 @@ pseudobulk_pairwise <- function(
             purrr::reduce(rbind)
     }) %>%
     purrr::reduce(rbind) %>%
-    dplyr::select(group1, group2, feature, dplyr::everything()) %>%
-    dplyr::arrange(group1, -stat)
+    dplyr::select("group1", "group2", "feature", dplyr::everything()) %>%
+    dplyr::arrange(.data$group1, -.data$stat)
 }
 
 #' Pseudobulk DESeq2: one-vs-all contrasts
@@ -317,13 +320,13 @@ pseudobulk_one_vs_all <- function(
             dge_res <- DESeq2::results(dds, name = contrast_name) %>%
                     data.frame() %>%
                     tibble::rownames_to_column("feature") %>%
-                    dplyr::arrange(-stat) %>%
+                    dplyr::arrange(-.data$stat) %>%
                     dplyr::mutate(group = foreground_id)
         })})
         return(dge_res)
     })) %>%
-    dplyr::select(group, feature, dplyr::everything()) %>%
-    dplyr::arrange(group, -stat)
+    dplyr::select("group", "feature", dplyr::everything()) %>%
+    dplyr::arrange(.data$group, -.data$stat)
 
 }
 
@@ -430,13 +433,13 @@ pseudobulk_within <- function(
             dge_res <- DESeq2::results(dds, name = contrast_name) %>%
                     data.frame() %>%
                     tibble::rownames_to_column("feature") %>%
-                    dplyr::arrange(-stat) %>%
+                    dplyr::arrange(-.data$stat) %>%
                     dplyr::mutate(group = group_test)
         })})
         return(dge_res)
     })) %>%
-    dplyr::select(group, feature, dplyr::everything()) %>%
-    dplyr::arrange(group, -stat)
+    dplyr::select("group", "feature", dplyr::everything()) %>%
+    dplyr::arrange(.data$group, -.data$stat)
 }
 
 #' Pseudobulk differential expression with DESeq2
@@ -635,16 +638,16 @@ top_markers_dds <- function(
 ) {
     res %>%
         dplyr::filter(
-            pvalue <= pval_max &
-            padj <= padj_max  &
-            log2FoldChange >= lfc_min
+            .data$pvalue <= pval_max &
+            .data$padj <= padj_max  &
+            .data$log2FoldChange >= lfc_min
         ) %>%
-        dplyr::group_by(group) %>%
-        dplyr::top_n(n = n, wt = stat) %>%
-        dplyr::mutate(rank = rank(-stat, ties.method = "random")) %>%
+        dplyr::group_by(.data$group) %>%
+        dplyr::top_n(n = n, wt = .data$stat) %>%
+        dplyr::mutate(rank = rank(-.data$stat, ties.method = "random")) %>%
         dplyr::ungroup() %>%
         dplyr::select("feature", "group", "rank") %>%
-        dplyr::arrange(rank) %>%
+        dplyr::arrange(.data$rank) %>%
         tidyr::pivot_wider(
             names_from = "group", values_from = "feature", names_sort = TRUE
         )
@@ -685,7 +688,7 @@ summarize_dge_pairs <- function(dge_res, mode=c("min", "max")[1]) {
             , head(.SD[order(-stat)], 1), by = list(group1, feature)
         ]
     ) %>%
-        dplyr::select(-group2) %>%
+        dplyr::select(-dplyr::any_of("group2")) %>%
         dplyr::rename(group = group1) %>%
-        dplyr::arrange(group, -stat)
+        dplyr::arrange(.data$group, -.data$stat)
 }
