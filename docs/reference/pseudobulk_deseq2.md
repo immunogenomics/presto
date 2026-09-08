@@ -112,22 +112,38 @@ identifier(s) (`group`, or `group1` / `group2` in `pairwise` mode),
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-    m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
+# \donttest{
+if (requireNamespace("DESeq2", quietly = TRUE)) {
+    ## 100 genes x 500 cells from 2 clusters across 6 donors
+    m <- matrix(sample.int(8, 100 * 500, replace = TRUE), nrow = 100)
     rownames(m) <- paste0("G", 1:100)
     colnames(m) <- paste0("C", 1:500)
-    md1 <- sample(c("a", "b"), 500, replace=TRUE)
-    md2 <- sample(c("c", "d"), 500, replace=TRUE)
-    df <- data.frame(md1, md2)
-    data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
-    res_mat <- pseudobulk_deseq2(
-        ~md1,
-        data_collapsed$meta_data["md1"],
-        data_collapsed$counts_mat,
+    meta <- data.frame(
+        cluster = sample(c("a", "b"), 500, replace = TRUE),
+        donor = sample(paste0("d", 1:6), 500, replace = TRUE)
+    )
+
+    ## collapse cells into per-(cluster, donor) pseudobulks
+    dc <- collapse_counts(m, meta, c("cluster", "donor"))
+
+    ## test each cluster against the rest
+    res <- pseudobulk_deseq2(
+        ~cluster,
+        dc$meta_data["cluster"],
+        dc$counts_mat,
         verbose = FALSE,
         present_in_min_samples = 1,
+        collapse_background = FALSE,
         mode = "one_vs_all"
     )
-    head(res_mat)
-} # }
+    head(res)
+}
+#>   group feature baseMean log2FoldChange      lfcSE     stat     pvalue     padj
+#> 1     a     G92 190.4614      0.1448955 0.07400614 1.957885 0.05024350 0.979238
+#> 2     a      G6 184.2070      0.1467020 0.07623659 1.924299 0.05431713 0.979238
+#> 3     a     G67 187.5035      0.1377440 0.07599174 1.812618 0.06989075 0.979238
+#> 4     a     G41 190.1180      0.1324874 0.07422529 1.784937 0.07427158 0.979238
+#> 5     a     G23 188.1956      0.1205691 0.08044927 1.498697 0.13395223 0.979238
+#> 6     a      G8 187.4472      0.1188057 0.07962251 1.492112 0.13566991 0.979238
+# }
 ```

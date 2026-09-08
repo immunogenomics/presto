@@ -1,6 +1,7 @@
 # presto: Fast differential expression
 
-Scalable implementation of the Wilcoxon rank sum test and auROC
+Scalable implementation of the Wilcoxon rank sum test and the area under
+the receiver operating characteristic curve (also known as auROC or AUC)
 statistic. Interfaces to dense and sparse matrices, as well as the
 genomics analysis frameworks 'Seurat' and 'SingleCellExperiment'.
 

@@ -54,6 +54,9 @@ from GitHub.
 * `pseudobulk_within()` handles character and multi-level contrast
   variables.
 * `pseudobulk_pairwise()` no longer fails on single-column `meta_data`.
+* `collapse_counts()` no longer drops a single-column `meta_data` to a
+  vector, which had broken the `collapse_background = TRUE` path of
+  `pseudobulk_deseq2()`.
 * `summarize_dge_pairs()` no longer prints debug output, and
   `pseudobulk_deseq2()` no longer warns unconditionally.
 * Replaced deprecated `.data$` tidyselect usage and superseded

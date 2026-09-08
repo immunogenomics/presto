@@ -99,7 +99,8 @@ collapse_counts <- function(
     idx_keep <- which(!is.na(hash))
     hash <- hash[idx_keep]
     hash <- factor(sprintf("sample_%d", as.integer(hash)))
-    meta_data <- meta_data[idx_keep, ]
+    ## drop = FALSE so a single-column meta_data stays a data.frame
+    meta_data <- data.frame(meta_data)[idx_keep, , drop = FALSE]
     counts_mat <- counts_mat[, idx_keep]
 
     ## one hot encoded design matrix, sample level
@@ -494,23 +495,32 @@ pseudobulk_within <- function(
 #'   `log2FoldChange`, `lfcSE`, `stat`, `pvalue`, `padj`.
 #'
 #' @examples
-#' \dontrun{
-#'     m <- matrix(sample.int(8, 100*500, replace=TRUE), nrow=100, ncol=500)
+#' \donttest{
+#' if (requireNamespace("DESeq2", quietly = TRUE)) {
+#'     ## 100 genes x 500 cells from 2 clusters across 6 donors
+#'     m <- matrix(sample.int(8, 100 * 500, replace = TRUE), nrow = 100)
 #'     rownames(m) <- paste0("G", 1:100)
 #'     colnames(m) <- paste0("C", 1:500)
-#'     md1 <- sample(c("a", "b"), 500, replace=TRUE)
-#'     md2 <- sample(c("c", "d"), 500, replace=TRUE)
-#'     df <- data.frame(md1, md2)
-#'     data_collapsed <- collapse_counts(m, df, c("md1", "md2"))
-#'     res_mat <- pseudobulk_deseq2(
-#'         ~md1,
-#'         data_collapsed$meta_data["md1"],
-#'         data_collapsed$counts_mat,
+#'     meta <- data.frame(
+#'         cluster = sample(c("a", "b"), 500, replace = TRUE),
+#'         donor = sample(paste0("d", 1:6), 500, replace = TRUE)
+#'     )
+#'
+#'     ## collapse cells into per-(cluster, donor) pseudobulks
+#'     dc <- collapse_counts(m, meta, c("cluster", "donor"))
+#'
+#'     ## test each cluster against the rest
+#'     res <- pseudobulk_deseq2(
+#'         ~cluster,
+#'         dc$meta_data["cluster"],
+#'         dc$counts_mat,
 #'         verbose = FALSE,
 #'         present_in_min_samples = 1,
+#'         collapse_background = FALSE,
 #'         mode = "one_vs_all"
 #'     )
-#'     head(res_mat)
+#'     head(res)
+#' }
 #' }
 #'
 #' @seealso [collapse_counts()], [top_markers_dds()],

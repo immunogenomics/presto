@@ -8,3 +8,4 @@
 ^\.claude$
 ^vignettes/.*\.orig$
 ^vignettes/precompute\.R$
+^issues$

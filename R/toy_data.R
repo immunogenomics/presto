@@ -1,25 +1,32 @@
 #' Deterministic toy counts shared by [toy_seurat()] and [toy_sce()].
 #' 20 genes x 300 cells, two cell types, with a few genes shifted per type
-#' so marker tests have signal. Saves and restores the caller's RNG state.
+#' so marker tests have signal.
+#'
+#' Counts come from a self-contained Park-Miller linear congruential
+#' generator rather than R's RNG, so the data are reproducible without
+#' calling set.seed() -- which would modify the user's `.Random.seed` in
+#' the global environment (disallowed by CRAN policy). Every product stays
+#' below 2^53, so the arithmetic is exact and identical on all platforms.
 #' @noRd
 toy_counts <- function() {
-    if (exists(".Random.seed", envir = globalenv())) {
-        old_seed <- get(".Random.seed", envir = globalenv())
-        on.exit(assign(".Random.seed", old_seed, envir = globalenv()))
-    }
-    set.seed(42)
-    n_genes <- 20
-    n_cells <- 300
+    n_genes <- 20L
+    n_cells <- 300L
     cell_type <- rep(c("jurkat", "t293"), length.out = n_cells)
-    counts <- matrix(rpois(n_genes * n_cells, lambda = 2),
-                     nrow = n_genes)
+
+    n <- n_genes * n_cells
+    draw <- numeric(n)
+    state <- 42
+    for (k in seq_len(n)) {
+        state <- (16807 * state) %% 2147483647
+        draw[k] <- state / 2147483647            # uniform in (0, 1)
+    }
+    counts <- matrix(as.numeric(floor(draw * 4)), nrow = n_genes)  # 0..3
+
     ## give each cell type a handful of upregulated marker genes
-    counts[1:3, cell_type == "jurkat"] <-
-        counts[1:3, cell_type == "jurkat"] +
-        rpois(3 * sum(cell_type == "jurkat"), lambda = 3)
-    counts[4:6, cell_type == "t293"] <-
-        counts[4:6, cell_type == "t293"] +
-        rpois(3 * sum(cell_type == "t293"), lambda = 3)
+    jurkat <- cell_type == "jurkat"
+    counts[1:3, jurkat] <- counts[1:3, jurkat] + 3
+    counts[4:6, !jurkat] <- counts[4:6, !jurkat] + 3
+
     dimnames(counts) <- list(
         paste0("G", seq_len(n_genes)),
         paste0("cell", seq_len(n_cells))

@@ -15,9 +15,11 @@ Authors@R: c(
     person("Austin", "Hartman",
         role = c("ctb"), comment = c(ORCID = "0000-0001-7278-1852"))
     )
-Description: Scalable implementation of the Wilcoxon rank sum test and
-    auROC statistic. Interfaces to dense and sparse matrices, as well as
-    the genomics analysis frameworks 'Seurat' and 'SingleCellExperiment'.
+Description: Scalable implementation of the Wilcoxon rank sum test and the
+    area under the receiver operating characteristic curve (also known as
+    auROC or AUC) statistic. Interfaces to dense and sparse matrices, as
+    well as the genomics analysis frameworks 'Seurat' and
+    'SingleCellExperiment'.
 License: GPL-3
 Encoding: UTF-8
 Depends: R (>= 3.5.0)

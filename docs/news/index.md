@@ -73,6 +73,10 @@ installed from GitHub.
   handles character and multi-level contrast variables.
 - [`pseudobulk_pairwise()`](https://immunogenomics.github.io/presto/reference/pseudobulk_pairwise.md)
   no longer fails on single-column `meta_data`.
+- [`collapse_counts()`](https://immunogenomics.github.io/presto/reference/collapse_counts.md)
+  no longer drops a single-column `meta_data` to a vector, which had
+  broken the `collapse_background = TRUE` path of
+  [`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md).
 - [`summarize_dge_pairs()`](https://immunogenomics.github.io/presto/reference/summarize_dge_pairs.md)
   no longer prints debug output, and
   [`pseudobulk_deseq2()`](https://immunogenomics.github.io/presto/reference/pseudobulk_deseq2.md)
