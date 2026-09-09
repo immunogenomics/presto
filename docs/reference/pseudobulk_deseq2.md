@@ -114,13 +114,13 @@ identifier(s) (`group`, or `group1` / `group2` in `pairwise` mode),
 ``` r
 # \donttest{
 if (requireNamespace("DESeq2", quietly = TRUE)) {
-    ## 100 genes x 500 cells from 2 clusters across 6 donors
-    m <- matrix(sample.int(8, 100 * 500, replace = TRUE), nrow = 100)
-    rownames(m) <- paste0("G", 1:100)
-    colnames(m) <- paste0("C", 1:500)
+    ## 40 genes x 300 cells from 2 clusters across 6 donors
+    m <- matrix(sample.int(8, 40 * 300, replace = TRUE), nrow = 40)
+    rownames(m) <- paste0("G", 1:40)
+    colnames(m) <- paste0("C", 1:300)
     meta <- data.frame(
-        cluster = sample(c("a", "b"), 500, replace = TRUE),
-        donor = sample(paste0("d", 1:6), 500, replace = TRUE)
+        cluster = sample(c("a", "b"), 300, replace = TRUE),
+        donor = sample(paste0("d", 1:6), 300, replace = TRUE)
     )
 
     ## collapse cells into per-(cluster, donor) pseudobulks
@@ -139,11 +139,11 @@ if (requireNamespace("DESeq2", quietly = TRUE)) {
     head(res)
 }
 #>   group feature baseMean log2FoldChange      lfcSE     stat     pvalue     padj
-#> 1     a     G92 190.4614      0.1448955 0.07400614 1.957885 0.05024350 0.979238
-#> 2     a      G6 184.2070      0.1467020 0.07623659 1.924299 0.05431713 0.979238
-#> 3     a     G67 187.5035      0.1377440 0.07599174 1.812618 0.06989075 0.979238
-#> 4     a     G41 190.1180      0.1324874 0.07422529 1.784937 0.07427158 0.979238
-#> 5     a     G23 188.1956      0.1205691 0.08044927 1.498697 0.13395223 0.979238
-#> 6     a      G8 187.4472      0.1188057 0.07962251 1.492112 0.13566991 0.979238
+#> 1     a      G3 113.1451      0.2054373 0.08921427 2.302740 0.02129346 0.572847
+#> 2     a     G12 108.6964      0.2280651 0.10421667 2.188374 0.02864235 0.572847
+#> 3     a     G13 103.3259      0.1215659 0.08240200 1.475279 0.14013755 0.982503
+#> 4     a      G6 110.3473      0.1306091 0.09479678 1.377780 0.16827136 0.982503
+#> 5     a      G4 106.6365      0.1401954 0.10660014 1.315152 0.18845882 0.982503
+#> 6     a      G7 111.2432      0.1016056 0.09145469 1.110994 0.26657085 0.982503
 # }
 ```

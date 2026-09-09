@@ -500,13 +500,13 @@ pseudobulk_within <- function(
 #' @examples
 #' \donttest{
 #' if (requireNamespace("DESeq2", quietly = TRUE)) {
-#'     ## 100 genes x 500 cells from 2 clusters across 6 donors
-#'     m <- matrix(sample.int(8, 100 * 500, replace = TRUE), nrow = 100)
-#'     rownames(m) <- paste0("G", 1:100)
-#'     colnames(m) <- paste0("C", 1:500)
+#'     ## 40 genes x 300 cells from 2 clusters across 6 donors
+#'     m <- matrix(sample.int(8, 40 * 300, replace = TRUE), nrow = 40)
+#'     rownames(m) <- paste0("G", 1:40)
+#'     colnames(m) <- paste0("C", 1:300)
 #'     meta <- data.frame(
-#'         cluster = sample(c("a", "b"), 500, replace = TRUE),
-#'         donor = sample(paste0("d", 1:6), 500, replace = TRUE)
+#'         cluster = sample(c("a", "b"), 300, replace = TRUE),
+#'         donor = sample(paste0("d", 1:6), 300, replace = TRUE)
 #'     )
 #'
 #'     ## collapse cells into per-(cluster, donor) pseudobulks

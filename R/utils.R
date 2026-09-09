@@ -228,6 +228,22 @@ rank_matrix.matrix <- function(X) {
     cpp_rank_matrix_dense(X)
 }
 
+#' Convert a group label vector to 0-based integer codes for the C++
+#' reductions. Factoring first makes character, factor, and numeric `y`
+#' all work; without it a character `y` becomes NA under as.integer() and
+#' then an out-of-bounds index in C++ (see the sumGroups/nnzeroGroups
+#' examples, which pass a character vector). NA labels are rejected here
+#' rather than crashing the compiled code.
+#' @noRd
+group_codes <- function(y) {
+    y <- factor(y)
+    if (anyNA(y)) {
+        stop("y contains NA values; remove them before grouping.",
+             call. = FALSE)
+    }
+    list(codes = as.integer(y) - 1L, n = nlevels(y))
+}
+
 #' Group-wise sum of a matrix along one axis
 #'
 #' For each unique value of the grouping vector `y`, sums the
@@ -257,22 +273,6 @@ rank_matrix.matrix <- function(X) {
 #'
 #' @seealso [nnzeroGroups()], [wilcoxauc()]
 #'
-#' Convert a group label vector to 0-based integer codes for the C++
-#' reductions. Factoring first makes character, factor, and numeric `y`
-#' all work; without it a character `y` becomes NA under as.integer() and
-#' then an out-of-bounds index in C++ (see the sumGroups/nnzeroGroups
-#' examples, which pass a character vector). NA labels are rejected here
-#' rather than crashing the compiled code.
-#' @noRd
-group_codes <- function(y) {
-    y <- factor(y)
-    if (anyNA(y)) {
-        stop("y contains NA values; remove them before grouping.",
-             call. = FALSE)
-    }
-    list(codes = as.integer(y) - 1L, n = nlevels(y))
-}
-
 #' @export
 sumGroups <- function(X, y, MARGIN = 2) {
     if (MARGIN == 2 & nrow(X) != length(y)) {
