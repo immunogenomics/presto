@@ -1,0 +1,71 @@
+# Run R CMD check under AddressSanitizer + UndefinedBehaviorSanitizer to
+# catch memory errors (out-of-bounds, use-after-free, bad casts) in the C++.
+# Uses Winston Chang's r-debug image, whose `RDsan` is an R-devel build
+# compiled with -fsanitize=address,undefined; installing packages with it
+# rebuilds their compiled code under the sanitizers too.
+#
+# This is the class of bug our examples/tests hit on Debian (an out-of-bounds
+# index in the C++ reductions) that macOS checks did not surface.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    # weekly safety net (Mondays 06:00 UTC), since sanitizer results depend
+    # on the toolchain and can change even when our code does not
+    - cron: '0 6 * * 1'
+
+name: ASAN-UBSAN
+
+jobs:
+  asan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    container:
+      image: wch1/r-debug:latest
+
+    env:
+      # DESeq2, rhdf5, Seurat, etc. are Bioconductor/heavy Suggests; we do not
+      # build them under the sanitizer. Missing Suggests then skip() rather
+      # than failing the check, which still exercises all of our own C++.
+      _R_CHECK_FORCE_SUGGESTS_: false
+      # R's own allocations look like leaks at exit; we care about memory
+      # errors (overflows / use-after-free), not leaks, so turn LSan off.
+      ASAN_OPTIONS: detect_leaks=0
+      UBSAN_OPTIONS: print_stacktrace=1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (compiled under the sanitizers)
+        run: |
+          RDsan -q -e 'install.packages(
+            c("Rcpp", "RcppArmadillo", "data.table", "dplyr", "tidyr",
+              "purrr", "tibble", "Matrix", "rlang", "testthat", "broom"),
+            repos = "https://cloud.r-project.org", Ncpus = 2)'
+
+      - name: Build
+        run: RDsan CMD build --no-build-vignettes --no-manual .
+
+      - name: Check under ASAN + UBSAN
+        run: |
+          tarball=$(ls -1t presto_*.tar.gz | head -n1)
+          RDsan CMD check --no-manual --no-vignettes --ignore-vignettes "$tarball"
+
+      - name: Show sanitizer output on failure
+        if: failure()
+        run: |
+          cat presto.Rcheck/00install.out 2>/dev/null || true
+          cat presto.Rcheck/presto-Ex.Rout* 2>/dev/null || true
+          cat presto.Rcheck/tests/*.Rout* 2>/dev/null || true
+
+      - name: Upload check directory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asan-check-results
+          path: presto.Rcheck
+          retention-days: 7
