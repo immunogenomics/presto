@@ -1,8 +1,9 @@
 # Run R CMD check under AddressSanitizer + UndefinedBehaviorSanitizer to
 # catch memory errors (out-of-bounds, use-after-free, bad casts) in the C++.
-# Uses Winston Chang's r-debug image, whose `RDsan` is an R-devel build
-# compiled with -fsanitize=address,undefined; installing packages with it
-# rebuilds their compiled code under the sanitizers too.
+#
+# Uses R-hub's maintained gcc-asan container, whose `R` is an R-devel build
+# compiled with -fsanitize=address,undefined and kept current with CRAN.
+# Installing packages inside it compiles their C/C++ under the sanitizers too.
 #
 # This is the class of bug our examples/tests hit on Debian (an out-of-bounds
 # index in the C++ reductions) that macOS checks did not surface.
@@ -22,10 +23,10 @@ name: ASAN-UBSAN
 jobs:
   asan:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     container:
-      image: wch1/r-debug:latest
+      image: ghcr.io/r-hub/containers/gcc-asan:latest
 
     env:
       # DESeq2, rhdf5, Seurat, etc. are Bioconductor/heavy Suggests; we do not
@@ -42,18 +43,18 @@ jobs:
 
       - name: Install dependencies (compiled under the sanitizers)
         run: |
-          RDsan -q -e 'install.packages(
+          Rscript -e 'install.packages(
             c("Rcpp", "RcppArmadillo", "data.table", "dplyr", "tidyr",
               "purrr", "tibble", "Matrix", "rlang", "testthat", "broom"),
             repos = "https://cloud.r-project.org", Ncpus = 2)'
 
       - name: Build
-        run: RDsan CMD build --no-build-vignettes --no-manual .
+        run: R CMD build --no-build-vignettes --no-manual .
 
       - name: Check under ASAN + UBSAN
         run: |
           tarball=$(ls -1t presto_*.tar.gz | head -n1)
-          RDsan CMD check --no-manual --no-vignettes --ignore-vignettes "$tarball"
+          R CMD check --no-manual --no-vignettes --ignore-vignettes "$tarball"
 
       - name: Show sanitizer output on failure
         if: failure()
