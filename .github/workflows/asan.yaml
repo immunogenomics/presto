@@ -42,11 +42,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install dependencies (compiled under the sanitizers)
+        # Use pak, not install.packages(): pak resolves and installs the
+        # system requirements too (e.g. libuv for 'fs', a transitive testthat
+        # dependency), which a bare install.packages() does not.
         run: |
-          Rscript -e 'install.packages(
+          Rscript -e 'pak::pkg_install(
             c("Rcpp", "RcppArmadillo", "data.table", "dplyr", "tidyr",
-              "purrr", "tibble", "Matrix", "rlang", "testthat", "broom"),
-            repos = "https://cloud.r-project.org", Ncpus = 2)'
+              "purrr", "tibble", "Matrix", "rlang", "testthat", "broom"))'
 
       - name: Build
         run: R CMD build --no-build-vignettes --no-manual .
