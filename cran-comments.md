@@ -1,23 +1,23 @@
 ## Resubmission
 
-This is a resubmission. In response to the CRAN review, I have:
+This is a resubmission addressing the remaining `\dontrun{}`. There are
+now no `\dontrun{}` examples in the package.
 
-* Explained the acronyms in the Description text: "auROC" and "AUC" are
-  now spelled out as "area under the receiver operating characteristic
-  curve".
+The last one, in `load_ircolitis_cd8()`, is now `\donttest{}`. Because
+that function downloads a ~121 MB dataset from GEO and requires the
+Bioconductor Suggests `rhdf5` and `R.utils`, the example body is guarded
+with `if (interactive() && requireNamespace("rhdf5") &&
+requireNamespace("R.utils"))`. This keeps `R CMD check` from downloading
+large data over the network while leaving the example runnable for users.
+
+Earlier resubmissions in response to the CRAN review also:
+
+* Explained the acronyms in the Description text ("auROC" / "AUC" ->
+  "area under the receiver operating characteristic curve").
 * Replaced `\dontrun{}` with `\donttest{}` in the `pseudobulk_deseq2()`
-  example (guarded by `requireNamespace("DESeq2")`, as DESeq2 is a
-  Bioconductor Suggests).
-* Removed all modification of the global environment. The internal toy
-  data generator previously called `set.seed()` and saved/restored
-  `.Random.seed` in `.GlobalEnv`; it now uses a self-contained
-  deterministic generator and never touches the user's RNG state.
-
-One `\dontrun{}` remains, in the `load_ircolitis_cd8()` example. This
-function downloads a ~121 MB dataset from GEO over the internet and
-requires the Bioconductor Suggests `rhdf5` and `R.utils`, so the example
-genuinely cannot be executed during checks (no network access, optional
-packages). This matches the documented exception for `\dontrun{}`.
+  example (guarded by `requireNamespace("DESeq2")`).
+* Removed all modification of the global environment (the internal toy
+  data generator no longer touches the user's `.Random.seed`).
 
 ## Test environments
 
