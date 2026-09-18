@@ -1,14 +1,12 @@
 ## Resubmission
 
-This is a resubmission addressing the remaining `\dontrun{}`. There are
-now no `\dontrun{}` examples in the package.
-
-The last one, in `load_ircolitis_cd8()`, is now `\donttest{}`. Because
-that function downloads a ~121 MB dataset from GEO and requires the
-Bioconductor Suggests `rhdf5` and `R.utils`, the example body is guarded
-with `if (interactive() && requireNamespace("rhdf5") &&
-requireNamespace("R.utils"))`. This keeps `R CMD check` from downloading
-large data over the network while leaving the example runnable for users.
+This is a resubmission. The one remaining `\dontrun{}` example,
+`load_ircolitis_cd8()`, now carries a comment at the top of the block
+explaining why it is not run, as requested: the function downloads a
+~121 MB dataset from GEO and requires the Bioconductor package `rhdf5`,
+so it is provided for the tutorial on real data and users opt in by
+calling it themselves. All other examples are executable (a few in
+`\donttest{}`).
 
 Earlier resubmissions in response to the CRAN review also:
 

@@ -39,19 +39,15 @@ CD8 T cells from immune checkpoint colitis patients and controls.
 Requires the suggested package \code{rhdf5} (Bioconductor).
 }
 \examples{
-\donttest{
-## Downloads ~121 MB from GEO on first use and requires the 'rhdf5' and
-## 'R.utils' packages, so run it only in an interactive session (this
-## keeps R CMD check from downloading large data over the network).
-if (interactive() &&
-    requireNamespace("rhdf5", quietly = TRUE) &&
-    requireNamespace("R.utils", quietly = TRUE)) {
-    d <- load_ircolitis_cd8()
-    dim(d$counts)
-    table(d$obs$cluster)
-    res <- wilcoxauc(d$counts, d$obs$cluster)
-    head(res)
-}
+\dontrun{
+# Not run during checks: load_ircolitis_cd8() downloads ~121 MB from
+# GEO and needs the Bioconductor package 'rhdf5'. It is only for the
+# tutorial on real data, so users opt in by calling it themselves.
+d <- load_ircolitis_cd8()
+dim(d$counts)
+table(d$obs$cluster)
+res <- wilcoxauc(d$counts, d$obs$cluster)
+head(res)
 }
 
 }
