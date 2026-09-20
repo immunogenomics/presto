@@ -27,13 +27,9 @@ installed from GitHub.
   [`toy_sce()`](https://immunogenomics.github.io/presto/reference/toy_sce.md)
   generate small example Seurat / SingleCellExperiment objects on the
   fly with the installed package versions, so they can never go stale.
-- New
-  [`load_ircolitis_cd8()`](https://immunogenomics.github.io/presto/reference/load_ircolitis_cd8.md)
-  downloads and caches the 25,341-cell colon CD8 T-cell dataset
-  (GSE206299, Thomas et al. 2024) used by the vignettes.
 - Two vignettes: *Getting started with presto* and *Pseudobulk
-  differential expression with DESeq2*, both run on the real ircolitis
-  dataset.
+  differential expression with DESeq2*, both worked through on a real
+  25,341-cell colon CD8 T-cell dataset (GSE206299, Thomas et al. 2024).
 
 ### Breaking changes
 

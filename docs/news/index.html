@@ -49,8 +49,7 @@
 <li>
 <code><a href="../reference/wilcoxauc.html">wilcoxauc()</a></code> gains an <code>nthreads</code> argument: the per-feature ranking of sparse (<code>dgCMatrix</code>) input can run multithreaded. Results are identical at any thread count; roughly 2.6x faster with 4 threads on a 3,000 x 80,000 matrix. The default (<code>nthreads = 1</code>) is unchanged.</li>
 <li>New <code><a href="../reference/toy_seurat.html">toy_seurat()</a></code> and <code><a href="../reference/toy_sce.html">toy_sce()</a></code> generate small example Seurat / SingleCellExperiment objects on the fly with the installed package versions, so they can never go stale.</li>
-<li>New <code><a href="../reference/load_ircolitis_cd8.html">load_ircolitis_cd8()</a></code> downloads and caches the 25,341-cell colon CD8 T-cell dataset (GSE206299, Thomas et al. 2024) used by the vignettes.</li>
-<li>Two vignettes: <em>Getting started with presto</em> and <em>Pseudobulk differential expression with DESeq2</em>, both run on the real ircolitis dataset.</li>
+<li>Two vignettes: <em>Getting started with presto</em> and <em>Pseudobulk differential expression with DESeq2</em>, both worked through on a real 25,341-cell colon CD8 T-cell dataset (GSE206299, Thomas et al. 2024).</li>
 </ul></div>
 <div class="section level3">
 <h3 id="breaking-changes-1-1-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-1-0"></a></h3>

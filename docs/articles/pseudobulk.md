@@ -28,8 +28,10 @@ donors. The unit of replication becomes the donor, not the cell.
 
 We use the colon-tissue CD8 T-cell dataset from [Thomas et al. *Nat.
 Med.* 2024](https://www.nature.com/articles/s41591-024-02895-x)
-([GSE206299](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206299)).
-27 donors, 9 cell clusters, 25,341 cells.
+([GSE206299](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206299)):
+27 donors, 9 cell clusters, 25,341 cells. It is fetched with
+`load_ircolitis_cd8()`, a small build-time helper (see
+`vignettes/ircolitis.R` in the package sources), not part of presto.
 
 ``` r
 
@@ -37,6 +39,8 @@ library(presto)
 library(Matrix)
 library(dplyr)
 
+## load_ircolitis_cd8() is defined in vignettes/ircolitis.R (build-time
+## only), not exported by presto.
 d <- load_ircolitis_cd8(verbose = FALSE)
 dim(d$counts)
 #> [1] 28165 25341
@@ -325,7 +329,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.0.0  knitr_1.51    ggplot2_4.0.2
+#> [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.1.0  knitr_1.51    ggplot2_4.0.2
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] utf8_1.2.6                  generics_0.1.4              tidyr_1.3.2                
