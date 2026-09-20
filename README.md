@@ -24,9 +24,8 @@ devtools::install_github("immunogenomics/presto")
 ```
 
 `pseudobulk_deseq2()` additionally requires
-[`DESeq2`](https://bioconductor.org/packages/DESeq2/), and the
-`load_ircolitis_cd8()` demo loader requires `rhdf5`. Both live in
-`Suggests`, so you only need them if you use those features.
+[`DESeq2`](https://bioconductor.org/packages/DESeq2/), which lives in
+`Suggests`, so you only need it if you use that feature.
 
 ## Quick example
 

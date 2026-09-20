@@ -1,12 +1,12 @@
 ## Resubmission
 
-This is a resubmission. The one remaining `\dontrun{}` example,
-`load_ircolitis_cd8()`, now carries a comment at the top of the block
-explaining why it is not run, as requested: the function downloads a
-~121 MB dataset from GEO and requires the Bioconductor package `rhdf5`,
-so it is provided for the tutorial on real data and users opt in by
-calling it themselves. All other examples are executable (a few in
-`\donttest{}`).
+This is a resubmission. To retire the last `\dontrun{}` entirely, the
+`load_ircolitis_cd8()` data downloader has been removed from the package:
+it only ever provided a realistic dataset for the vignettes, so it now
+lives as a build-time helper (vignettes/ircolitis.R, excluded from the
+build) used when the pre-computed vignettes are generated. As a result
+there are now no `\dontrun{}` examples, and `rhdf5` / `R.utils` are no
+longer needed as suggested packages.
 
 Earlier resubmissions in response to the CRAN review also:
 
@@ -34,10 +34,10 @@ There are currently no reverse dependencies on CRAN.
 
 ## Notes for reviewers
 
-* The suggested packages DESeq2, rhdf5, SingleCellExperiment,
+* The suggested packages DESeq2, SingleCellExperiment,
   SummarizedExperiment, DelayedArray, and BiocStyle are from
   Bioconductor. All uses are guarded with requireNamespace() and are
   optional.
 * The vignettes are pre-computed (see vignettes/precompute.R): they use a
-  ~121 MB dataset downloaded from GEO, so the shipped .Rmd files are
-  static and build offline without network access.
+  ~121 MB dataset downloaded from GEO by a build-time helper, so the
+  shipped .Rmd files are static and build offline without network access.

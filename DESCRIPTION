@@ -48,8 +48,6 @@ Suggests:
     DelayedArray,
     broom,
     BiocStyle,
-    DESeq2,
-    rhdf5,
-    R.utils
+    DESeq2
 NeedsCompilation: yes
 VignetteBuilder: knitr

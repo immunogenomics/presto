@@ -22,9 +22,11 @@ hundred-thousand-cell single-cell experiments.
 This vignette uses CD8 T cells from human colon tissue published by
 [Thomas et al., *Nature Medicine* 2024](https://www.nature.com/articles/s41591-024-02895-x)
 ([GSE206299](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206299)).
-`load_ircolitis_cd8()` downloads the 121 MB `.h5ad.gz` file on first use,
-caches it under `tools::R_user_dir("presto", "cache")`, and parses it with
-`rhdf5`.
+The data is fetched with `load_ircolitis_cd8()`, a small build-time helper
+(see `vignettes/ircolitis.R` in the package sources) that downloads the
+121 MB `.h5ad.gz` from GEO and parses it with `rhdf5`. It is not part of
+presto -- presto works on any counts matrix, `Seurat`, or
+`SingleCellExperiment`; this just supplies a realistic example.
 
 
 ``` r
@@ -32,6 +34,8 @@ library(presto)
 library(Matrix)
 library(dplyr)
 
+## load_ircolitis_cd8() is defined in vignettes/ircolitis.R (build-time
+## only), not exported by presto.
 d <- load_ircolitis_cd8(verbose = FALSE)
 dim(d$counts)
 #> [1] 28165 25341
@@ -200,7 +204,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.0.0  knitr_1.51    ggplot2_4.0.2
+#> [1] dplyr_1.2.1   Matrix_1.7-4  presto_1.1.0  knitr_1.51    ggplot2_4.0.2
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] vctrs_0.7.2         cli_3.6.5           rlang_1.1.7         xfun_0.56          

@@ -9,3 +9,4 @@
 ^vignettes/.*\.orig$
 ^vignettes/precompute\.R$
 ^issues$
+^vignettes/ircolitis\.R$

@@ -1,40 +1,19 @@
-#' Download and load the ircolitis tissue CD8 demo dataset
-#'
-#' Downloads `GSE206299_ircolitis-tissue-cd8.h5ad.gz` from GEO on first call
-#' and caches it under [tools::R_user_dir()]. Subsequent calls reuse the cache.
-#' Used to demonstrate presto on a realistic single-cell dataset.
-#'
-#' Source: Thomas et al. (Nat. Med. 2024), GSE206299. 25,341 colon-tissue
-#' CD8 T cells from immune checkpoint colitis patients and controls.
-#'
-#' Requires the suggested package `rhdf5` (Bioconductor).
-#'
-#' @param cache_dir Directory for the cached `.h5ad` file. Defaults to
-#'   `tools::R_user_dir("presto", which = "cache")`.
-#' @param overwrite If `TRUE`, re-download even if the file is cached.
-#' @param verbose Print download / parsing progress.
-#'
-#' @return A list with elements:
-#' \itemize{
-#'   \item `counts` - gene-by-cell `dgCMatrix` of raw UMI counts.
-#'   \item `obs` - cell metadata `data.frame` (categorical fields decoded
-#'     to character; `UMAP1`/`UMAP2` and `PC1..PC24` kept as numeric).
-#'   \item `var` - gene metadata `data.frame`.
-#' }
-#'
-#' @examples
-#' \dontrun{
-#' # Not run during checks: load_ircolitis_cd8() downloads ~121 MB from
-#' # GEO and needs the Bioconductor package 'rhdf5'. It is only for the
-#' # tutorial on real data, so users opt in by calling it themselves.
-#' d <- load_ircolitis_cd8()
-#' dim(d$counts)
-#' table(d$obs$cluster)
-#' res <- wilcoxauc(d$counts, d$obs$cluster)
-#' head(res)
-#' }
-#'
-#' @export
+# Build-time helper for the presto vignettes -- NOT part of the package.
+#
+# Downloads and parses the ircolitis tissue CD8 dataset used to give the
+# vignettes a realistic example. It is sourced by precompute.R when the
+# static vignettes are regenerated, so it only ever runs on the maintainer's
+# machine (which has network access and the Bioconductor package 'rhdf5').
+# It is excluded from the built package via .Rbuildignore, which is why
+# presto itself does not depend on rhdf5 / R.utils or ship a data downloader.
+#
+# Source: Thomas et al. (Nat. Med. 2024), GSE206299. 25,341 colon-tissue
+# CD8 T cells from immune checkpoint colitis patients and controls.
+
+# Download GSE206299_ircolitis-tissue-cd8.h5ad.gz from GEO on first call and
+# cache it under tools::R_user_dir(); subsequent calls reuse the cache.
+# Returns list(counts = gene-by-cell dgCMatrix, obs = cell metadata,
+# var = gene metadata).
 load_ircolitis_cd8 <- function(
     cache_dir = tools::R_user_dir("presto", which = "cache"),
     overwrite = FALSE,
@@ -70,7 +49,6 @@ load_ircolitis_cd8 <- function(
     parse_ircolitis_h5ad(h5_path, verbose = verbose)
 }
 
-#' @noRd
 parse_ircolitis_h5ad <- function(path, verbose = TRUE) {
     if (verbose) message("Reading X (sparse counts)...")
     shape <- rhdf5::h5readAttributes(path, "/X")$shape
@@ -122,10 +100,9 @@ parse_ircolitis_h5ad <- function(path, verbose = TRUE) {
     list(counts = counts, obs = obs_df, var = var_df)
 }
 
-#' Read an AnnData /obs or /var group into a data.frame.
-#' Handles legacy categorical encoding (/obs/__categories/<field> integer codes)
-#' and modern encoding (/obs/<field>/categories + /codes).
-#' @noRd
+# Read an AnnData /obs or /var group into a data.frame. Handles legacy
+# categorical encoding (/obs/__categories/<field> integer codes) and modern
+# encoding (/obs/<field>/categories + /codes).
 read_h5_table <- function(path, group) {
     all_nodes <- rhdf5::h5ls(path)
     children <- all_nodes[all_nodes$group == group, ]
